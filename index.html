@@ -184,11 +184,15 @@ body {
   transform: scale(1.1);
 }
 
+.view.hidden {
+  display: none;
+}
+
 /* ボタン類の共通ホバーアニメーション */
 button {
   transition: background-color 0.3s ease, transform 0.15s ease;
 }
-
+  
 /* 使いやすいレスポンシブ最低限 */
 @media screen and (max-width: 600px){
   #sidebar {
@@ -215,8 +219,8 @@ button {
 </head>
 <body>
 <div id="sidebar">
-  <button onclick="goToSection('seat')">🎮 プレイヤー管理</button>
-  <button onclick="goToSection('ranking')">🏆 順位登録</button>
+  <button onclick="switchView('seat-view')">🎮 プレイヤー管理</button>
+  <button onclick="switchView('ranking-view')">🏆 順位登録</button>
   <button onclick="window.open('https://example.com/rank', '_blank')">📈 ランキング表</button>
   <button onclick="window.open('https://example.com/live', '_blank')">📍 リアルタイム座席</button>
   <button onclick="window.open('https://example.com/realtime-rank', '_blank')">📊 リアルタイムランキング</button>
@@ -240,7 +244,7 @@ button {
     <div id="table-list" class="table-area"></div>
   </section>
 
-  <section id="ranking" class="view hidden">
+  <section id="ranking-view" class="view hidden">
     <h1>🏆 順位登録</h1>
     <button onclick="startSeatQRScan()">座席QR読み取り</button>
     <div>読み取り座席ID: <span id="ranking-seat"></span></div>
@@ -389,6 +393,18 @@ function startQRCodeReader(onRead) {
     });
   }
 }
+
+  function switchView(viewId) {
+  document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+  const target = document.getElementById(viewId);
+  if (target) target.classList.remove('hidden');
+  }
+
+  // ページ読み込み後に表示初期化
+  window.addEventListener("DOMContentLoaded", () => {
+    switchView("seat-view"); // 初期は座席ビュー
+  });
+
   // --- 座席・プレイヤー登録 ---
   window.startQRScan = () => {
   // 本番ではQRライブラリでQRコードを読み取り、その内容に応じて処理
@@ -639,14 +655,7 @@ function exportLeaveCSV() {
   let currentRankingSeatID = null;
   let currentRankingPlayers = [];
   let rankAssignments = {};
-
-  window.goToSection = (section) => {
-    document.querySelectorAll("main > section").forEach(sec => sec.classList.add("hidden"));
-    const target = document.getElementById(section);
-    if(target) target.classList.remove("hidden");
-    if(section === "ranking") resetRankingArea();
-  };
-
+  
  // QR読み取り開始（順位登録用）
   window.startSeatQRScan = () => {
     // 本番ではQRライブラリでQRコードを読み取り、その内容に応じて処理
