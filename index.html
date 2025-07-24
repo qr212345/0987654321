@@ -4,103 +4,214 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>ババ抜き大会管理</title>
+/* フォント指定は既にあるのでそのまま */
 <style>
-  body {
-    margin: 0;
-    font-family: sans-serif;
-    background: #f9f9f9;
-  }
+/* bodyは明るく見やすいベース */
+body {
+  margin: 0;
+  font-family: 'Baloo 2', 'Noto Sans JP', sans-serif;
+  background: #f0f4f8; /* 少し柔らかい爽やかカラー */
+  color: #333;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* サイドバー：少し柔らかく丸みと影を足す */
+#sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 220px; /* 少し幅広め */
+  background: #2c3e50;
+  padding: 15px 10px;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.3);
+  border-top-right-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+
+#sidebar.closed {
+  transform: translateX(-100%);
+}
+
+#sidebar button {
+  margin: 10px 0;
+  padding: 12px 15px;
+  background: #34495e;
+  color: #ecf0f1;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+#sidebar button:hover {
+  background: #1abc9c;
+  transform: scale(1.05);
+}
+
+/* メイン領域はサイドバーの幅に合わせて調整 */
+#main {
+  margin-left: 220px;
+  padding: 25px 30px;
+}
+
+/* QRコードエリアは角丸と影 */
+.qr-area {
+  width: 100%;
+  height: 220px;
+  background: #e0e7ff;
+  margin-top: 12px;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(100, 120, 250, 0.2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  color: #5a6ef0;
+}
+
+/* 座席リスト */
+.table-area {
+  margin-top: 25px;
+}
+
+/* 座席ボックスもカード風に */
+.table-box {
+  border: none;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 25px;
+  background: linear-gradient(145deg, #ffffff, #d4e0ff);
+  box-shadow:
+    6px 6px 10px rgba(150, 180, 250, 0.3),
+    -6px -6px 10px rgba(255, 255, 255, 0.7);
+  transition: box-shadow 0.3s ease;
+  cursor: default;
+}
+.table-box:hover {
+  box-shadow:
+    8px 8px 14px rgba(130, 160, 240, 0.5),
+    -8px -8px 14px rgba(255, 255, 255, 0.9);
+}
+
+/* プレイヤータグ：カード風にしっかり立体感 */
+.player-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #43cea2, #185a9d);
+  color: white;
+  padding: 10px 18px;
+  margin: 6px 8px;
+  border-radius: 25px;
+  position: relative;
+  cursor: grab;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.2),
+    inset 0 -3px 6px rgba(255,255,255,0.25);
+  user-select: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.player-tag:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow:
+    0 10px 14px rgba(0,0,0,0.3),
+    inset 0 -3px 8px rgba(255,255,255,0.4);
+}
+.player-tag:active {
+  cursor: grabbing;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 6px 10px rgba(0,0,0,0.4),
+    inset 0 -3px 7px rgba(255,255,255,0.35);
+}
+
+/* ✖ボタンも丸くてポップに */
+.player-tag button {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(231, 76, 60, 0.8);
+  transition: background-color 0.2s ease;
+}
+.player-tag button:hover {
+  background: #c0392b;
+}
+
+/* 順位登録エリアのドロップボックスもカードに */
+.rank-drop {
+  flex: 1 1 130px;
+  min-height: 90px;
+  background: #dce6f7;
+  border: 2px dashed #4a90e2;
+  text-align: center;
+  padding: 14px;
+  border-radius: 18px;
+  font-weight: 700;
+  color: #2a3f6f;
+  box-shadow: inset 0 0 8px rgba(74,144,226,0.3);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.rank-drop:hover {
+  background-color: #a4bdfc;
+  border-color: #1e62d0;
+}
+
+/* ドラッグ中のプレイヤータグの影 */
+.player-tag.dragging {
+  opacity: 0.6;
+  box-shadow: 0 15px 25px rgba(0,0,0,0.3);
+  transform: scale(1.1);
+}
+
+/* ボタン類の共通ホバーアニメーション */
+button {
+  transition: background-color 0.3s ease, transform 0.15s ease;
+}
+
+/* 使いやすいレスポンシブ最低限 */
+@media screen and (max-width: 600px){
   #sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 200px;
-    background: #333;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-  }
-  #sidebar.closed {
-    transform: translateX(-100%);
-  }
-  #sidebar button {
-    margin: 10px 0;
-    padding: 10px;
-    background: #444;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  #sidebar button:hover {
-    background: #666;
+    width: 160px;
+    padding: 10px 8px;
   }
   #main {
-    margin-left: 200px;
-    padding: 20px;
-  }
-  .view.hidden {
-    display: none;
-  }
-  .qr-area {
-    width: 100%;
-    height: 200px;
-    background: #ccc;
-    margin-top: 10px;
-  }
-  .table-area {
-    margin-top: 20px;
-  }
-  .table-box {
-    border: 1px solid #aaa;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 15px;
-    background: white;
+    margin-left: 160px;
+    padding: 15px 20px;
   }
   .player-tag {
-    display: inline-block;
-    background: #4caf50;
-    color: white;
-    padding: 5px 10px;
-    margin: 5px;
-    border-radius: 15px;
-    position: relative;
-    cursor: grab;
-  }
-  .player-tag button {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .ranking-area {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 20px;
+    padding: 8px 14px;
+    font-size: 1rem;
   }
   .rank-drop {
-    flex: 1 1 120px;
-    min-height: 80px;
-    background: #ddd;
-    border: 2px dashed #999;
-    text-align: center;
+    flex: 1 1 100px;
+    min-height: 70px;
     padding: 10px;
-    border-radius: 10px;
-    font-weight: bold;
   }
+}
 </style>
+<!-- html5-qrcodeライブラリ -->
+<script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
 <div id="sidebar">
@@ -230,16 +341,63 @@ function renderDouTaku(){
   });
 }
 
+// QRコード読み取り開始（共通化）
+// onRead は (decodedText) => {} の形式で呼び出されるコールバック関数
+function startQRCodeReader(onRead) {
+  const qrContainer = document.getElementById("qr-reader");
+  if (!qrContainer) {
+    alert("QR表示エリアが見つかりません");
+    return;
+  }
+
+  // すでにスキャナーが存在する場合は停止・クリア
+  if (window.qrReaderInstance) {
+    window.qrReaderInstance.stop().then(() => {
+      qrContainer.innerHTML = "";
+      initializeScanner();
+    });
+  } else {
+    initializeScanner();
+  }
+
+  function initializeScanner() {
+    const config = {
+      fps: 10,
+      qrbox: { width: 250, height: 250 },
+      aspectRatio: 1.333, // 標準的なスマホ比率
+      facingMode: "environment", // 背面カメラ
+    };
+
+    const html5QrCode = new Html5Qrcode("qr-reader");
+    html5QrCode.start(
+     { facingMode: "environment" }, // カメラ指定
+     config,                       // 設定
+     (decodedText) => {            // 成功コールバック
+      onRead(decodedText);
+        html5QrCode.stop().then(() => {
+         qrContainer.innerHTML = "";
+        });
+     },
+  (errorMessage) => {
+    // 読み取り失敗時（無視してOK）
+  }
+    ).then(() => {
+      window.qrReaderInstance = html5QrCode;
+    }).catch((err) => {
+      console.error("QRコード開始失敗:", err);
+      alert("カメラ初期化に失敗しました");
+    });
+  }
+}
   // --- 座席・プレイヤー登録 ---
   window.startQRScan = () => {
-    alert("QR読み取り開始 (simulateQRScan(id)でテストしてください)");
-  };
-
-  window.simulateQRScan = (id) => {
+  // 本番ではQRライブラリでQRコードを読み取り、その内容に応じて処理
+   startQRCodeReader((id) => {
     if (!id) return;
     if (id.startsWith("table~")) addSeat(id);
     else if (id.startsWith("player~")) addPlayer(id);
     else alert("不明なQRコード: " + id);
+   });
   };
 
   function addSeat(seatID) {
@@ -489,20 +647,20 @@ function exportLeaveCSV() {
     if(section === "ranking") resetRankingArea();
   };
 
+ // QR読み取り開始（順位登録用）
   window.startSeatQRScan = () => {
-    alert("座席QRコード読み取り開始\nsimulateSeatQRScan('table~001')でテスト");
-  };
-
-  window.simulateSeatQRScan = (seatID) => {
-    if(!seats[seatID]){
-      alert(`座席 ${seatID} が未登録です`);
-      return;
-    }
-    currentRankingSeatID = seatID;
-    currentRankingPlayers = seats[seatID].players.slice();
-    rankAssignments = {};
-    renderRankingArea();
-    document.getElementById("ranking-seat").textContent = seatID;
+    // 本番ではQRライブラリでQRコードを読み取り、その内容に応じて処理
+    startQRCodeReader((seatID) => {
+      if(!seats[seatID]){
+        alert(`座席 ${seatID} が未登録です`);
+        return;
+      }
+      currentRankingSeatID = seatID;
+      currentRankingPlayers = seats[seatID].players.slice();
+      rankAssignments = {};
+      renderRankingArea();
+      document.getElementById("ranking-seat").textContent = seatID;
+    });
   };
 
   function renderRankingArea(){
