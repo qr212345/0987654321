@@ -6,9 +6,10 @@
 <title>ババ抜き大会管理</title>
 /* フォント指定は既にあるのでそのまま */
 <style>
-/* bodyは明るく見やすいベース */
-body {
+html, body {
+  height: 100%;
   margin: 0;
+  overflow: hidden; /* 画面全体のスクロールは止める */
   font-family: 'Baloo 2', 'Noto Sans JP', sans-serif;
   background: #f0f4f8; /* 少し柔らかい爽やかカラー */
   color: #333;
@@ -28,6 +29,7 @@ body {
   padding: 15px 10px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;  /* サイドバー内部を縦スクロール可能に */
   z-index: 1000;
   transition: transform 0.3s ease;
   box-shadow: 2px 0 8px rgba(0,0,0,0.3);
@@ -61,6 +63,8 @@ body {
 #main {
   margin-left: 220px;
   padding: 25px 30px;
+  height: 100%;          /* ビューポート高さいっぱい */
+  overflow-y: auto;      /* メイン領域を縦スクロール可能に */
 }
 
 /* QRコードエリアは角丸と影 */
@@ -192,7 +196,7 @@ body {
 button {
   transition: background-color 0.3s ease, transform 0.15s ease;
 }
-  
+
 /* 使いやすいレスポンシブ最低限 */
 @media screen and (max-width: 600px){
   #sidebar {
