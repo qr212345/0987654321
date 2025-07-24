@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ババ抜き大会管理</title>
+<style>
+  body {
+    margin: 0;
+    font-family: sans-serif;
+    background: #f9f9f9;
+  }
+  #sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 200px;
+    background: #333;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+  }
+  #sidebar.closed {
+    transform: translateX(-100%);
+  }
+  #sidebar button {
+    margin: 10px 0;
+    padding: 10px;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #sidebar button:hover {
+    background: #666;
+  }
+  #main {
+    margin-left: 200px;
+    padding: 20px;
+  }
+  .view.hidden {
+    display: none;
+  }
+  .qr-area {
+    width: 100%;
+    height: 200px;
+    background: #ccc;
+    margin-top: 10px;
+  }
+  .table-area {
+    margin-top: 20px;
+  }
+  .table-box {
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 15px;
+    background: white;
+  }
+  .player-tag {
+    display: inline-block;
+    background: #4caf50;
+    color: white;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 15px;
+    position: relative;
+    cursor: grab;
+  }
+  .player-tag button {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .ranking-area {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+  .rank-drop {
+    flex: 1 1 120px;
+    min-height: 80px;
+    background: #ddd;
+    border: 2px dashed #999;
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <button onclick="goToSection('seat')">🎮 プレイヤー管理</button>
+  <button onclick="goToSection('ranking')">🏆 順位登録</button>
+  <button onclick="window.open('https://example.com/rank', '_blank')">📈 ランキング表</button>
+  <button onclick="window.open('https://example.com/live', '_blank')">📍 リアルタイム座席</button>
+  <button onclick="window.open('https://example.com/realtime-rank', '_blank')">📊 リアルタイムランキング</button>
+</div>
+
+<main id="main">
+  <!-- 手動保存ボタン・CSVエクスポートボタン -->
+  <div style="margin-bottom:10px;">
+    <button onclick="saveToGAS()">Googleドライブに手動保存</button>
+    <button onclick="exportPlayerCSV()" style="margin-left:10px;">生徒データをCSVエクスポート</button>
+    <button onclick="exportSeatCSV()" style="margin-left:10px;">座席データをCSVエクスポート</button>
+    <button onclick="exportLeaveCSV()">対戦離席履歴をCSVダウンロード</button>
+    <button onclick="undo()" style="margin-left:10px;">Undo</button>
+    <button onclick="redo()" style="margin-left:10px;">Redo</button>
+  </div>
+
+  <section id="seat" class="view">
+    <h1>🎮 プレイヤー・座席管理</h1>
+    <button onclick="startQRScan()">QRコード読み取り開始</button>
+    <div id="qr-reader" class="qr-area"></div>
+    <div id="table-list" class="table-area"></div>
+  </section>
+
+  <section id="ranking" class="view hidden">
+    <h1>🏆 順位登録</h1>
+    <button onclick="startSeatQRScan()">座席QR読み取り</button>
+    <div>読み取り座席ID: <span id="ranking-seat"></span></div>
+    <div id="ranking-area" class="ranking-area"></div>
+  </section>
+
+  <!-- HTML: 銅鐸履歴セクション -->
+<section id="dou-taku" class="view hidden">
+  <h1>🔔 銅鐸履歴</h1>
+  <div id="dou-taku-list">読み込み中...</div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+
+(() => {
+  // データ構造と状態
+  let seats = {};
+  let playerSet = new Set();
+  let undoStack = [];
+  let redoStack = [];
+
+  // --- UI要素 ---
+  const tableList = document.getElementById("table-list");
+  const sidebar = document.getElementById("sidebar");
+
+  // --- Undo/Redo ---
+  function saveStateForUndo() {
+    undoStack.push({
+      seats: JSON.parse(JSON.stringify(seats)),
+      playerSet: new Set(playerSet)
+    });
+    redoStack = [];
+  }
+
+  window.undo = () => {
+    if (undoStack.length === 0) {
+      alert("Undoできる履歴がありません。");
+      return;
+    }
+    redoStack.push({
+      seats: JSON.parse(JSON.stringify(seats)),
+      playerSet: new Set(playerSet)
+    });
+    const prev = undoStack.pop();
+    seats = JSON.parse(JSON.stringify(prev.seats));
+    playerSet = new Set(prev.playerSet);
+    renderSeats();
+    saveToLocal();
+  };
+
+  window.redo = () => {
+    if (redoStack.length === 0) {
+      alert("Redoできる履歴がありません。");
+      return;
+    }
+    undoStack.push({
+      seats: JSON.parse(JSON.stringify(seats)),
+      playerSet: new Set(playerSet)
+    });
+    const next = redoStack.pop();
+    seats = JSON.parse(JSON.stringify(next.seats));
+    playerSet = new Set(next.playerSet);
+    renderSeats();
+    saveToLocal();
+  };
+
+// JS: 銅鐸履歴サンプルデータ
+window.goToSection = (section) => {
+  document.querySelectorAll("main > section").forEach(sec => sec.classList.add("hidden"));
+  const target = document.getElementById(section);
+  if(target) target.classList.remove("hidden");
+  if(section === "ranking") resetRankingArea?.();
+  if(section === "dou-taku") renderDouTaku();
+};
+
+  const douTakuRecords = [
+  { date:"2025-07-20 13:00", event:"大会1回戦", result:"player~0001が勝利" },
+  { date:"2025-07-21 15:30", event:"大会2回戦", result:"player~0003が離席" },
+];
+
+// 銅鐸履歴描画関数
+function renderDouTaku(){
+  const container = document.getElementById("dou-taku-list");
+  if(!container) return;
+  if(douTakuRecords.length === 0){
+    container.textContent = "履歴がありません。";
+    return;
+  }
+  container.innerHTML = "";
+  douTakuRecords.forEach(rec=>{
+    const div = document.createElement("div");
+    div.className = "dou-taku-item";
+    div.textContent = `${rec.date} | ${rec.event} | ${rec.result}`;
+    container.appendChild(div);
+  });
+}
+
+  // --- 座席・プレイヤー登録 ---
+  window.startQRScan = () => {
+    alert("QR読み取り開始 (simulateQRScan(id)でテストしてください)");
+  };
+
+  window.simulateQRScan = (id) => {
+    if (!id) return;
+    if (id.startsWith("table~")) addSeat(id);
+    else if (id.startsWith("player~")) addPlayer(id);
+    else alert("不明なQRコード: " + id);
+  };
+
+  function addSeat(seatID) {
+    if (seats[seatID]) {
+      alert(`座席 ${seatID} は既に登録済みです。`);
+      return;
+    }
+    saveStateForUndo();
+    seats[seatID] = { id: seatID, players: [] };
+    renderSeats();
+    saveToLocal();
+  }
+
+  function addPlayer(playerID) {
+    if (playerSet.has(playerID)) {
+      alert(`プレイヤー ${playerID} は既に登録済みです。`);
+      return;
+    }
+    const seatIDs = Object.keys(seats);
+    if (seatIDs.length === 0) {
+      alert("先に座席を登録してください。");
+      return;
+    }
+    const lastSeatID = seatIDs[seatIDs.length - 1];
+    const seat = seats[lastSeatID];
+    if (seat.players.length >= 6) {
+      alert(`座席 ${lastSeatID} は6人で満員です。`);
+      return;
+    }
+    saveStateForUndo();
+    seat.players.push(playerID);
+    playerSet.add(playerID);
+    renderSeats();
+    saveToLocal();
+  }
+
+  window.removePlayer = (seatID, playerID) => {
+    saveStateForUndo();
+    const seat = seats[seatID];
+    if (!seat) return;
+    seat.players = seat.players.filter(p => p !== playerID);
+    playerSet.delete(playerID);
+    renderSeats();
+    saveToLocal();
+  };
+
+  // --- 表示更新 ---
+  function renderSeats() {
+    tableList.innerHTML = "";
+    Object.values(seats).forEach(({ id, players }) => {
+      const div = document.createElement("div");
+      div.className = "table-box";
+      div.innerHTML = `<h3>${id}</h3>`;
+      players.forEach(p => {
+        const span = document.createElement("span");
+        span.className = "player-tag";
+        span.textContent = p;
+        const btn = document.createElement("button");
+        btn.textContent = "✖";
+        btn.onclick = () => window.removePlayer(id, p);
+        span.appendChild(btn);
+        div.appendChild(span);
+      });
+      tableList.appendChild(div);
+    });
+  }
+
+  // --- ローカル保存・復元 ---
+  function saveToLocal() {
+    try {
+      const data = { seats, playerSet: Array.from(playerSet) };
+      localStorage.setItem("babnukiData", JSON.stringify(data));
+    } catch(e) { console.error(e); }
+  }
+
+  function loadFromLocal() {
+    try {
+      const raw = localStorage.getItem("babnukiData");
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      seats = data.seats || {};
+      playerSet = new Set(data.playerSet || []);
+      renderSeats();
+    } catch(e) { console.error(e); }
+  }
+
+  // --- GAS連携 ---
+  const ENDPOINT = "https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec"; // 自分のURLに置換
+
+  window.saveToGAS = async () => {
+    try {
+      const data = { action: "save", seats, playerSet: Array.from(playerSet), url: window.location.href || "no_URL" };
+      const resp = await fetch(ENDPOINT, { method: "POST", headers: {"Content-Type":"application/json"}, mode:"cors", body: JSON.stringify(data) });
+      if(!resp.ok) throw new Error("HTTP error "+resp.status);
+      alert("Googleドライブに保存しました。");
+    } catch(e) { alert("保存失敗:"+e.message); console.error(e); }
+  };
+
+  window.loadFromGAS = async () => {
+    try {
+      const url = new URL(ENDPOINT);
+      url.searchParams.append("action","load");
+      url.searchParams.append("url", window.location.href || "no_URL");
+      const resp = await fetch(url.toString(), {mode:"cors"});
+      if(!resp.ok) throw new Error("HTTP error "+resp.status);
+      const json = await resp.json();
+      if(json.seats && json.playerSet){
+        seats = json.seats;
+        playerSet = new Set(json.playerSet);
+        renderSeats();
+        alert("Googleドライブから読み込みました。");
+      }
+    } catch(e) { alert("読み込み失敗:"+e.message); console.error(e); }
+  };
+
+  window.startAutoSync = () => {
+    setInterval(() => {
+      console.log("自動同期");
+      window.saveToGAS();
+    }, 5*60*1000);
+  };
+
+  // --- CSVエクスポート ---
+  function toCSV(data, headers) {
+    const csvRows = [];
+    csvRows.push(headers.join(","));
+    data.forEach(row => {
+      const vals = headers.map(h=>{
+        let v = row[h] ?? "";
+        if(typeof v === "string" && v.includes(",")) v = `"${v.replace(/"/g,'""')}"`;
+        return v;
+      });
+      csvRows.push(vals.join(","));
+    });
+    return csvRows.join("\n");
+  }
+
+  window.exportPlayerCSV = () => {
+    const players = [];
+    Object.values(seats).forEach(({id:seatID, players})=>{
+      players.push(...players.map(p=>({playerID:p, seatID, rate:window.playerRates?.[p]??0})));
+    });
+    if(players.length === 0){
+      alert("エクスポートする生徒データがありません。");
+      return;
+    }
+    const headers = ["playerID","seatID","rate"];
+    const csv = toCSV(players, headers);
+    downloadCSV(csv, "players.csv");
+  };
+
+  window.exportSeatCSV = () => {
+    const seatData = Object.values(seats).map(({id, players})=>({seatID:id, players:players.join(";")}));
+    if(seatData.length === 0){
+      alert("エクスポートする座席データがありません。");
+      return;
+    }
+    const headers = ["seatID","players"];
+    const csv = toCSV(seatData, headers);
+    downloadCSV(csv, "seats.csv");
+  };
+
+  function downloadCSV(csvText, filename){
+    const blob = new Blob([csvText], {type: "text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+// 対戦離席履歴サンプル
+const leaveRecords = [
+  { playerID:"player~0003", time:"2025-07-21 15:30", reason:"通信切断" },
+  { playerID:"player~0010", time:"2025-07-22 18:45", reason:"トイレ離席" }
+];
+
+// CSV生成ユーティリティ
+function toCSV(data, headers) {
+  const csvRows = [];
+  csvRows.push(headers.join(","));
+  data.forEach(row => {
+    const vals = headers.map(h=>{
+      let v = row[h] ?? "";
+      if(typeof v === "string" && v.includes(",")) v = `"${v.replace(/"/g,'""')}"`;
+      return v;
+    });
+    csvRows.push(vals.join(","));
+  });
+  return csvRows.join("\n");
+}
+
+// CSVダウンロードユーティリティ
+function downloadCSV(csvText, filename){
+  const blob = new Blob([csvText], {type: "text/csv;charset=utf-8;"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// 対戦離席CSV出力関数
+function exportLeaveCSV() {
+  if(leaveRecords.length === 0){
+    alert("対戦離席データがありません。");
+    return;
+  }
+  const headers = ["playerID","time","reason"];
+  const csv = toCSV(leaveRecords, headers);
+  downloadCSV(csv, "leave_records.csv");
+}
+
+  // --- サイドバー スクロールで自動閉じ ---
+  let lastScrollTop = 0;
+  let scrollTimeout;
+  window.addEventListener("scroll", () => {
+    if(scrollTimeout) clearTimeout(scrollTimeout);
+    const st = window.pageYOffset || document.documentElement.scrollTop;
+    if(st > lastScrollTop){
+      sidebar.classList.add("closed");
+    } else {
+      sidebar.classList.remove("closed");
+    }
+    lastScrollTop = st <= 0 ? 0 : st;
+    scrollTimeout = setTimeout(() => sidebar.classList.remove("closed"), 1500);
+  });
+
+  // --- 順位登録画面 & レート計算 ---
+
+  let currentRankingSeatID = null;
+  let currentRankingPlayers = [];
+  let rankAssignments = {};
+
+  window.goToSection = (section) => {
+    document.querySelectorAll("main > section").forEach(sec => sec.classList.add("hidden"));
+    const target = document.getElementById(section);
+    if(target) target.classList.remove("hidden");
+    if(section === "ranking") resetRankingArea();
+  };
+
+  window.startSeatQRScan = () => {
+    alert("座席QRコード読み取り開始\nsimulateSeatQRScan('table~001')でテスト");
+  };
+
+  window.simulateSeatQRScan = (seatID) => {
+    if(!seats[seatID]){
+      alert(`座席 ${seatID} が未登録です`);
+      return;
+    }
+    currentRankingSeatID = seatID;
+    currentRankingPlayers = seats[seatID].players.slice();
+    rankAssignments = {};
+    renderRankingArea();
+    document.getElementById("ranking-seat").textContent = seatID;
+  };
+
+  function renderRankingArea(){
+    const area = document.getElementById("ranking-area");
+    area.innerHTML = "";
+    const pool = document.createElement("div");
+    pool.id = "player-pool";
+    pool.style.minHeight = "100px";
+    pool.style.border = "1px solid #444";
+    pool.style.padding = "5px";
+    pool.style.marginBottom = "10px";
+    pool.style.background = "#eee";
+
+    currentRankingPlayers.forEach(p => {
+      if(Object.values(rankAssignments).includes(p)) return;
+      const div = document.createElement("div");
+      div.className = "player-tag";
+      div.textContent = p;
+      div.draggable = true;
+      div.dataset.playerId = p;
+      div.addEventListener("dragstart", dragStart);
+      pool.appendChild(div);
+    });
+
+    area.appendChild(pool);
+
+    for(let i=1;i<=6;i++){
+      const drop = document.createElement("div");
+      drop.className = "rank-drop";
+      drop.dataset.rank = i;
+      drop.textContent = i + "位";
+      if(rankAssignments[i]){
+        const assigned = document.createElement("div");
+        assigned.className = "player-tag";
+        assigned.textContent = rankAssignments[i];
+        assigned.draggable = true;
+        assigned.dataset.playerId = rankAssignments[i];
+        assigned.addEventListener("dragstart", dragStart);
+        drop.appendChild(assigned);
+      }
+      drop.addEventListener("dragover", dragOver);
+      drop.addEventListener("drop", dropHandler);
+      area.appendChild(drop);
+    }
+
+    const btnRegister = document.createElement("button");
+    btnRegister.textContent = "順位を登録してレート計算";
+    btnRegister.onclick = () => {
+      if(Object.keys(rankAssignments).length < currentRankingPlayers.length){
+        alert("全員の順位を割り当ててください");
+        return;
+      }
+      applyRatingChange(currentRankingSeatID, rankAssignments);
+    };
+    area.appendChild(btnRegister);
+  }
+
+  let draggedPlayerId = null;
+  function dragStart(e){
+    draggedPlayerId = e.target.dataset.playerId;
+  }
+  function dragOver(e){ e.preventDefault(); }
+  function dropHandler(e){
+    e.preventDefault();
+    const rank = parseInt(e.currentTarget.dataset.rank,10);
+    if(!draggedPlayerId || !rank) return;
+
+    for(const r in rankAssignments){
+      if(rankAssignments[r] === draggedPlayerId) rankAssignments[r] = null;
+    }
+    if(rankAssignments[rank]){
+      currentRankingPlayers.push(rankAssignments[rank]);
+    }
+    rankAssignments[rank] = draggedPlayerId;
+    currentRankingPlayers = currentRankingPlayers.filter(p=>p!==draggedPlayerId);
+    renderRankingArea();
+    draggedPlayerId = null;
+  }
+
+  window.playerRates = window.playerRates || {};
+
+  function applyRatingChange(seatID, rankAssignments){
+    const ranks = [];
+    for(let i=1;i<=6;i++){
+      ranks.push(rankAssignments[i]||null);
+    }
+
+    const newRates = {...window.playerRates};
+
+    for(const p of ranks){
+      if(!p) continue;
+      if(!newRates[p]) newRates[p] = 0;
+    }
+
+    // 1位 +8
+    if(ranks[0]) newRates[ranks[0]] += 8;
+    // 最下位 -8
+    if(ranks[ranks.length-1]) newRates[ranks[ranks.length-1]] -=8;
+
+    // 80以上は80%減衰
+    for(const p of ranks){
+      if(!p) continue;
+      if(newRates[p]>=80) newRates[p] = newRates[p]*0.8;
+    }
+
+    // 順位差による増減 (+2/-2 * 差分)
+    for(let i=0;i<ranks.length;i++){
+      const p = ranks[i];
+      if(!p) continue;
+      for(let j=0;j<ranks.length;j++){
+        const p2 = ranks[j];
+        if(!p2 || p===p2) continue;
+        const diff = j - i;
+        if(diff === 0) continue;
+        if(diff > 0) newRates[p] += 2*diff; // 上がった分プラス
+        else newRates[p] -= 2*(-diff);
+      }
+    }
+
+    // トップを抜いたボーナス +2
+    const maxBefore = Math.max(...Object.values(window.playerRates));
+    ranks.forEach(p=>{
+      if(!p) return;
+      if(window.playerRates[p]<maxBefore && newRates[p]>maxBefore){
+        newRates[p] += 2;
+      }
+    });
+
+    window.playerRates = newRates;
+    alert("レート計算完了");
+    goToSection("seat");
+  }
+
+  // 初期化
+  loadFromLocal();
+  loadFromGAS().then(() => {
+    window.startAutoSync();
+  });
+
+  // 初期表示は座席管理
+  goToSection("seat");
+
+})();
+</script>
+</body>
+</html>
