@@ -33,7 +33,11 @@
         <h2>QRコードスキャン</h2>
         <div id="messageArea"></div>
         <div id="seatList"></div>
-        <div id="reader" style="width: 320px; height: 320px;"></div>
+        <div id="reader-wrapper">
+          <div id="reader"></div>
+          <div id="qr-mask"></div>
+          <div id="qr-overlay"></div>
+        </div>
         <button id="exportPlayerBtn">🎓 プレイヤーCSV</button>
         <button id="exportSeatBtn">🪑 座席CSV</button>
         <button id="exportLeaveBtn">🚪 離席履歴CSV</button>
