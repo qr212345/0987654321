@@ -286,7 +286,7 @@ function loadFromLocalStorage() {
 }
 
     /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
-  if (section === "ranking") {
+  if (section === "rankingSection") {
     isRankingMode  = true;
     rankingSeatId  = null;
     document.getElementById("rankingList").innerHTML = "";
@@ -329,7 +329,7 @@ function loadFromLocalStorage() {
         rankingQrReader = null;
       });
     }
-    if (!qrActive && section === "scan") initCamera();
+    if (!qrActive && section === "scanSection") initCamera();
   }
 
 /** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
