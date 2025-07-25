@@ -60,5 +60,40 @@
   <button onclick="navigate('scanSection')">⬅ 戻る</button>
 </section>
 </main>
+ <script>
+    const proxyBase = "http://localhost:3000"; // Node.jsサーバーURL
+
+    const samplePayload = {
+      seatMap: { table01: ["player01", "player02"] },
+      playerData: { player01: { name: "田中", rate: 100 } },
+      douTakuRecords: []
+    };
+
+    document.getElementById("saveToGAS").onclick = () => {
+      fetch(proxyBase + "/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(samplePayload),
+      })
+      .then(res => res.text())
+      .then(txt => {
+        document.getElementById("result").textContent = "保存結果: " + txt;
+      })
+      .catch(err => {
+        document.getElementById("result").textContent = "保存エラー: " + err;
+      });
+    };
+
+    document.getElementById("loadFromGAS").onclick = () => {
+      fetch(proxyBase + "/load")
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("result").textContent = "読み込み結果:\n" + JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        document.getElementById("result").textContent = "読み込みエラー: " + err;
+      });
+    };
+  </script>
 </body>
 </html>
