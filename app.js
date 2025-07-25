@@ -609,7 +609,6 @@ function bindButtons() {
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
 }
 
-  // 初期化
 document.addEventListener("DOMContentLoaded", () => {
   initCamera();
   loadFromLocalStorage();
@@ -628,18 +627,25 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("読み取り成功:", decodedText);
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
+
+    // プレイヤー登録機能を入れたければここに書く
+    // addPlayerToSeat(decodedText);
   }
 
   qrReader.start(
     { facingMode: "environment" },
     config,
     handleScanSuccess,
-    () => {} // 無視
+    (errorMessage) => {
+      // 読み取り失敗時（無視してOK）
+    }
   ).catch((err) => {
     console.error("カメラ起動エラー:", err);
+    const messageArea = document.getElementById("messageArea");
+    messageArea.textContent = "❌ カメラの起動に失敗しました";
   });
 
-}); // ✅ ← これが必要！
+}); // ← ← ← これが無いと "Unexpected end of input" エラーになる！
 
 // ✅ グローバル公開
 Object.assign(window, {
