@@ -1,7 +1,7 @@
   let qrReader;
 
-  const ENDPOINT = "";
-  const FILE_ID = '';
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbyyNbyyZNFOZWTHpHmoMObnNHwes-26pFAX9nN7NxPKYCYCIDhXDB6_KQSwDtQ-9ZgU/exec";
+  const FILE_ID = '1y6caWn6j8SroDRPILJgY8e7uVHLprH2N';
   const SECRET   = "kosen-brain-super-secret";
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
