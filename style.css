@@ -21,7 +21,6 @@ body {
   width: 250px;
   height: 310px;
   margin-top: 0px;
-  object-fit: cover;
   position: relative;
   object-position: center -50px
 }
