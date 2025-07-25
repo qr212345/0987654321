@@ -641,17 +641,14 @@ document.addEventListener("DOMContentLoaded", () => {
   ).catch(err => {
     console.error("カメラ起動エラー:", err);
   });
-});
-
-
-Object.assign(window, {
-  navigate,
-  navigateToExternal: url => window.open(url, "_blank"),
-  undoAction,
-  redoAction,
-  removePlayer,
-  exportPlayerCSV,
-  exportSeatCSV,
-  exportLeaveCSV,
-  confirmRanking
-});
+  Object.assign(window, {
+    navigate,
+    navigateToExternal: url => window.open(url, "_blank"),
+    undoAction,
+    redoAction,
+    removePlayer,
+    exportPlayerCSV,
+    exportSeatCSV,
+    exportLeaveCSV,
+    confirmRanking
+  });
