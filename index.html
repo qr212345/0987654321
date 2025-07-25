@@ -44,7 +44,7 @@
         <button id="redoBtn">↪ Redo</button>
         <button onclick="saveToGAS()">☁ データをGASに保存</button>
         <button onclick="loadFromGAS()">🔄 GASから読み込み</button>
-        <pre id="result"></pre>
+        <pre id="output"></pre>
   </section>
         <!-- 順位登録UI -->
   <section id="rankingEntrySection" class="section" style="display:none">
@@ -62,39 +62,21 @@
 </section>
 </main>
  <script>
-    const proxyBase = "http://localhost:3000"; // Node.jsサーバーURL
-
-    const samplePayload = {
-      seatMap: { table01: ["player01", "player02"] },
-      playerData: { player01: { name: "田中", rate: 100 } },
-      douTakuRecords: []
-    };
-
-    document.getElementById("saveToGAS").onclick = () => {
-      fetch(proxyBase + "/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(samplePayload),
-      })
-      .then(res => res.text())
-      .then(txt => {
-        document.getElementById("result").textContent = "保存結果: " + txt;
-      })
-      .catch(err => {
-        document.getElementById("result").textContent = "保存エラー: " + err;
+    async function saveToGAS() {
+      const res = await fetch('http://localhost:3000/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'イチゴ大福', score: 100 })
       });
-    };
+      const text = await res.text();
+      document.getElementById('output').textContent = text;
+    }
 
-    document.getElementById("loadFromGAS").onclick = () => {
-      fetch(proxyBase + "/load")
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("result").textContent = "読み込み結果:\n" + JSON.stringify(data, null, 2);
-      })
-      .catch(err => {
-        document.getElementById("result").textContent = "読み込みエラー: " + err;
-      });
-    };
+    async function loadFromGAS() {
+      const res = await fetch('http://localhost:3000/get');
+      const json = await res.json();
+      document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+    }
   </script>
 </body>
 </html>
