@@ -615,9 +615,9 @@ document.addEventListener("DOMContentLoaded", () => {
  const qrReader = new Html5Qrcode("reader");
 
  const config = {
-    fps: 10,
-    qrbox: { width: 250, height: 250 }  // 読み取り範囲も一致
-    aspectRatio: 1.0,
+  fps: 10,
+  qrbox: { width: 250, height: 250 },
+  aspectRatio: 1.0
  };
 
   function handleScanSuccess(decodedText, decodedResult) {
