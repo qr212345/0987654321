@@ -33,11 +33,13 @@
         <div id="seatList"></div>
         <div id="reader" style="width: 320px"></div>
         <button onclick="saveToGAS()">Googleドライブに手動保存</button>
-        <button onclick="exportPlayerCSV()" style="margin-left:10px;">生徒データをCSVエクスポート</button>
-        <button onclick="exportSeatCSV()" style="margin-left:10px;">座席データをCSVエクスポート</button>
-        <button onclick="exportLeaveCSV()">対戦離席履歴をCSVダウンロード</button>
-        <button onclick="undo()">Undo</button>
-        <button onclick="redo()">Redo</button>
+        <button id="exportPlayerBtn">🎓 プレイヤーCSV</button>
+        <button id="exportSeatBtn">🪑 座席CSV</button>
+        <button id="exportLeaveBtn">🚪 離席履歴CSV</button>
+        <button id="undoBtn">↩ Undo</button>
+        <button id="redoBtn">↪ Redo</button>
+        <button onclick="saveToGAS()">☁ データをGASに保存</button>
+        <button onclick="loadFromGAS()">🔄 GASから読み込み</button>
   </section>
 
   <section id="rankingSection" class="section" style="display:none">
@@ -46,8 +48,17 @@
     <div id="rankingReader" style="width: 320px;"></div>
     <ul id="rankingList" class="draggable-list"></ul>
     <button onclick="confirmRanking()">✅ 順位決定</button>
+ </section>
+
+        <!-- 順位登録UI -->
+  <section id="rankingSection" class="section" style="display:none">
+     <h2>順位登録モード</h2>
+     <p>QRコードで座席を読み込んでください。</p>
+     <div id="rankingReader" style="width: 320px;"></div>
+     <ul id="rankingList" class="draggable-list"></ul>
+     <button id="confirmRankingBtn">✅ 順位を決定</button>
   </section>
-</main>
+ </main>
 </div>
 <script type="module" src="./app.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
