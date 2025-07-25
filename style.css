@@ -1,9 +1,20 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background-color: #f7f7f7;
+  background-color: #f7f3e9;
+  color:#333;
   display: flex;
   height: 100vh;
+}
+
+#reader {
+  width: 320px;
+  height: 320px;
+  border: 3px solid #1976d2;
+  border-radius: 12px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  position: relative;
 }
 
 #sidebar {
@@ -14,8 +25,12 @@ body {
 }
 
 #sidebar h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
+  font-family: 'Rock Salt', cursive;
+  font-size: 24px;
+  border-bottom: 2px solid #b8860b;
+  padding-bottom: 6px;
+  margin-bottom: 16px;
+  color: #b8860b; /* 金色系 */
 }
 
 #sidebar ul {
@@ -49,10 +64,11 @@ body {
 }
 
 .seat-block {
-  border: 2px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 1px solid #d4cfc4;
   padding: 10px;
   margin-bottom: 10px;
-  background: white;
+  background: #fffefb;
   border-radius: 10px;
 }
 
@@ -93,8 +109,9 @@ body {
 }
 /* ボタン系 */
 button {
-  padding: 10px 16px;
+  padding: 12px 20px;
   margin: 6px;
+  outline-offset: 3px;
   background: #1976d2;
   color: white;
   border: none;
@@ -106,6 +123,11 @@ button {
 
 button:hover {
   background: #125ba3;
+}
+
+button:focus {
+  outline: 3px solid #90caf9; /* 見やすい青系のアウトライン */
+  outline-offset: 3px;
 }
 
 /* メッセージ表示 */
@@ -243,4 +265,37 @@ button:hover {
 .rate-zero {
   background-color: #eeeeee;
   color: #666;
+}
+
+#messageArea {
+  padding: 10px 14px;
+  margin: 12px 0;
+  border-left: 5px solid;
+  font-weight: bold;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+#messageArea.info {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  border-color: #2196f3;
+}
+
+#messageArea.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-color: #4caf50;
+}
+
+#messageArea.warning {
+  background-color: #fff8e1;
+  color: #f9a825;
+  border-color: #ffeb3b;
+}
+
+#messageArea.error {
+  background-color: #ffebee;
+  color: #c62828;
+  border-color: #f44336;
 }
