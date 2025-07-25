@@ -447,7 +447,7 @@ function getTopRatedPlayerId() {
 }
 
 //GAS
-function loadFromGAS() {
+window.loadFromGAS = function () {
   fetch(ENDPOINT)
     .then(res => res.json())
     .then(json => {
@@ -464,7 +464,7 @@ function loadFromGAS() {
     });
 }
 
-function saveToGAS() {
+window.saveToGAS = function () {
   const payload = {
     seatMap,
     playerData,
