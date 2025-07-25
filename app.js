@@ -631,16 +631,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 必要であれば、以下に登録処理を呼び出す:
     // addPlayerToSeat(decodedText);
   }
-
-  html5QrCode.start(
-    { facingMode: "environment" },
-    config,
-    handleScanSuccess
-  ).catch((err) => {
-    console.error("カメラ起動エラー:", err);
-    const messageArea = document.getElementById("messageArea");
-    messageArea.textContent = "カメラを起動できませんでした。";
-  });
 });
 
 Object.assign(window, {
