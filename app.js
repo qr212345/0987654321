@@ -1,6 +1,6 @@
   let qrReader;
 
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbyyNbyyZNFOZWTHpHmoMObnNHwes-26pFAX9nN7NxPKYCYCIDhXDB6_KQSwDtQ-9ZgU/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbz5lkzAty8t6bxDMSWRUHS317r79mn7b5kNvJXCkWrQ2KkgLRDNVqsLvWtxveKoja8/exec";
   const FILE_ID = '1y6caWn6j8SroDRPILJgY8e7uVHLprH2N';
   const SECRET   = "kosen-brain-super-secret";
   const SCAN_COOLDOWN_MS = 1500;
@@ -446,24 +446,7 @@ function getTopRatedPlayerId() {
   return topId;
 }
 
-//GAS
-window.loadFromGAS = function () {
-  fetch(ENDPOINT)
-    .then(res => res.json())
-    .then(json => {
-      seatMap        = json.seatMap || {};
-      playerData     = json.playerData || {};
-      douTakuRecords = json.douTakuRecords || [];
-      displayMessage("✅ GASからデータを読み込みました");
-      saveToLocalStorage();
-      renderSeats();
-    })
-    .catch(err => {
-      console.error(err);
-      displayMessage("❌ GASからの読み込みに失敗しました");
-    });
-}
-
+//GAS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 window.saveToGAS = function () {
   const payload = {
     seatMap,
@@ -476,24 +459,40 @@ window.saveToGAS = function () {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      secret: SECRET,
-      payload
+    body: JSON.stringify({ secret: SECRET, payload })
+  })
+    .then(res => res.text())
+    .then(txt => {
+      if (txt === "OK") {
+        displayMessage("✅ GASに保存しました");
+      } else {
+        displayMessage("❌ エラー: " + txt);
+      }
     })
+    .catch(err => {
+      console.error(err);
+      displayMessage("❌ 通信エラー");
+    });
+};
+
+// 読み取り処理
+window.loadFromGAS = function () {
+  fetch(ENDPOINT, {
+    method: "GET"
   })
-  .then(res => res.text())
-  .then(txt => {
-    if (txt === "OK") {
-      displayMessage("✅ GASに保存しました");
-    } else {
-      displayMessage("❌ エラー: " + txt);
-    }
-  })
-  .catch(err => {
-    console.error(err);
-    displayMessage("❌ 通信エラー");
-  });
-}
+    .then(res => res.json())
+    .then(data => {
+      seatMap = data.seatMap || {};
+      playerData = data.playerData || {};
+      douTakuRecords = data.douTakuRecords || {};
+      renderSeats(); // ← 表示を再描画
+      displayMessage("✅ GASから読み込み完了");
+    })
+    .catch(err => {
+      console.error(err);
+      displayMessage("❌ 読み取りエラー");
+    });
+};
 
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
@@ -546,6 +545,7 @@ window.saveToGAS = function () {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
 
 // 対戦離席履歴サンプル
 const leaveRecords = [
