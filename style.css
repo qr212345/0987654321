@@ -22,6 +22,7 @@ body {
   height: 250px;
   object-fit: contain;
   background: black;
+  box-shadow: 0 0 0 2px limegreen;
   margin: 0 auto;
 }
 
