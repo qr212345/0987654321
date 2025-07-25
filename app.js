@@ -172,6 +172,7 @@ function navigate(targetId) {
     location.hash = targetId;  // URLハッシュ変更（オプション）
   } else {
     console.warn(`指定されたセクション "${targetId}" は存在しません。`);
+    return;
   }
 
   // セクション固有の処理
@@ -179,10 +180,56 @@ function navigate(targetId) {
     case 'historySection':
       loadDouTakuHistory();
       break;
+
+    case 'rankingSection':
+      isRankingMode  = true;
+      rankingSeatId  = null;
+      document.getElementById("rankingList").innerHTML = "";
+      displayMessage("座席QR を読み込んでください（順位登録モード）");
+
+      if (!rankingQrReader) {
+        rankingQrReader = new Html5Qrcode("rankingReader");
+        rankingQrReader.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          decodedText => {
+            if (decodedText.startsWith("table")) {
+              handleRankingMode(decodedText);
+              displayMessage(`✅ 座席 ${decodedText} 読み取り成功`);
+
+              // 読み取り後はカメラを停止
+              rankingQrReader.stop()
+                .then(() => {
+                  rankingQrReader.clear();
+                  rankingQrReader = null;
+                })
+                .catch(err => {
+                  console.error("rankingQrReader stop error:", err);
+                  rankingQrReader = null;
+                });
+            } else {
+              displayMessage("⚠ 座席コードのみ読み取り可能です");
+            }
+          }
+        ).catch(err => {
+          console.error(err);
+          displayMessage("❌ カメラの起動に失敗しました（順位登録）");
+        });
+      }
+      break;
+
+    case 'scanSection':
+      isRankingMode = false;
+      if (rankingQrReader) {
+        rankingQrReader.stop().then(() => {
+          rankingQrReader.clear();
+          rankingQrReader = null;
+        });
+      }
+      if (!qrActive) initCamera();  // QRスキャン画面ならカメラを再起動
+      break;
   }
 }
-
-
 // --- Undo/Redo ---
   // 操作を保存（何かアクションがあったときに毎回呼ぶ）
 function saveAction(action) {
@@ -286,51 +333,6 @@ function loadFromLocalStorage() {
 }
 
     /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
-  if (section === "rankingSection") {
-    isRankingMode  = true;
-    rankingSeatId  = null;
-    document.getElementById("rankingList").innerHTML = "";
-    displayMessage("座席QR を読み込んでください（順位登録モード）");
-
-   if (!rankingQrReader) {
-  rankingQrReader = new Html5Qrcode("rankingReader");
-  rankingQrReader.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    decodedText => {
-      if (decodedText.startsWith("table")) {
-        handleRankingMode(decodedText);
-        displayMessage(`✅ 座席 ${decodedText} 読み取り成功`);
-        // 1 座席読めば十分なので即停止
-        rankingQrReader.stop()
-          .then(() => {
-            rankingQrReader.clear();
-            rankingQrReader = null;
-          })
-          .catch(err => {
-            console.error("rankingQrReader stop error:", err);
-            rankingQrReader = null;
-          });
-      } else {
-        displayMessage("⚠ 座席コードのみ読み取り可能です");
-      }
-    }
-  ).catch(err => {
-    console.error(err);
-    displayMessage("❌ カメラの起動に失敗しました（順位登録）");
-  });
-}
-
-  } else {           /* --- “QR スキャン” 画面へ戻る --- */
-    isRankingMode = false;
-    if (rankingQrReader) {
-      rankingQrReader.stop().then(() => {
-        rankingQrReader.clear();
-        rankingQrReader = null;
-      });
-    }
-    if (!qrActive && section === "scanSection") initCamera();
-  }
 
 /** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
 function handleRankingMode(tableCode) {
