@@ -631,7 +631,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
   }
+    qrReader.start(
+    { facingMode: "environment" },
+    config,
+    handleScanSuccess,
+    (errorMessage) => {
+      // エラー時は無視（または console.log）
+    }
+  ).catch(err => {
+    console.error("カメラ起動エラー:", err);
   });
+});
+
 
 Object.assign(window, {
   navigate,
