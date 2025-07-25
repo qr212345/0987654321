@@ -609,6 +609,40 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
+  
+  const qrRegionSize = 250;
+
+  const html5QrCode = new Html5Qrcode("reader");
+
+  const config = {
+    fps: 10,
+    qrbox: {
+      width: qrRegionSize,
+      height: qrRegionSize,
+    },
+    aspectRatio: 1.0,
+  };
+
+  // ✅ スキャン成功時の処理を定義
+  function handleScanSuccess(decodedText, decodedResult) {
+    console.log("読み取り成功:", decodedText);
+    const messageArea = document.getElementById("messageArea");
+    messageArea.textContent = `読み取ったID: ${decodedText}`;
+
+    // あなたの座席登録ロジックに接続可能
+    // 例: addPlayerToSeat(decodedText);
+  }
+
+  // ✅ スキャンを開始
+  html5QrCode.start(
+    { facingMode: "environment" },
+    config,
+    handleScanSuccess
+  ).catch((err) => {
+    console.error("カメラ起動エラー:", err);
+    const messageArea = document.getElementById("messageArea");
+    messageArea.textContent = "カメラを起動できませんでした。";
+  });
 });
 
 Object.assign(window, {
