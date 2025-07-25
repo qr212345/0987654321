@@ -91,7 +91,7 @@ function handleScanSuccess(decodedText) {
 
     qrReader.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
+      { fps: 10, qrbox: 350 },
       handleScanSuccess
     ).then(() => {
       qrActive = true;  // 起動成功したらフラグを立てる
@@ -191,7 +191,7 @@ function navigate(targetId) {
         rankingQrReader = new Html5Qrcode("rankingReader");
         rankingQrReader.start(
           { facingMode: "environment" },
-          { fps: 10, qrbox: 250 },
+          { fps: 10, qrbox: 350 },
           decodedText => {
             if (decodedText.startsWith("table")) {
               handleRankingMode(decodedText);
