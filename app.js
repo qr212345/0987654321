@@ -631,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
   }
+  
     qrReader.start(
     { facingMode: "environment" },
     config,
@@ -641,6 +642,8 @@ document.addEventListener("DOMContentLoaded", () => {
   ).catch(err => {
     console.error("カメラ起動エラー:", err);
   });
+
+});
   Object.assign(window, {
     navigate,
     navigateToExternal: url => window.open(url, "_blank"),
