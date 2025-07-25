@@ -331,7 +331,6 @@ function loadFromLocalStorage() {
     }
     if (!qrActive && section === "scan") initCamera();
   }
-}
 
 /** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
 function handleRankingMode(tableCode) {
