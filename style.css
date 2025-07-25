@@ -10,7 +10,7 @@ body {
 #readerContainer {
   width: 250px;
   height: 250px;
-  margin: 100px auto; /* 任意の位置調整 */
+  margin: 100px auto 0 auto; /* 任意の位置調整 */
   position: relative;
   background: black;
   overflow: hidden;
