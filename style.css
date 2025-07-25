@@ -1,0 +1,246 @@
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f7f7f7;
+  display: flex;
+  height: 100vh;
+}
+
+#sidebar {
+  width: 240px;
+  background-color: #333;
+  color: white;
+  padding: 20px;
+}
+
+#sidebar h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+#sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+#sidebar li {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+#sidebar li:hover {
+  background-color: #555;
+}
+
+#mainContent {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+#seatList {
+  margin-top: 20px;
+}
+
+.seat-block {
+  border: 2px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: white;
+  border-radius: 10px;
+}
+
+.seat-block h3 {
+  margin-top: 0;
+}
+
+.player-entry:last-child {
+  border-bottom: none;
+}
+
+.remove-button {
+  color: red;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+/* 順位リスト用 */
+.draggable-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.draggable-list li {
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #fff;
+  border: 2px solid #999;
+  border-radius: 8px;
+  cursor: move;
+  user-select: none;
+}
+
+.draggable-list li.dragging {
+  opacity: 0.5;
+  background: #ddd;
+}
+/* ボタン系 */
+button {
+  padding: 10px 16px;
+  margin: 6px;
+  background: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #125ba3;
+}
+
+/* メッセージ表示 */
+#messageArea {
+  background: #ffffcc;
+  color: #333;
+  padding: 8px 12px;
+  margin: 10px 0;
+  border-left: 4px solid #ffcc00;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+/* プレイヤー情報表示強化 */
+.player-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #ddd;
+  background-color: #fafafa;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+
+.player-entry span.title-badge {
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* 王者（1位）: 雷⚡エフェクト */
+.title-👑 {
+  position: relative;
+  background: gold;
+  color: black;
+  overflow: visible;
+}
+.title-👑::before {
+  content: "⚡";
+  position: absolute;
+  left: -1.5em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.3em;
+  color: #ffff33;
+  text-shadow:
+    0 0 5px #fff,
+    0 0 10px #ff0,
+    0 0 15px #ff0;
+  animation: lightning-flicker 1.2s infinite;
+  pointer-events: none;
+}
+@keyframes lightning-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 挑戦者（2位）: 風🍃エフェクト */
+.title-🥈 {
+  position: relative;
+  background: silver;
+  color: black;
+  overflow: visible;
+}
+.title-🥈::before {
+  content: "🍃";
+  position: absolute;
+  left: -1.5em;
+  top: 50%;
+  transform: translateY(-50%) rotate(0deg);
+  font-size: 1.2em;
+  animation: wind-sway 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes wind-sway {
+  0%, 100% { transform: translateY(-50%) rotate(-10deg); }
+  50% { transform: translateY(-50%) rotate(10deg); }
+}
+
+/* 鬼気迫る者（3位）: 鬼👹エフェクト */
+.title-🥉 {
+  position: relative;
+  background: #cd7f32;
+  color: white;
+  overflow: visible;
+  text-shadow: 0 0 8px #aa0000;
+}
+.title-🥉::before {
+  content: "👹";
+  position: absolute;
+  left: -1.7em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.3em;
+  animation: fire-flicker 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes fire-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+
+/* 固定ボタン群（画面下部右） */
+.fixed-controls {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rate-change {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.rate-up {
+  background-color: #e0f2f1;
+  color: #00796b;
+}
+.rate-down {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.rate-zero {
+  background-color: #eeeeee;
+  color: #666;
+}
