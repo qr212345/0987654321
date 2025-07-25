@@ -17,6 +17,20 @@ body {
   position: relative;
 }
 
+#reader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+#result {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #333;
+  margin-top: 0.5rem;
+}
+
 #sidebar {
   width: 240px;
   background-color: #333;
