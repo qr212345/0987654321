@@ -7,37 +7,34 @@ body {
   height: 100vh;
 }
 
-#reader-wrapper {
-  width: 100%;
-  max-width: 320px;
-  aspect-ratio: 1 / 1;
-  margin: auto;
+#readerContainer {
+  width: 250px;
+  height: 250px;
+  margin: 100px auto; /* 任意の位置調整 */
   position: relative;
+  background: black;
+  overflow: hidden;
+  border-radius: 8px;
 }
 
 #reader {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
-  background: black;
-  box-shadow: 0 0 0 2px limegreen; /* 緑枠をこの中で描く */
+  object-fit: cover;
   position: relative;
-  overflow: hidden;
 }
 
-
-/* 覆い（マスク）で背景を暗くするが、中央だけ透明 */
-#qr-mask {
+/* 見える枠（視覚表示用） */
+#overlayBox {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  width: 250px;
+  height: 250px;
+  box-sizing: border-box;
+  border: 3px solid limegreen;
   pointer-events: none;
   z-index: 10;
-  mask: radial-gradient(circle 125px at center, transparent 0%, black 130px);
-  -webkit-mask: radial-gradient(circle 125px at center, transparent 0%, black 130px);
 }
 
 #sidebar {
