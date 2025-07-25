@@ -631,7 +631,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 必要であれば、以下に登録処理を呼び出す:
     // addPlayerToSeat(decodedText);
   }
-  });
 });
 
 Object.assign(window, {
