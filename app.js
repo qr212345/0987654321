@@ -610,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSeats();
   bindButtons();
   
-  const qrRegionSize = 250;
+ const qrRegionSize = 250;
 
   const html5QrCode = new Html5Qrcode("reader");
 
@@ -618,22 +618,20 @@ document.addEventListener("DOMContentLoaded", () => {
     fps: 10,
     qrbox: {
       width: qrRegionSize,
-      height: qrRegionSize,
+      height: qrRegionSize
     },
     aspectRatio: 1.0,
   };
 
-  // ✅ スキャン成功時の処理を定義
   function handleScanSuccess(decodedText, decodedResult) {
     console.log("読み取り成功:", decodedText);
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
 
-    // あなたの座席登録ロジックに接続可能
-    // 例: addPlayerToSeat(decodedText);
+    // 必要であれば、以下に登録処理を呼び出す:
+    // addPlayerToSeat(decodedText);
   }
 
-  // ✅ スキャンを開始
   html5QrCode.start(
     { facingMode: "environment" },
     config,
