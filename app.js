@@ -446,54 +446,6 @@ function getTopRatedPlayerId() {
   return topId;
 }
 
-//GAS//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-window.saveToGAS = function () {
-  const payload = {
-    seatMap,
-    playerData,
-    douTakuRecords
-  };
-
-  fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ secret: SECRET, payload })
-  })
-    .then(res => res.text())
-    .then(txt => {
-      if (txt === "OK") {
-        displayMessage("✅ GASに保存しました");
-      } else {
-        displayMessage("❌ エラー: " + txt);
-      }
-    })
-    .catch(err => {
-      console.error(err);
-      displayMessage("❌ 通信エラー");
-    });
-};
-
-// 読み取り処理
-window.loadFromGAS = function () {
-  fetch(ENDPOINT, {
-    method: "GET"
-  })
-    .then(res => res.json())
-    .then(data => {
-      seatMap = data.seatMap || {};
-      playerData = data.playerData || {};
-      douTakuRecords = data.douTakuRecords || {};
-      renderSeats(); // ← 表示を再描画
-      displayMessage("✅ GASから読み込み完了");
-    })
-    .catch(err => {
-      console.error(err);
-      displayMessage("❌ 読み取りエラー");
-    });
-};
-
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
