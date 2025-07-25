@@ -617,7 +617,6 @@ document.addEventListener("DOMContentLoaded", () => {
  const config = {
     fps: 10,
     qrbox: { width: 250, height: 250 }  // 読み取り範囲も一致
- };
     aspectRatio: 1.0,
  };
 
