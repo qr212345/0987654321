@@ -413,7 +413,53 @@ function getTopRatedPlayerId() {
 }
 
 //GAS
+function loadFromGAS() {
+  fetch(ENDPOINT)
+    .then(res => res.json())
+    .then(json => {
+      seatMap        = json.seatMap || {};
+      playerData     = json.playerData || {};
+      douTakuRecords = json.douTakuRecords || [];
+      displayMessage("✅ GASからデータを読み込みました");
+      saveToLocalStorage();
+      renderSeats();
+    })
+    .catch(err => {
+      console.error(err);
+      displayMessage("❌ GASからの読み込みに失敗しました");
+    });
+}
 
+function saveToGAS() {
+  const payload = {
+    seatMap,
+    playerData,
+    douTakuRecords
+  };
+
+  fetch(ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      secret: SECRET,
+      payload
+    })
+  })
+  .then(res => res.text())
+  .then(txt => {
+    if (txt === "OK") {
+      displayMessage("✅ GASに保存しました");
+    } else {
+      displayMessage("❌ エラー: " + txt);
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    displayMessage("❌ 通信エラー");
+  });
+}
 
   // --- CSVエクスポート ---
   function toCSV(data, headers) {
