@@ -563,20 +563,6 @@ function toCSV(data, headers) {
   return csvRows.join("\n");
 }
 
-// CSVダウンロードユーティリティ
-function downloadCSV(csvText, filename){
-  const blob = new Blob([csvText], {type: "text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-
 // 対戦離席CSV出力関数
 function exportLeaveCSV() {
   if(leaveRecords.length === 0){
