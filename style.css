@@ -19,13 +19,21 @@ body {
 
 #reader {
   width: 250px;
-  height: 250px;
+  height: auto;
   object-fit: contain;
   background: black;
   box-shadow: 0 0 0 2px limegreen;
   margin: 0 auto;
 }
-
+/* PCだけに適用（画面幅が768px以上のとき） */
+@media (min-width: 768px) {
+  #reader {
+    transform: scale(1.15);      /* カメラ映像を拡大して下の黒を隠す */
+    transform-origin: top;       /* 上を起点に拡大する */
+    max-height: 100%;
+    height: auto;
+  }
+}
 /* 見える枠（視覚表示用） */
 #overlayBox {
   position: absolute;
