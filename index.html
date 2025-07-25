@@ -62,21 +62,21 @@
 </section>
 </main>
  <script>
-    async function saveToGAS() {
-      const res = await fetch('http://localhost:3000/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'イチゴ大福', score: 100 })
-      });
-      const text = await res.text();
-      document.getElementById('output').textContent = text;
-    }
+async function saveToGAS() {
+  const res = await fetch('http://localhost:3000/post', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'イチゴ大福', score: 100 })
+  });
+  const text = await res.text();
+  document.getElementById('output').textContent = text;
+}
 
-    async function loadFromGAS() {
-      const res = await fetch('http://localhost:3000/get');
-      const json = await res.json();
-      document.getElementById('output').textContent = JSON.stringify(json, null, 2);
-    }
+async function loadFromGAS() {
+  const res = await fetch('http://localhost:3000/get');
+  const json = await res.json();
+  document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+}
   </script>
 </body>
 </html>
