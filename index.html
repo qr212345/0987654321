@@ -62,20 +62,40 @@
 </section>
 </main>
  <script>
+let seatMap = {};
+let playerData = {};
+
+// 保存
 async function saveToGAS() {
-  const res = await fetch('http://localhost:3000/post', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'イチゴ大福', score: 100 })
-  });
-  const text = await res.text();
-  document.getElementById('output').textContent = text;
+  const data = { seatMap, playerData };
+
+  try {
+    const res = await fetch('http://localhost:3000/post', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const msg = await res.text();
+    alert("保存完了: " + msg);
+  } catch (err) {
+    console.error('保存失敗:', err);
+    alert("保存に失敗しました");
+  }
 }
 
+// 読み込み
 async function loadFromGAS() {
-  const res = await fetch('http://localhost:3000/get');
-  const json = await res.json();
-  document.getElementById('output').textContent = JSON.stringify(json, null, 2);
+  try {
+    const res = await fetch('http://localhost:3000/get');
+    const data = await res.json();
+    seatMap = data.seatMap || {};
+    playerData = data.playerData || {};
+    console.log("読込完了", seatMap, playerData);
+    renderSeats(); // ← UI描画があれば
+  } catch (err) {
+    console.error('読み込み失敗:', err);
+    alert("読込に失敗しました");
+  }
 }
   </script>
 </body>
