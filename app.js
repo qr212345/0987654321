@@ -617,8 +617,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const config = {
     fps: 10,
     qrbox: {
-      width: qrRegionSize,
-      height: qrRegionSize
+      width: 250,
+      height: 250
     },
     aspectRatio: 1.0,
   };
