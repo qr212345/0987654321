@@ -40,20 +40,6 @@ body {
   -webkit-mask: radial-gradient(circle 125px at center, transparent 0%, black 130px);
 }
 
-#overlayBox {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 250px;   /* qrboxのサイズと合わせる */
-  height: 250px;
-  margin-left: -125px;  /* 半分のマイナスで中央に配置 */
-  margin-top: -125px;
-  border: 3px solid limegreen;
-  box-sizing: border-box;
-  pointer-events: none; /* 枠をクリック無効化 */
-  border-radius: 8px;   /* お好みで角丸 */
-}
-
 #sidebar {
   width: 240px;
   background-color: #333;
