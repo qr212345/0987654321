@@ -86,15 +86,14 @@ async function saveToGAS() {
 // 読み込み
 async function loadFromGAS() {
   try {
-    const res = await fetch('http://localhost:3000/get');
-    const data = await res.json();
-    seatMap = data.seatMap || {};
-    playerData = data.playerData || {};
-    console.log("読込完了", seatMap, playerData);
-    renderSeats(); // ← UI描画があれば
+    const res = await fetch("http://localhost:3000/get");
+    const data = await res.json(); // ← HTMLが返ってきてたらここでエラー
+    console.log("読み込み成功:", data);
+    // seatMap = data.seatMap;
+    // playerData = data.playerData;
   } catch (err) {
-    console.error('読み込み失敗:', err);
-    alert("読込に失敗しました");
+    console.error("読み込み失敗:", err);
+    alert("データ読み込み失敗: " + err.message);
   }
 }
   </script>
