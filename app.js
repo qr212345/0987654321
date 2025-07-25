@@ -630,11 +630,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("読み取り成功:", decodedText);
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
-
-    // 必要であれば、以下に登録処理を呼び出す:
-    // addPlayerToSeat(decodedText);
   }
-});
+  });
 
 Object.assign(window, {
   navigate,
