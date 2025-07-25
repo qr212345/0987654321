@@ -20,9 +20,10 @@ body {
 #reader {
   width: 250px;
   height: 250px;
-  margin-top: 60px;
+  margin-top: 0px;
   object-fit: cover;
   position: relative;
+  object-position: center -50px
 }
 
 /* 見える枠（視覚表示用） */
