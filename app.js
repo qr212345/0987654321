@@ -615,11 +615,13 @@ document.addEventListener("DOMContentLoaded", () => {
   renderSeats();
   bindButtons();
 
+  const qrRegionSize = 250;
+
   const qrReader = new Html5Qrcode("reader");
 
   const config = {
     fps: 10,
-    qrbox: { width: 250, height: 250 },
+    qrbox: { width: qrRegionSize, height: qrRegionSize },
     aspectRatio: 1.0
   };
 
@@ -627,8 +629,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("読み取り成功:", decodedText);
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
-
-    // プレイヤー登録機能を入れたければここに書く
+    
+    // 必要に応じてここで登録処理を呼ぶ：
     // addPlayerToSeat(decodedText);
   }
 
@@ -636,8 +638,8 @@ document.addEventListener("DOMContentLoaded", () => {
     { facingMode: "environment" },
     config,
     handleScanSuccess,
-    (errorMessage) => {
-      // 読み取り失敗時（無視してOK）
+    (errMsg) => {
+      // 読み取り失敗は無視
     }
   ).catch((err) => {
     console.error("カメラ起動エラー:", err);
@@ -645,7 +647,7 @@ document.addEventListener("DOMContentLoaded", () => {
     messageArea.textContent = "❌ カメラの起動に失敗しました";
   });
 
-}); // ← ← ← これが無いと "Unexpected end of input" エラーになる！
+});
 
 // ✅ グローバル公開
 Object.assign(window, {
