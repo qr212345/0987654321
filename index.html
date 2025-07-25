@@ -16,9 +16,9 @@
 <div id="sidebar">
   <h2>メニュー</h2>
   <ul>
-  <button onclick="navigate('scan')">🎮 プレイヤー管理</button>
-  <button onclick="navigate('ranking')">🏆 順位登録</button>
-  <button onclick="navigate('kekka')">🔔 銅鐸履歴</button>
+  <button onclick="navigate('scanSection')">🎮 プレイヤー管理</button>
+  <button onclick="navigate('rankingEntrySection')">🏆 順位登録</button>
+  <button onclick="navigate('historySection')">🔔 銅鐸履歴</button>
   <button onclick="window.open('https://example.com/rank', '_blank')">📈 ランキング表</button>
   <button onclick="window.open('https://example.com/live', '_blank')">📍 リアルタイム座席</button>
   <button onclick="window.open('https://example.com/realtime-rank', '_blank')">📊 リアルタイムランキング</button>
@@ -41,23 +41,20 @@
         <button onclick="saveToGAS()">☁ データをGASに保存</button>
         <button onclick="loadFromGAS()">🔄 GASから読み込み</button>
   </section>
-
-  <section id="rankingSection" class="section" style="display:none">
-    <h1>🎮 プレイヤー・座席管理</h1>
-    <p>QRコードで座席を読み込んでください。</p>
-    <div id="rankingReader" style="width: 320px;"></div>
-    <ul id="rankingList" class="draggable-list"></ul>
-    <button onclick="confirmRanking()">✅ 順位決定</button>
- </section>
-
         <!-- 順位登録UI -->
-  <section id="rankingSection" class="section" style="display:none">
+  <section id="rankingEntrySection" class="section" style="display:none">
      <h2>順位登録モード</h2>
      <p>QRコードで座席を読み込んでください。</p>
      <div id="rankingReader" style="width: 320px;"></div>
      <ul id="rankingList" class="draggable-list"></ul>
      <button id="confirmRankingBtn">✅ 順位を決定</button>
   </section>
+
+  <section id="historySection" class="section" style="display: none;">
+  <h2>🔔 銅鐸履歴</h2>
+  <div id="historyList"></div>
+  <button onclick="navigate('scanSection')">⬅ 戻る</button>
+</section>
  </main>
 </div>
 <script type="module" src="./app.js"></script>
