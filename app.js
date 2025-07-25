@@ -51,10 +51,24 @@ function handleScanSuccess(decodedText) {
     currentSeatId = decodedText;
     seatMap[currentSeatId] ??= [];
     displayMessage(`✅ 座席セット: ${currentSeatId}`);
+
+    // 座席コードのときだけ順位登録モードが有効なら呼ぶ
+    if (isRankingMode) {
+      handleRankingMode(decodedText);
+    }
   } else if (decodedText.startsWith("player")) {
-    if (!currentSeatId)                  { displayMessage("⚠ 先に座席QRを読み込んでください"); return; }
-    if (seatMap[currentSeatId].includes(decodedText)) { displayMessage("⚠ 既に登録済み"); return; }
-    if (seatMap[currentSeatId].length >= 6)           { displayMessage("⚠ この座席は6人まで"); return; }
+    if (!currentSeatId) {
+      displayMessage("⚠ 先に座席QRを読み込んでください");
+      return;
+    }
+    if (seatMap[currentSeatId].includes(decodedText)) {
+      displayMessage("⚠ 既に登録済み");
+      return;
+    }
+    if (seatMap[currentSeatId].length >= 6) {
+      displayMessage("⚠ この座席は6人まで");
+      return;
+    }
 
     seatMap[currentSeatId].push(decodedText);
     playerData[decodedText] ??= { nickname: decodedText, rate: 50, lastRank: null, bonus: 0 };
@@ -63,10 +77,7 @@ function handleScanSuccess(decodedText) {
     saveToLocalStorage();
     renderSeats();
   }
-
-    handleRankingMode(decodedText);
-  }
-
+}
   /* ======== カメラ起動 ======== */
   function initCamera() {
     // 既にスキャン中なら再起動しない
@@ -147,7 +158,32 @@ function handleScanSuccess(decodedText) {
     saveToLocalStorage();
     renderSeats();
   }
-  // --- Undo/Redo ---
+ 
+function navigate(targetId) {
+  // 全セクション非表示
+  document.querySelectorAll('.section').forEach(section => {
+    section.style.display = 'none';
+  });
+
+  // ターゲットセクションだけ表示
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.style.display = 'block';
+    location.hash = targetId;  // URLハッシュ変更（オプション）
+  } else {
+    console.warn(`指定されたセクション "${targetId}" は存在しません。`);
+  }
+
+  // セクション固有の処理
+  switch (targetId) {
+    case 'historySection':
+      loadDouTakuHistory();
+      break;
+  }
+}
+
+
+// --- Undo/Redo ---
   // 操作を保存（何かアクションがあったときに毎回呼ぶ）
 function saveAction(action) {
   undoStack.push(action);
@@ -212,35 +248,28 @@ function redoAction() {
   saveToLocalStorage();
   renderSeats();
 }
-// 銅鐸履歴サンプルデータ
-const douTakuRecords = [
-  { date:"2025-07-20 13:00", event:"大会1回戦", result:"player~0001が勝利" },
-  { date:"2025-07-21 15:30", event:"大会2回戦", result:"player~0003が離席" },
-];
 
 // 銅鐸履歴描画関数
-function renderDouTaku(){
-  const container = document.getElementById("dou-taku-list");
-  if(!container) return;
-  if(douTakuRecords.length === 0){
-    container.textContent = "履歴がありません。";
+function loadDouTakuHistory() {
+  const douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
+  const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+
+  if (douTakuRecords.length === 0) {
+    list.innerHTML = "<p>🔕 履歴がありません</p>";
     return;
   }
-  container.innerHTML = "";
-  douTakuRecords.forEach(rec=>{
-    const div = document.createElement("div");
-    div.className = "dou-taku-item";
-    div.textContent = `${rec.date} | ${rec.event} | ${rec.result}`;
-    container.appendChild(div);
+
+  douTakuRecords.forEach(record => {
+    const player = playerData[record.playerId] || { name: "不明", seat: "?" };
+    const item = document.createElement("div");
+    item.className = "history-entry";
+    item.innerText = `🔔 ${player.name} さん（座席 ${player.seat}）が ${record.time} に鳴らしました`;
+    list.appendChild(item);
   });
 }
-
-// 初期表示はプレイヤー管理など既存の画面に
-window.addEventListener("DOMContentLoaded", () => {
-  switchView('seat-view');
-});
-
-
 
   // --- ローカル保存・復元 ---
   function saveToLocalStorage() {
@@ -255,11 +284,6 @@ function loadFromLocalStorage() {
   playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
   douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");  // 追加
 }
-function navigate(section) {
-  // 表示切替
-  document.getElementById("scanSection"   ).style.display = section === "scan"    ? "block" : "none";
-  document.getElementById("rankingSection").style.display = section === "ranking" ? "block" : "none";
-　document.getElementById("doTakuSection").style.display = section === "doTaku" ? "block" : "none";  
 
     /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
   if (section === "ranking") {
@@ -268,29 +292,35 @@ function navigate(section) {
     document.getElementById("rankingList").innerHTML = "";
     displayMessage("座席QR を読み込んでください（順位登録モード）");
 
-    if (!rankingQrReader) {
-      rankingQrReader = new Html5Qrcode("rankingReader");
-      rankingQrReader.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        decodedText => {
-          if (decodedText.startsWith("table")) {
-            handleRankingMode(decodedText);
-            displayMessage(`✅ 座席 ${decodedText} 読み取り成功`);
-            // 1 座席読めば十分なので即停止
-            rankingQrReader.stop().then(() => {
-              rankingQrReader.clear();
-              rankingQrReader = null;
-            });
-          } else {
-            displayMessage("⚠ 座席コードのみ読み取り可能です");
-          }
-        }
-      ).catch(err => {
-        console.error(err);
-        displayMessage("❌ カメラの起動に失敗しました（順位登録）");
-       });
+   if (!rankingQrReader) {
+  rankingQrReader = new Html5Qrcode("rankingReader");
+  rankingQrReader.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    decodedText => {
+      if (decodedText.startsWith("table")) {
+        handleRankingMode(decodedText);
+        displayMessage(`✅ 座席 ${decodedText} 読み取り成功`);
+        // 1 座席読めば十分なので即停止
+        rankingQrReader.stop()
+          .then(() => {
+            rankingQrReader.clear();
+            rankingQrReader = null;
+          })
+          .catch(err => {
+            console.error("rankingQrReader stop error:", err);
+            rankingQrReader = null;
+          });
+      } else {
+        displayMessage("⚠ 座席コードのみ読み取り可能です");
+      }
     }
+  ).catch(err => {
+    console.error(err);
+    displayMessage("❌ カメラの起動に失敗しました（順位登録）");
+  });
+}
+
   } else {           /* --- “QR スキャン” 画面へ戻る --- */
     isRankingMode = false;
     if (rankingQrReader) {
@@ -462,20 +492,6 @@ function saveToGAS() {
 }
 
   // --- CSVエクスポート ---
-  function toCSV(data, headers) {
-    const csvRows = [];
-    csvRows.push(headers.join(","));
-    data.forEach(row => {
-      const vals = headers.map(h=>{
-        let v = row[h] ?? "";
-        if(typeof v === "string" && v.includes(",")) v = `"${v.replace(/"/g,'""')}"`;
-        return v;
-      });
-      csvRows.push(vals.join(","));
-    });
-    return csvRows.join("\n");
-  }
-
   window.exportPlayerCSV = () => {
     const players = [];
     
