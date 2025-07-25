@@ -90,25 +90,19 @@ function handleScanSuccess(decodedText) {
     }
 
     // インスタンス未生成なら作成
-const html5QrCode = new Html5Qrcode("reader");
+    if (!qrReader) qrReader = new Html5Qrcode("reader");
 
-html5QrCode.start(
-  { facingMode: "environment" },
-  {
-    fps: 10,
-    qrbox: { width: 250, height: 250 }, // 読み取り範囲を中央のみに
-    aspectRatio: 1.0
-  },
-  (decodedText) => {
-    console.log("QRコード読み取り成功:", decodedText);
-    // 必要ならここで処理を実行（例: 保存、座席反映など）
-  },
-  (errorMessage) => {
-    // 読み取り失敗時も呼ばれる。頻繁なので何もしない or ログのみ
+    qrReader.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 350 },
+      handleScanSuccess
+    ).then(() => {
+      qrActive = true;  // 起動成功したらフラグを立てる
+    }).catch(err => {
+      console.error(err);
+      displayMessage("❌ カメラの起動に失敗しました");
+    });
   }
-).catch((err) => {
-  console.error("カメラ起動エラー:", err);
-});
 
   /* ======== 座席表示 ======== */
   function renderSeats() {
@@ -609,47 +603,46 @@ function bindButtons() {
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
 }
 
+  // 初期化
 document.addEventListener("DOMContentLoaded", () => {
   initCamera();
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
+  
+ const qrRegionSize = 250;
 
-  const qrRegionSize = 250;
-
-  const qrReader = new Html5Qrcode("reader");
+  const html5QrCode = new Html5Qrcode("reader");
 
   const config = {
     fps: 10,
-    qrbox: { width: qrRegionSize, height: qrRegionSize },
-    aspectRatio: 1.0
+    qrbox: {
+      width: 250,
+      height: 250
+    },
+    aspectRatio: 1.0,
   };
 
   function handleScanSuccess(decodedText, decodedResult) {
     console.log("読み取り成功:", decodedText);
     const messageArea = document.getElementById("messageArea");
     messageArea.textContent = `読み取ったID: ${decodedText}`;
-    
-    // 必要に応じてここで登録処理を呼ぶ：
+
+    // 必要であれば、以下に登録処理を呼び出す:
     // addPlayerToSeat(decodedText);
   }
 
-  qrReader.start(
+  html5QrCode.start(
     { facingMode: "environment" },
     config,
-    handleScanSuccess,
-    (errMsg) => {
-      // 読み取り失敗は無視
-    }
+    handleScanSuccess
   ).catch((err) => {
     console.error("カメラ起動エラー:", err);
     const messageArea = document.getElementById("messageArea");
-    messageArea.textContent = "❌ カメラの起動に失敗しました";
+    messageArea.textContent = "カメラを起動できませんでした。";
   });
-
 });
 
-// ✅ グローバル公開
 Object.assign(window, {
   navigate,
   navigateToExternal: url => window.open(url, "_blank"),
@@ -660,4 +653,4 @@ Object.assign(window, {
   exportSeatCSV,
   exportLeaveCSV,
   confirmRanking
-}
+});
