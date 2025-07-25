@@ -9,7 +9,7 @@ body {
 
 #readerContainer {
   width: 250px;
-  height: 310px;
+  height: 250px;
   margin: 100px auto 0 auto; /* 任意の位置調整 */
   position: relative;
   background: black;
@@ -19,10 +19,10 @@ body {
 
 #reader {
   width: 250px;
-  height: 310px;
-  margin-top: 0px;
-  position: relative;
-  object-position: center -50px
+  height: 250px;
+  object-fit: contain;
+  background: black;
+  margin: 0 auto;
 }
 
 /* 見える枠（視覚表示用） */
