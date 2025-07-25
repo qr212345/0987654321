@@ -20,7 +20,7 @@ body {
 #reader {
   width: 250px;
   height: 250px;
-  margin-top: 0px;
+  margin-top: 60px;
   object-fit: cover;
   position: relative;
 }
