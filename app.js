@@ -47,6 +47,9 @@ function handleScanSuccess(decodedText) {
   lastScannedText = decodedText;
   lastScanTime = now;
 
+  const resultEl = document.getElementById("result");
+  if (resultEl) resultEl.textContent = `📷 ${decodedText} を読み取りました`;
+  
   if (decodedText.startsWith("table")) {
     currentSeatId = decodedText;
     seatMap[currentSeatId] ??= [];
