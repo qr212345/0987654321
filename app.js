@@ -90,19 +90,25 @@ function handleScanSuccess(decodedText) {
     }
 
     // インスタンス未生成なら作成
-    if (!qrReader) qrReader = new Html5Qrcode("reader");
+const html5QrCode = new Html5Qrcode("reader");
 
-    qrReader.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 350 },
-      handleScanSuccess
-    ).then(() => {
-      qrActive = true;  // 起動成功したらフラグを立てる
-    }).catch(err => {
-      console.error(err);
-      displayMessage("❌ カメラの起動に失敗しました");
-    });
+html5QrCode.start(
+  { facingMode: "environment" },
+  {
+    fps: 10,
+    qrbox: { width: 250, height: 250 }, // 読み取り範囲を中央のみに
+    aspectRatio: 1.0
+  },
+  (decodedText) => {
+    console.log("QRコード読み取り成功:", decodedText);
+    // 必要ならここで処理を実行（例: 保存、座席反映など）
+  },
+  (errorMessage) => {
+    // 読み取り失敗時も呼ばれる。頻繁なので何もしない or ログのみ
   }
+).catch((err) => {
+  console.error("カメラ起動エラー:", err);
+});
 
   /* ======== 座席表示 ======== */
   function renderSeats() {
