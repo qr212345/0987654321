@@ -660,4 +660,4 @@ Object.assign(window, {
   exportSeatCSV,
   exportLeaveCSV,
   confirmRanking
-});
+}
