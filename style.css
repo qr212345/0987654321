@@ -60,7 +60,7 @@ body {
 
 #rankingReader {
   width: 90vw;        /* 画面幅の90%に自動調整 */
-  max-width: 350px;   /* 最大350px */
+  max-width: 250px;   /* 最大350px */
   height: auto;
   aspect-ratio: 1 / 1; /* 正方形を維持 */
   border-radius: 8px;
@@ -69,7 +69,7 @@ body {
 
 .ranking-list {
   width: 100%;
-  max-width: 350px;
+  max-width: 250px;
   list-style: none;
   padding: 0;
   margin: 0;
