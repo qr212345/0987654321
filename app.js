@@ -708,8 +708,7 @@ function bindButtons() {
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => saveToGAS(seatMap, playerData));
   document.getElementById("loadFromGASBtn").addEventListener("click", loadFromGAS);
   document.getElementById("exitRankBtn").addEventListener("click", exitRankMode);
-  document.getElementById("confirmRankingBtn").addEventListener("click", confirmRanking);
-
+  document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
 }
 
   // 初期化
