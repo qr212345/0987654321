@@ -59,10 +59,10 @@ body {
 }
 
 #rankingReader {
-  width: 90vw;        /* 画面幅の90%に自動調整 */
-  max-width: 250px;   /* 最大350px */
-  height: auto;
-  aspect-ratio: 1 / 1; /* 正方形を維持 */
+  width: 90vw;
+  max-width: 250px;
+  height: 90vw;
+  max-height: 250px;
   border-radius: 8px;
   background: black;
 }
