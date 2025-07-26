@@ -456,6 +456,7 @@ async function saveToGAS() {
         playerData,
       }),
     });
+
     const json = await res.json();
     console.log("保存成功:", json);
     alert("保存に成功しました");
