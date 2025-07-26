@@ -456,7 +456,7 @@ window.startRankCamera = function () {
     initAndStartRankQr();
   }
 
-　function initAndStartRankQr() {
+    window.initAndStartRankQr = function() {
     rankQr = new Html5Qrcode(targetId);
     const config = {
   　　fps: 10,
@@ -475,18 +475,18 @@ window.startRankCamera = function () {
   }
 };
 
-window.stopScanCamera = function () {
-  if (scanQr) {
-    scanQr.stop().then(() => {
-      scanQr.clear();
-      scanQr = null;
-      console.log("🛑 プレイヤー管理カメラ停止");
+window.stopRankCamera = function() {
+  if (rankQr) {
+    rankQr.stop().then(() => {
+      document.getElementById("rankingReader").innerHTML = ""; // カメラ表示をクリア
+      rankQr = null;
+      console.log("🛑 順位登録カメラ停止");
     }).catch(console.warn);
   }
-};
+}
 
-function exitRankMode() {
-  stopRankCamera();
+window.exitRankMode = function () {
+  stopRankCamera(); // ← これが呼べるようになる
   navigate('scanSection');
   startScanCamera();
 }
