@@ -455,12 +455,16 @@ function startRankCamera() {
   });
 }
 
-function stopRankCamera() {
-  if (rankQr) {
-    rankQr.stop().then(() => {
-      rankQr.clear();
-      rankQr = null;
-    });
+function stopScanCamera() {
+  if (scanQr) {
+    scanQr.stop()
+      .then(() => {
+        document.getElementById("reader").innerHTML = ""; // カメラ映像を消す
+        scanQr = null;
+      })
+      .catch(err => {
+        console.warn("scanQr 停止時にエラー:", err);
+      });
   }
 }
 
