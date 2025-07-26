@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbzHJlwFHw7ZZ-c8TH4Ls4v-vQXmgdK_FyqlUgyfweRheC_cNaIjAadWN5qF88DhbTgu/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -445,26 +445,23 @@ function getTopRatedPlayerId() {
   return topId;
 }
 //---GAS---
-async function saveToGAS() {
+async function saveToGAS(seatMap, playerData) {
+  
+  const formData = new URLSearchParams();
+  formData.append('secret', SECRET);
+  formData.append('data', JSON.stringify({ seatMap, playerData }));
+
   try {
-    const formData = new URLSearchParams();
-    formData.append("secret", SECRET);
-    formData.append("data", JSON.stringify({ seatMap, playerData }));
-
     const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: formData.toString()
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+      mode: 'cors' // これでCORS対応
     });
-
     const json = await res.json();
     console.log('保存成功:', json);
-    alert('保存に成功しました');
   } catch (err) {
     console.error('保存失敗:', err);
-    alert('保存に失敗しました');
   }
 }
 
