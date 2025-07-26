@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbxWfrfyoP8TV3rXl-NEqvjUi6ifJgxv20wiKoQkju5H_9B7vIMYxM0Z8Nd65nAuQ-OM/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbyYuJj6YAhph_hFUyBNwyWxXWQOAsn7WPKhOIaN2neniWcuaV7u2gZsC0B43IlmQLU/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -445,37 +445,39 @@ function getTopRatedPlayerId() {
   return topId;
 }
 //---GAS---
-async function saveToGAS(seatMap, playerData) {
+async function saveToGAS() {
   try {
     const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret: SECRET, seatMap, playerData }),
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: SECRET,
+        seatMap,
+        playerData,
+      }),
     });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const json = await res.json();
-    console.log("保存成功:", json);
-    alert("保存に成功しました");
+    console.log('保存成功:', json);
+    alert('保存に成功しました');
   } catch (err) {
-    console.error("保存失敗:", err);
-    alert("保存に失敗しました");
+    console.error('保存失敗:', err);
+    alert('保存に失敗しました');
   }
 }
 
+// GASからデータを読み込み
 async function loadFromGAS() {
   try {
-    const res = await fetch(GAS_URL, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const res = await fetch(GAS_URL, { method: 'GET' });
     const json = await res.json();
-    console.log("読み込み成功:", json);
-    // seatMap, playerDataに代入するなど適宜処理
-    return json;
+    seatMap = json.seatMap || {};
+    playerData = json.playerData || {};
+    console.log('読み込み完了:', seatMap, playerData);
+    alert('読み込みに成功しました');
+    // ここで画面に反映する処理を呼ぶ
   } catch (err) {
-    console.error("読み込み失敗:", err);
-    alert("読み込みに失敗しました");
+    console.error('読み込みエラー:', err);
+    alert('読み込みに失敗しました');
   }
 }
 
