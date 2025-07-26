@@ -47,6 +47,46 @@ body {
   z-index: 10;
 }
 
+#weaderContainer {
+  width: 250px;
+  height: 250px;
+  margin: 100px auto 0 auto; /* 任意の位置調整 */
+  position: relative;
+  background: black;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+#qerder {
+  width: 250px;
+  height: auto;
+  object-fit: contain;
+  background: black;
+  box-shadow: 0 0 0 2px limegreen;
+  margin: 0 auto;
+}
+/* PCだけに適用（画面幅が768px以上のとき） */
+@media (min-width: 768px) {
+  #qerder {
+    transform: scale(1.15);      /* カメラ映像を拡大して下の黒を隠す */
+    transform-origin: top;       /* 上を起点に拡大する */
+    max-height: 100%;
+    height: auto;
+  }
+}
+/* 見える枠（視覚表示用） */
+#overlayBoa {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 250px;
+  box-sizing: border-box;
+  border: 3px solid limegreen;
+  pointer-events: none;
+  z-index: 10;
+}
+
 #sidebar {
   width: 240px;
   background-color: #333;
