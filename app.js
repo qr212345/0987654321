@@ -104,8 +104,7 @@ function handleScanSuccess(decodedText) {
     });
   }
 
-  /* ======== 座席表示 ======== */
- 
+  /* ======== 座席表示 ======== */ 
 function renderSeats() {
   const seatList = document.getElementById("seatList");
   seatList.innerHTML = "";
@@ -123,6 +122,7 @@ function renderSeats() {
       const entryDiv = document.createElement("div");
       entryDiv.className = "player-entry";
 
+      // プレイヤー情報表示
       entryDiv.innerHTML = `
         <div>
           <strong>${playerId}</strong>
@@ -134,16 +134,23 @@ function renderSeats() {
         </div>
       `;
 
+      // ✖ボタン（スコープをしっかり閉じる）
       const removeBtn = document.createElement("span");
       removeBtn.className = "remove-button";
       removeBtn.textContent = "✖";
-      removeBtn.onclick = () => {
-        undoStack.push({ type: "remove", seatId, playerId });
+      removeBtn.addEventListener("click", () => {
+        // undo登録
+        undoStack.push({ type: "remove", seatId: seatId, playerId: playerId });
+
+        // 削除処理
         seatMap[seatId] = seatMap[seatId].filter(id => id !== playerId);
-        if (seatMap[seatId].length === 0) delete seatMap[seatId];
+        if (seatMap[seatId].length === 0) {
+          delete seatMap[seatId];
+        }
+
         saveState();
         renderSeats();
-      };
+      });
 
       entryDiv.appendChild(removeBtn);
       seatDiv.appendChild(entryDiv);
