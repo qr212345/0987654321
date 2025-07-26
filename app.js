@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbzAuKXAr7MZMh1znVNYLFzlm2-dKFYVFkfrYI7t0xKeWX3CZCCJla25m4TXq5sJV9iW/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbxWfrfyoP8TV3rXl-NEqvjUi6ifJgxv20wiKoQkju5H_9B7vIMYxM0Z8Nd65nAuQ-OM/exec";
 
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -445,18 +445,14 @@ function getTopRatedPlayerId() {
   return topId;
 }
 //---GAS---
-async function saveToGAS() {
+async function saveToGAS(seatMap, playerData) {
   try {
     const res = await fetch(GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret: "kosen-brain-super-secret",
-        seatMap,
-        playerData,
-      }),
+      body: JSON.stringify({ secret: SECRET, seatMap, playerData }),
     });
-
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const json = await res.json();
     console.log("保存成功:", json);
     alert("保存に成功しました");
@@ -466,21 +462,23 @@ async function saveToGAS() {
   }
 }
 
-// 読み込み処理
 async function loadFromGAS() {
   try {
-    const res = await fetch(GAS_URL);
-    const data = await res.json();
-    seatMap = data.seatMap || {};
-    playerData = data.playerData || {};
-    console.log("読み込み完了:", seatMap, playerData);
-    alert("✅ 読み込みました");
-    renderSeats(); // ← あれば画面更新関数
+    const res = await fetch(GAS_URL, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    const json = await res.json();
+    console.log("読み込み成功:", json);
+    // seatMap, playerDataに代入するなど適宜処理
+    return json;
   } catch (err) {
-    console.error("読み込みエラー:", err);
-    alert("❌ 読み込みに失敗しました");
+    console.error("読み込み失敗:", err);
+    alert("読み込みに失敗しました");
   }
 }
+
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
