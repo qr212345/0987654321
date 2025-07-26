@@ -475,6 +475,12 @@ window.startRankCamera = function () {
   }
 };
 
+function exitRankMode() {
+  stopRankCamera();
+  navigate('scanSection');
+  startScanCamera();
+}
+
 window.stopScanCamera = function () {
   if (scanQr) {
     scanQr.stop().then(() => {
@@ -490,12 +496,6 @@ window.enterRankMode = function () {
   stopScanCamera();       // ← 必ずこの順番
   startRankCamera();      // ← 順位登録カメラを起動（定義済み？）
 };
-
-function exitRankMode() {
-  stopRankCamera();
-  navigate('scanSection');
-  startScanCamera();
-}
 
 function finalizeRanking() {
   const list = document.getElementById("rankingList");
