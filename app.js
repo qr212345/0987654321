@@ -456,7 +456,7 @@ window.startRankCamera = function () {
     initAndStartRankQr();
   }
 
-  function initAndStartRankQr() {
+　function initAndStartRankQr() {
     rankQr = new Html5Qrcode(targetId);
     const config = {
   　　fps: 10,
@@ -475,12 +475,6 @@ window.startRankCamera = function () {
   }
 };
 
-function exitRankMode() {
-  stopRankCamera();
-  navigate('scanSection');
-  startScanCamera();
-}
-
 window.stopScanCamera = function () {
   if (scanQr) {
     scanQr.stop().then(() => {
@@ -490,6 +484,12 @@ window.stopScanCamera = function () {
     }).catch(console.warn);
   }
 };
+
+function exitRankMode() {
+  stopRankCamera();
+  navigate('scanSection');
+  startScanCamera();
+}
 
 window.enterRankMode = function () {
   navigate('rankingEntrySection');
