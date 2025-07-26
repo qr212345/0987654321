@@ -27,7 +27,7 @@ body {
 }
 /* PCだけに適用（画面幅が768px以上のとき） */
 @media (min-width: 768px) {
-  #reader {
+  #werder {
     transform: scale(1.15);      /* カメラ映像を拡大して下の黒を隠す */
     transform-origin: top;       /* 上を起点に拡大する */
     max-height: 100%;
