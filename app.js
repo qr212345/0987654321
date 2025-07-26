@@ -431,7 +431,7 @@ function enableDragSort(listId) {
   });
 }
 
-window.startRankCamera = function () {
+function startRankCamera() {
   const targetId = "rankingReader";
   const el = document.getElementById(targetId);
   if (!el) {
@@ -475,23 +475,24 @@ window.startRankCamera = function () {
   }
 };
 
-window.stopRankCamera = function() {
-  if (rankQr) {
-    rankQr.stop().then(() => {
-      document.getElementById("rankingReader").innerHTML = ""; // カメラ表示をクリア
-      rankQr = null;
-      console.log("🛑 順位登録カメラ停止");
+function stopScanCamera() {
+  if (scanQr) {
+    scanQr.stop().then(() => {
+      document.getElementById("reader").innerHTML = ""; // 読み取り領域をクリア
+      scanQr = null;
+      console.log("🛑 プレイヤー管理カメラ停止");
     }).catch(console.warn);
   }
 }
 
-window.exitRankMode = function () {
+
+function exitRankMode () {
   stopRankCamera(); // ← これが呼べるようになる
   navigate('scanSection');
   startScanCamera();
 }
 
-window.enterRankMode = function () {
+function enterRankMode () {
   navigate('rankingEntrySection');
   stopScanCamera();       // ← 必ずこの順番
   startRankCamera();      // ← 順位登録カメラを起動（定義済み？）
