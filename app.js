@@ -159,8 +159,8 @@ function renderSeats() {
       });
 
       seatList.appendChild(block);
-    });
-  }
+    );
+}
 
   function removePlayer(seatId, playerId) {
     const idx = seatMap[seatId]?.indexOf(playerId);
