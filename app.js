@@ -4,6 +4,7 @@
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
+  const MAX_PLAYERS_PER_SEAT = 6;
 // データ構造と状態
   let currentSeatId   = null;
   let seatMap         = {};      // { table01: [player01, …] }
@@ -16,11 +17,11 @@
   let qrActive = false;         // ← グローバル保持して二重起動防止
   let rankingQrReader = null;
 
-  let isRankingMode   =null;
+  let isRankingMode   =false;
   let rankingSeatId   = null;
 
+  let lastScannedText = null;
   let lastScanTime    = 0;
-  let lastScannedText = "";
   let msgTimer        = null;
 
   let pollTimer = null;
@@ -74,7 +75,7 @@ function handleScanSuccess(decodedText) {
 
     seatMap[currentSeatId].push(decodedText);
     playerData[decodedText] ??= { nickname: decodedText, rate: 50, lastRank: null, bonus: 0 };
-    actionHistory.push({ type: "addPlayer", seatId: currentSeatId, playerId: decodedText });
+    saveAction({ type: "addPlayer", seatId: currentSeatId, playerId: decodedText });
     displayMessage(`✅ ${decodedText} 追加`);
     saveToLocalStorage();
     renderSeats();
@@ -104,30 +105,39 @@ function handleScanSuccess(decodedText) {
   }
 
   /* ======== 座席表示 ======== */
-  function renderSeats() {
-    const seatList = document.getElementById("seatList");
-    seatList.innerHTML = "";
+ 
+function renderSeats() {
+  const seatList = document.getElementById("seatList");
+  seatList.innerHTML = "";
 
-    Object.keys(seatMap).forEach(seatId => {
-      const block = document.createElement("div");
-      block.className = "seat-block";
+  for (const [seatId, players] of Object.entries(seatMap)) {
+    const seatDiv = document.createElement("div");
+    seatDiv.className = "seat-box";
+    seatDiv.innerHTML = `<strong>${seatId}</strong>`;
 
-      /* --- 見出し --- */
-      const title = document.createElement("h3");
-      title.textContent = `座席: ${seatId}`;
-      const removeSeat = document.createElement("span");
-      removeSeat.textContent = "✖";
-      removeSeat.className = "remove-button";
-      removeSeat.onclick = () => {
-        if (confirm(`座席 ${seatId} を削除しますか？`)) {
-          actionHistory.push({ type: "removeSeat", seatId, players: seatMap[seatId] });
-          delete seatMap[seatId];
-          saveToLocalStorage();
-          renderSeats();
-        }
+    players.forEach(playerId => {
+      const span = document.createElement("span");
+      span.className = "player";
+      span.textContent = playerId;
+
+      const removeBtn = document.createElement("span");
+      removeBtn.className = "remove-btn";
+      removeBtn.textContent = "✖";
+      removeBtn.onclick = () => {
+        undoStack.push({ type: "remove", seatId, playerId });
+        seatMap[seatId] = seatMap[seatId].filter(id => id !== playerId);
+        if (seatMap[seatId].length === 0) delete seatMap[seatId];
+        saveState();
+        renderSeats();
       };
-      title.appendChild(removeSeat);
-      block.appendChild(title);
+
+      span.appendChild(removeBtn);
+      seatDiv.appendChild(span);
+    });
+
+    seatList.appendChild(seatDiv);
+  }
+}
 
       /* --- プレイヤー --- */
       seatMap[seatId].forEach(pid => {
@@ -321,17 +331,35 @@ function loadDouTakuHistory() {
 }
 
   // --- ローカル保存・復元 ---
-  function saveToLocalStorage() {
-  localStorage.setItem("seatMap",    JSON.stringify(seatMap));
+function saveToLocalStorage() {
+  localStorage.setItem("seatMap", JSON.stringify(seatMap));
   localStorage.setItem("playerData", JSON.stringify(playerData));
-  localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));  // 追加
 }
 
 // ローカルストレージから読み込み
 function loadFromLocalStorage() {
-  seatMap    = JSON.parse(localStorage.getItem("seatMap")    || "{}");
-  playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
-  douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");  // 追加
+  const savedSeatMap = localStorage.getItem("seatMap");
+  const savedPlayerData = localStorage.getItem("playerData");
+
+  if (savedSeatMap) {
+    try {
+      seatMap = JSON.parse(savedSeatMap);
+    } catch (e) {
+      console.warn("座席データの復元に失敗", e);
+      seatMap = {};
+    }
+  }
+
+  if (savedPlayerData) {
+    try {
+      playerData = JSON.parse(savedPlayerData);
+    } catch (e) {
+      console.warn("プレイヤーデータの復元に失敗", e);
+      playerData = {};
+    }
+  }
+
+  renderSeats(); // 復元後に描画
 }
 
     /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
