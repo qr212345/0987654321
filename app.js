@@ -220,35 +220,6 @@ function navigate(targetId) {
       document.getElementById("rankingList").innerHTML = "";
       displayMessage("座席QR を読み込んでください（順位登録モード）");
 
-      if (!rankingQrReader) {
-        rankingQrReader = new Html5Qrcode("rankingReader");
-        rankingQrReader.start(
-          { facingMode: "environment" },
-          { fps: 10, qrbox: 350 },
-          decodedText => {
-            if (decodedText.startsWith("table")) {
-              handleRankingMode(decodedText);
-              displayMessage(`✅ 座席 ${decodedText} 読み取り成功`);
-
-              // 読み取り後はカメラを停止
-              rankingQrReader.stop()
-                .then(() => {
-                  rankingQrReader.clear();
-                  rankingQrReader = null;
-                })
-                .catch(err => {
-                  console.error("rankingQrReader stop error:", err);
-                  rankingQrReader = null;
-                });
-            } else {
-              displayMessage("⚠ 座席コードのみ読み取り可能です");
-            }
-          }
-        ).catch(err => {
-          console.error(err);
-          displayMessage("❌ カメラの起動に失敗しました（順位登録）");
-        });
-      }
       break;
 
     case 'scanSection':
