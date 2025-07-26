@@ -490,10 +490,6 @@ window.enterRankMode = function () {
   startRankCamera();      // ← 順位登録カメラを起動（定義済み？）
 };
 
-window.onload = function () {
-  enterScanMode(); // ← 呼び出し
-};
-
 function exitRankMode() {
   stopRankCamera();
   navigate('scanSection');
