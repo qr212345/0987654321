@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbxWfrfyoP8TV3rXl-NEqvjUi6ifJgxv20wiKoQkju5H_9B7vIMYxM0Z8Nd65nAuQ-OM/exec";
-
+  const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
 // データ構造と状態
