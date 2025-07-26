@@ -442,7 +442,31 @@ function getTopRatedPlayerId() {
   }
   return topId;
 }
+//---GAS---
+ async function SaveAction() {
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(seatMap)
+        });
+        const text = await res.text();
+        document.getElementById("log").textContent = "保存結果: " + text;
+      } catch (err) {
+        document.getElementById("log").textContent = "保存エラー: " + err;
+      }
+    }
 
+    async function LoadAction() {
+      try {
+        const res = await fetch(ENDPOINT);
+        const data = await res.json();
+        seatMap = data;
+        document.getElementById("log").textContent = "読み込み結果:\n" + JSON.stringify(seatMap, null, 2);
+      } catch (err) {
+        document.getElementById("log").textContent = "読み込みエラー: " + err;
+      }
+    }
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
@@ -550,6 +574,8 @@ function bindButtons() {
   document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
   document.getElementById("exportLeaveBtn")?.addEventListener("click", exportLeaveCSV);
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
+  document.getElementById("saveToGAS")?.addEventListener("click", saveAction);
+  document.getElementById("loadFromGAS")?.addEventListener("click", LoadAction);
 }
 
   // 初期化
