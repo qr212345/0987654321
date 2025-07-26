@@ -30,7 +30,8 @@
   let lastScrollTop = 0;
   let scrollTimeout;
 
-  let scanQr, rankQr;
+  let scanQr;
+  let rankQr;
   /* ======== ユーティリティ ======== */
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -462,33 +463,41 @@ function enableDragSort(listId) {
 function startRankCamera() {
   if (rankingQrReader) return;
 
+  const el = document.getElementById("rankingReader");
+  if (!el) {
+    console.error("rankingReader が存在しません");
+    return;
+  }
+
   rankingQrReader = new Html5Qrcode("rankingReader");
 
   rankingQrReader.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
-    (decodedText, decodedResult) => {
+    (decodedText) => {
       handleRankingScan(decodedText);
     }
   ).catch(err => {
     console.error("順位カメラ起動失敗:", err);
     displayMessage("❌ 順位カメラの起動に失敗しました");
+    rankingQrReader = null; // 起動失敗時にリセット
   });
 }
 
 function stopRankCamera() {
-  if (rankingQrReader) {
-    rankingQrReader.stop().then(() => {
-      rankingQrReader.clear();
-      rankingQrReader = null;
+  if (rankQr) {
+    rankQr.stop().then(() => {
+      rankQr.clear();
+      rankQr = null;
     });
   }
 }
 
+
 function enterRankMode() {
-  navigate('rankingEntrySection');
-  stopScanCamera();
-  startRankCamera();
+  navigate("rankingEntrySection");
+  stopScanCamera();     // スキャンモードのカメラを止める
+  startRankCamera();    // 順位登録用のカメラを起動
 }
 
 function exitRankMode() {
