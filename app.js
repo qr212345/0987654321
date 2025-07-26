@@ -720,7 +720,6 @@ function bindButtons() {
   document.getElementById("loadFromGASBtn").addEventListener("click", loadFromGAS);
   document.getElementById("exitRankBtn").addEventListener("click", exitRankMode);
   document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
-  document.getElementById("enterRankBtn").addEventListener("click", enterRankMode);
 }
 
   // 初期化
