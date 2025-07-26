@@ -443,30 +443,37 @@ function getTopRatedPlayerId() {
   return topId;
 }
 //---GAS---
- async function SaveAction() {
-      try {
-        const res = await fetch(ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(seatMap)
-        });
-        const text = await res.text();
-        document.getElementById("log").textContent = "保存結果: " + text;
-      } catch (err) {
-        document.getElementById("log").textContent = "保存エラー: " + err;
-      }
-    }
+async function saveToGAS() {
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ seatMap, playerData }),
+    });
+    const result = await res.text();
+    console.log("保存完了:", result);
+    alert("✅ 保存しました");
+  } catch (err) {
+    console.error("保存エラー:", err);
+    alert("❌ 保存に失敗しました");
+  }
+}
 
-    async function LoadAction() {
-      try {
-        const res = await fetch(ENDPOINT);
-        const data = await res.json();
-        seatMap = data;
-        document.getElementById("log").textContent = "読み込み結果:\n" + JSON.stringify(seatMap, null, 2);
-      } catch (err) {
-        document.getElementById("log").textContent = "読み込みエラー: " + err;
-      }
-    }
+// 読み込み処理
+async function loadFromGAS() {
+  try {
+    const res = await fetch(GAS_URL);
+    const data = await res.json();
+    seatMap = data.seatMap || {};
+    playerData = data.playerData || {};
+    console.log("読み込み完了:", seatMap, playerData);
+    alert("✅ 読み込みました");
+    renderSeats(); // ← あれば画面更新関数
+  } catch (err) {
+    console.error("読み込みエラー:", err);
+    alert("❌ 読み込みに失敗しました");
+  }
+}
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
@@ -574,8 +581,8 @@ function bindButtons() {
   document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
   document.getElementById("exportLeaveBtn")?.addEventListener("click", exportLeaveCSV);
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
-  document.getElementById("saveToGAS")?.addEventListener("click", saveAction);
-  document.getElementById("loadFromGAS")?.addEventListener("click", LoadAction);
+  document.getElementById("saveToGASBtn").addEventListener("click", saveToGAS);
+  document.getElementById("loadFromGASBtn").addEventListener("click", loadFromGAS);
 }
 
   // 初期化
