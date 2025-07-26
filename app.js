@@ -159,7 +159,6 @@ function renderSeats() {
       });
 
       seatList.appendChild(block);
-    );
 }
 
   function removePlayer(seatId, playerId) {
