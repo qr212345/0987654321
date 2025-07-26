@@ -474,20 +474,15 @@ window.startRankCamera = function () {
   }
 };
 
-window.stopRankCamera = function () {
-  if (rankQr) {
-    rankQr.stop()
-      .then(() => {
-        rankQr.clear();
-        rankQr = null;
-        console.log("🛑 順位登録カメラ停止");
-      })
-      .catch(err => {
-        console.error("❌ カメラ停止失敗:", err);
-      });
+window.stopScanCamera = function () {
+  if (scanQr) {
+    scanQr.stop().then(() => {
+      scanQr.clear();
+      scanQr = null;
+      console.log("🛑 プレイヤー管理カメラ停止");
+    }).catch(console.warn);
   }
 };
-
 
 window.enterRankMode = function () {
   navigate('rankingEntrySection');
