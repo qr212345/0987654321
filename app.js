@@ -626,28 +626,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
-  
- const qrRegionSize = 250;
-
-  const html5QrCode = new Html5Qrcode("reader");
-
-  const config = {
-    fps: 10,
-    qrbox: {
-      width: 250,
-      height: 250
-    },
-    aspectRatio: 1.0,
-  };
-
-  function handleScanSuccess(decodedText, decodedResult) {
-    console.log("読み取り成功:", decodedText);
-    const messageArea = document.getElementById("messageArea");
-    messageArea.textContent = `読み取ったID: ${decodedText}`;
-
-    // 必要であれば、以下に登録処理を呼び出す:
-    // addPlayerToSeat(decodedText);
-  }
 });
 
 Object.assign(window, {
