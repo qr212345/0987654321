@@ -42,6 +42,16 @@ function displayMessage(msg) {
   msgTimer = setTimeout(() => (area.textContent = ""), 3000);
 }
 
+window.navigate = function (sectionId) {
+  document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
+  const target = document.getElementById(sectionId);
+  if (target) target.style.display = 'block';
+};
+
+function confirmRanking() {
+  return window.confirm("この順位で確定してもよろしいですか？");
+}
+
 /* ======== QR 読み取りコールバック ======== */
 function handleScanSuccess(decodedText) {
   const now = Date.now();
@@ -83,7 +93,8 @@ function handleScanSuccess(decodedText) {
     renderSeats();
   }
 }
-  /* ======== カメラ起動 ======== */
+
+/* ======== カメラ起動 ======== */
 function initCamera() {
   // 順位登録用QRリーダーが動いていたら停止
   if (rankingQrReader) {
