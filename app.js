@@ -485,17 +485,17 @@ function stopScanCamera() {
   }
 }
 
+function exitRankMode () {
+  stopRankCamera(); // ← これが呼べるようになる
+  navigate('scanSection');
+  startScanCamera();
+};
+
 function enterRankMode () {
   navigate('rankingEntrySection');
   stopScanCamera();       // ← 必ずこの順番
   startRankCamera();      // ← 順位登録カメラを起動（定義済み？）
 };
-
-function exitRankMode () {
-  stopRankCamera(); // ← これが呼べるようになる
-  navigate('scanSection');
-  startScanCamera();
-}
 
 function finalizeRanking() {
   const list = document.getElementById("rankingList");
