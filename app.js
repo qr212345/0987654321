@@ -473,9 +473,8 @@ function stopRankCamera() {
   }
 }
 
-function enterRankMode() {
+window.enterRankMode = function () {
   navigate("rankingEntrySection");
-
   stopScanCamera();    // プレイヤーカメラ停止（同時起動対策）
   stopRankCamera();    // 念のため一旦順位カメラ停止
   setTimeout(() => {
