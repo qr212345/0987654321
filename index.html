@@ -45,24 +45,22 @@
         <button id="redoBtn">↪ Redo</button>
         <button id="saveToGASBtn">☁ データをGASに保存</button>
         <button id="loadFromGASBtn">🔄 GASから読み込み</button>
-  </section>
+　  </section>
         <!-- 順位登録UI -->
-  <section id="rankingEntrySection" class="section" style="display:none">
-     <h2>順位登録モード</h2>
-     <p>QRコードで座席を読み込んでください。</p>
-     <div id="rankingReader" style="width: 320px; height: 320px;"></div>
-     <ul id="rankingList" class="draggable-list"></ul>
-     <button onclick="exitRankMode()">🔙戻る</button>
-     <button id="confirmRankingBtn">✅ 順位を決定</button>
-  </section>
+ 　 <section id="rankingEntrySection" class="section" style="display:none">
+     　<h2>順位登録モード</h2>
+   　  <p>QRコードで座席を読み込んでください。</p>
+   　  <div id="rankingReader" style="width: 320px; height: 320px;"></div>
+  　   <ul id="rankingList" class="draggable-list"></ul>
+  　   <button onclick="exitRankMode()">🔙戻る</button>
+  　   <button id="confirmRankingBtn">✅ 順位を決定</button>
+　  </section>
 
-  <div id="messageArea"></div>
-
-<section id="historySection" class="section" style="display: none;">
-  <h2>🔔 銅鐸履歴</h2>
-  <div id="historyList"></div>
-  <button onclick="navigate('scanSection')">⬅ 戻る</button>
-</section>
+　　<section id="historySection" class="section" style="display: none;">
+ 　　 <h2>🔔 銅鐸履歴</h2>
+　　  <div id="historyList"></div>
+ 　　 <button onclick="navigate('scanSection')">⬅ 戻る</button>
+　　</section>
 </main>
 </body>
 </html>
