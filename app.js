@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbz3JE66JG7oeeGPTJutVebH8PURnZJf6IwyxXwJAEAcTNU6UJKN5fvG-MWeQgDD-nHS/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbxzXFbobWaeNr8txmP8YuN3Z5AQe8eRWGjqXKzEEYoajmEXFgYuePH3grmLZWjoCzEF/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
