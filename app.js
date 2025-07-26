@@ -458,13 +458,17 @@ window.startRankCamera = function () {
 
   function initAndStartRankQr() {
     rankQr = new Html5Qrcode(targetId);
-
-    const config = { fps: 10, qrbox: 250 };
+    const config = {
+      fps: 10,
+      qrbox: function(viewfinderWidth, viewfinderHeight) {
+        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+        return { width: minEdge * 0.8, height: minEdge * 0.8 };
+      }
+    };
     const qrCodeSuccessCallback = (decodedText, decodedResult) => {
       console.log("🎯 順位登録 QR:", decodedText);
       handleRankingScan(decodedText); // ← ここを自分の関数に合わせて変えてOK
     };
-
     rankQr.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
       .then(() => console.log("✅ 順位登録カメラ起動"))
       .catch(err => {
