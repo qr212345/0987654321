@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbw5jcdhGsPROjFzScFXFPsrCJCNk0kJZsazEbb1vp39L_6Sk2QZSY3VGLiXwXzdPZ_j/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbymqiC1Df1nh7cmN5IAnlEjWAIurVV_7vfFCXoxyBb-1w1kcv-PyhhEiV2XfBxlzZI/exec";
 
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -456,13 +456,12 @@ async function saveToGAS() {
         playerData,
       }),
     });
-
-    const result = await res.json();
-    console.log("保存成功:", result);
-    alert("保存成功しました");
+    const json = await res.json();
+    console.log("保存成功:", json);
+    alert("保存に成功しました");
   } catch (err) {
     console.error("保存失敗:", err);
-    alert("保存失敗");
+    alert("保存に失敗しました");
   }
 }
 
