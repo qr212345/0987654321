@@ -622,10 +622,10 @@ function bindButtons() {
 
   // 初期化
 document.addEventListener("DOMContentLoaded", () => {
-  initCamera();
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
+  initCamera();
 });
 
 Object.assign(window, {
