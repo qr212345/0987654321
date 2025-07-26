@@ -432,55 +432,68 @@ function enableDragSort(listId) {
 }
 
 window.startRankCamera = function () {
-  const el = document.getElementById("rankingReader");
+  const targetId = "rankingReader";
+  const el = document.getElementById(targetId);
   if (!el) {
-    console.error("❌ rankingReader 要素が見つかりません");
+    console.error("❌ rankingReader が見つかりません");
     return;
   }
 
-  // すでに存在していた場合の保険：停止して再度起動
-  if (rankingQrReader) {
-    stopRankCamera(); // 明示的に止めておく
-  }
-
-  rankingQrReader = new Html5Qrcode("rankingReader");
-
-  rankingQrReader.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (decodedText, decodedResult) => {
-      handleRankingScan(decodedText);
-    }
-  ).then(() => {
-    console.log("✅ 順位カメラ起動成功");
-  }).catch(err => {
-    console.error("❌ 順位カメラ起動失敗:", err);
-    displayMessage("❌ 順位カメラの起動に失敗しました");
-  });
-}
-
-window.stopRankCamera = function() {
-  if (rankingQrReader) {
-    rankingQrReader.stop()
+  if (rankQr) {
+    console.log("⏹️ すでにカメラ起動中（停止して再起動）");
+    rankQr.stop()
       .then(() => {
-        rankingQrReader.clear();
-        rankingQrReader = null;
-        console.log("✅ 順位カメラ停止完了");
+        return rankQr.clear();
+      })
+      .then(() => {
+        initAndStartRankQr();
       })
       .catch(err => {
-        console.warn("⚠️ 順位カメラ停止エラー:", err);
+        console.error("❌ カメラ再起動エラー:", err);
+        displayMessage("❌ 順位登録カメラの再起動に失敗しました");
+      });
+  } else {
+    initAndStartRankQr();
+  }
+
+  function initAndStartRankQr() {
+    rankQr = new Html5Qrcode(targetId);
+
+    const config = { fps: 10, qrbox: 250 };
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      console.log("🎯 順位登録 QR:", decodedText);
+      handleRankingScan(decodedText); // ← ここを自分の関数に合わせて変えてOK
+    };
+
+    rankQr.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+      .then(() => console.log("✅ 順位登録カメラ起動"))
+      .catch(err => {
+        console.error("❌ 順位登録カメラ起動エラー:", err);
+        displayMessage("❌ 順位登録カメラの起動に失敗しました");
       });
   }
-}
+};
+
+window.stopRankCamera = function () {
+  if (rankQr) {
+    rankQr.stop()
+      .then(() => {
+        rankQr.clear();
+        rankQr = null;
+        console.log("🛑 順位登録カメラ停止");
+      })
+      .catch(err => {
+        console.error("❌ カメラ停止失敗:", err);
+      });
+  }
+};
+
 
 window.enterRankMode = function () {
-  navigate("rankingEntrySection");
-  stopScanCamera();    // プレイヤーカメラ停止（同時起動対策）
-  stopRankCamera();    // 念のため一旦順位カメラ停止
-  setTimeout(() => {
-    startRankCamera(); // 停止完了を待ってから起動
-  }, 300);             // 少し待って確実に初期化されてから起動
-}
+  navigate('rankingEntrySection');
+  stopScanCamera();       // ← 必ずこの順番
+  startRankCamera();      // ← 順位登録カメラを起動（定義済み？）
+};
 
 function exitRankMode() {
   stopRankCamera();
