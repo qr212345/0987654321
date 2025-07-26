@@ -117,25 +117,22 @@ body {
 }
 
 /* 順位リスト用 */
-.draggable-list {
+.ranking-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin-top: 1em;
 }
 
-.draggable-list li {
-  padding: 12px;
-  margin-bottom: 8px;
-  background: #fff;
-  border: 2px solid #999;
-  border-radius: 8px;
-  cursor: move;
-  user-select: none;
+.draggable-item {
+  padding: 8px 12px;
+  background: #eee;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+  cursor: grab;
 }
 
-.draggable-list li.dragging {
+.draggable-item.dragging {
   opacity: 0.5;
-  background: #ddd;
 }
 /* ボタン系 */
 button {
