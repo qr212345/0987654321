@@ -369,22 +369,69 @@ function loadFromLocalStorage() {
 }
 
     /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
+function enterRankMode() {
+  if (isRankingMode) return;
+  isRankingMode = true;
+  rankingSeatId = null;
 
-/** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
-function handleRankingMode(tableCode) {
+  document.getElementById("rankingEntrySection").style.display = "block";
+
+  // QRコードリーダー初期化（html5-qrcode）
+  rankingQrReader = new Html5Qrcode("rankingReader");
+
+  const config = {
+    fps: 10,
+    qrbox: 320,
+    aspectRatio: 1.0,
+  };
+
+  rankingQrReader.start(
+    { facingMode: "environment" },
+    config,
+    (decodedText, decodedResult) => {
+      handleRankingQrSuccess(decodedText);
+    },
+    errorMessage => {
+      // console.log("QR読み取り失敗", errorMessage);
+    }
+  ).catch(err => {
+    console.error("QRリーダー起動失敗", err);
+  });
+  displayMessage("順位登録モードを開始しました。QRコードを読み取ってください。");
+}
+
+function exitRankMode() {
   if (!isRankingMode) return;
+
+  // QRリーダー停止
+  if (rankingQrReader) {
+    rankingQrReader.stop().then(() => {
+      rankingQrReader.clear();
+      rankingQrReader = null;
+    });
+  }
+   document.getElementById("rankingEntrySection").style.display = "none";
+   displayMessage("順位登録モードを終了しました。");
+  }
+/** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
+function handleRankingQrSuccess(tableCode) {
+  if (!isRankingMode) return;
+
   rankingSeatId = tableCode;
 
-  const list    = document.getElementById("rankingList");
+  const list = document.getElementById("rankingList");
   list.innerHTML = "";
+
+  // seatMap[tableCode] に座席内プレイヤーID配列がある想定
   (seatMap[tableCode] || []).forEach(pid => {
     const li = document.createElement("li");
-    li.textContent     = pid;
+    li.textContent = pid;
     li.dataset.playerId = pid;
     list.appendChild(li);
   });
 
   makeListDraggable(list);
+
   displayMessage(`座席 ${tableCode} の順位を並び替えてください`);
 }
 
@@ -395,14 +442,20 @@ function makeListDraggable(ul) {
   ul.querySelectorAll("li").forEach(li => {
     li.draggable = true;
 
-    li.ondragstart = () => { dragging = li; li.classList.add("dragging"); };
-    li.ondragend   = () => { dragging = null; li.classList.remove("dragging"); };
+    li.ondragstart = () => {
+      dragging = li;
+      li.classList.add("dragging");
+    };
+    li.ondragend = () => {
+      dragging = null;
+      li.classList.remove("dragging");
+    };
 
-    li.ondragover  = e => {
+    li.ondragover = e => {
       e.preventDefault();
       const tgt = e.target;
       if (tgt && tgt !== dragging && tgt.nodeName === "LI") {
-        const r   = tgt.getBoundingClientRect();
+        const r = tgt.getBoundingClientRect();
         const aft = (e.clientY - r.top) > r.height / 2;
         tgt.parentNode.insertBefore(dragging, aft ? tgt.nextSibling : tgt);
       }
@@ -410,21 +463,32 @@ function makeListDraggable(ul) {
   });
 }
 
-/** 「順位決定」ボタン */
+// 順位確定ボタンの処理
 function confirmRanking() {
-  if (!rankingSeatId) return;
+  if (!rankingSeatId) {
+    displayMessage("座席が選択されていません");
+    return;
+  }
 
-  // li 順で ID を抽出
   const ordered = Array.from(document.querySelectorAll("#rankingList li"))
-                    .map(li => li.dataset.playerId);
+    .map(li => li.dataset.playerId);
 
+  if (ordered.length === 0) {
+    displayMessage("順位リストが空です");
+    return;
+  }
+
+  // プレイヤーデータに順位をセット（1位～）
   ordered.forEach((pid, idx) => {
-    if (playerData[pid]) playerData[pid].lastRank = idx + 1;
+    if (playerData[pid]) {
+      playerData[pid].lastRank = idx + 1;
+    }
   });
 
-  calculateRate(ordered);
+  calculateRate(ordered);     // 既存のレート計算関数
+  saveToLocalStorage();       // 既存の保存関数
+
   displayMessage("✅ 順位を保存しました");
-  saveToLocalStorage();
 }
 
 /* ---------- レート計算まわり ---------- */
@@ -624,6 +688,9 @@ function bindButtons() {
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => saveToGAS(seatMap, playerData));
   document.getElementById("loadFromGASBtn").addEventListener("click", loadFromGAS);
+  document.getElementById("exitRankBtn").addEventListener("click", exitRankMode);
+  document.getElementById("confirmRankingBtn").addEventListener("click", confirmRanking);
+
 }
 
   // 初期化
