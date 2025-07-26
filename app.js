@@ -322,7 +322,8 @@ function redoAction() {
 // 銅鐸履歴描画関数
 function loadDouTakuHistory() {
   const douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
-  const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+  const savedPlayerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+  const savedSeatMap = JSON.parse(localStorage.getItem("seatMap") || "{}");
 
   const list = document.getElementById("historyList");
   list.innerHTML = "";
@@ -333,10 +334,17 @@ function loadDouTakuHistory() {
   }
 
   douTakuRecords.forEach(record => {
-    const player = playerData[record.playerId] || { name: "不明", seat: "?" };
+    const playerId = record.playerId;
+    const nickname = savedPlayerData[playerId]?.nickname ?? playerId;
+
+    // 座席を seatMap から探索
+    const seatId = Object.entries(savedSeatMap).find(([, players]) =>
+      players.includes(playerId)
+    )?.[0] ?? "?";
+
     const item = document.createElement("div");
     item.className = "history-entry";
-    item.innerText = `🔔 ${player.name} さん（座席 ${player.seat}）が ${record.time} に鳴らしました`;
+    item.innerText = `🔔 ${nickname} さん（座席 ${seatId}）が ${record.time} に鳴らしました`;
     list.appendChild(item);
   });
 }
@@ -627,7 +635,7 @@ function bindButtons() {
   document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
   document.getElementById("exportLeaveBtn")?.addEventListener("click", exportLeaveCSV);
   document.getElementById("confirmRankingBtn")?.addEventListener("click", confirmRanking);
-  document.getElementById("saveToGASBtn").addEventListener("click", saveToGAS);
+  document.getElementById("saveToGASBtn")?.addEventListener("click", () => saveToGAS(seatMap, playerData));
   document.getElementById("loadFromGASBtn").addEventListener("click", loadFromGAS);
 }
 
