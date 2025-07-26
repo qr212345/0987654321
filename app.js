@@ -431,7 +431,7 @@ function enableDragSort(listId) {
   });
 }
 
-function startRankCamera() {
+window.startRankCamera = function () {
   const el = document.getElementById("rankingReader");
   if (!el) {
     console.error("❌ rankingReader 要素が見つかりません");
@@ -459,7 +459,7 @@ function startRankCamera() {
   });
 }
 
-function stopRankCamera() {
+window.stopRankCamera = function() {
   if (rankingQrReader) {
     rankingQrReader.stop()
       .then(() => {
