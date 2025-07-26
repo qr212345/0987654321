@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbxX4RREHfgzG05tC7pu7oUIBddxOknLRhfYNO97PtGwFFBg9EeNvlVhXCuqkg4AI88A/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbw5jcdhGsPROjFzScFXFPsrCJCNk0kJZsazEbb1vp39L_6Sk2QZSY3VGLiXwXzdPZ_j/exec";
 
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
