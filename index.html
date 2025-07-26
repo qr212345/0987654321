@@ -63,39 +63,40 @@
 </main>
  <script>
 let seatMap = {};
-let playerData = {};
 
-// 保存
+const PROXY_URL = "https://gas-proxy-jmxd.onrender.com";
+
+// ✅ seatMap（座席ID → 生徒IDの配列）を保存
 async function saveToGAS() {
-  const data = { seatMap, playerData };
-
   try {
-    const res = await fetch('http://localhost:3000/post', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+    const res = await fetch(`${PROXY_URL}/post`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ seatMap }), // ← seatMap だけ送信
     });
-    const msg = await res.text();
-    alert("保存完了: " + msg);
+    const result = await res.text();
+    console.log("保存結果:", result);
   } catch (err) {
-    console.error('保存失敗:', err);
-    alert("保存に失敗しました");
+    console.error("保存失敗:", err);
   }
 }
 
-// 読み込み
+// ✅ seatMap を読み込み
 async function loadFromGAS() {
   try {
-    const res = await fetch("http://localhost:3000/get");
-    const data = await res.json(); // ← HTMLが返ってきてたらここでエラー
-    console.log("読み込み成功:", data);
-    // seatMap = data.seatMap;
-    // playerData = data.playerData;
+    const res = await fetch(`${PROXY_URL}/get`);
+    const data = await res.json();
+    if (data.seatMap) {
+      seatMap = data.seatMap; // ← 読み込んだseatMapを代入
+      console.log("読み込んだ seatMap:", seatMap);
+    } else {
+      console.warn("seatMap データがありません");
+    }
   } catch (err) {
     console.error("読み込み失敗:", err);
-    alert("データ読み込み失敗: " + err.message);
   }
 }
+
   </script>
 </body>
 </html>
