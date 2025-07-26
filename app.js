@@ -459,12 +459,9 @@ window.startRankCamera = function () {
   function initAndStartRankQr() {
     rankQr = new Html5Qrcode(targetId);
     const config = {
-      fps: 10,
-      qrbox: function(viewfinderWidth, viewfinderHeight) {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        return { width: minEdge * 0.8, height: minEdge * 0.8 };
-      }
-    };
+  　　fps: 10,
+  　　qrbox: { width: 200, height: 200 } // ← 固定サイズで表示が安定
+　　};
     const qrCodeSuccessCallback = (decodedText, decodedResult) => {
       console.log("🎯 順位登録 QR:", decodedText);
       handleRankingScan(decodedText); // ← ここを自分の関数に合わせて変えてOK
