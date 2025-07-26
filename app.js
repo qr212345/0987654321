@@ -116,12 +116,26 @@ function renderSeats() {
     seatDiv.innerHTML = `<strong>${seatId}</strong>`;
 
     players.forEach(playerId => {
-      const span = document.createElement("span");
-      span.className = "player";
-      span.textContent = playerId;
+      const player = playerData[playerId] || { rate: 0 }; // 未登録でもOKに
+      const bonus = player.bonus ?? 0;
+      const title = player.title ?? "";
+
+      const entryDiv = document.createElement("div");
+      entryDiv.className = "player-entry";
+
+      entryDiv.innerHTML = `
+        <div>
+          <strong>${playerId}</strong>
+          ${title ? `<span class="title-badge title-${title}">${title}</span>` : ""}
+          <span style="margin-left:10px;color:#888;">Rate: ${player.rate}</span>
+          <span class="rate-change ${bonus > 0 ? "rate-up" : bonus < 0 ? "rate-down" : "rate-zero"}">
+            ${bonus > 0 ? "↑" : bonus < 0 ? "↓" : "±"}${Math.abs(bonus)}
+          </span>
+        </div>
+      `;
 
       const removeBtn = document.createElement("span");
-      removeBtn.className = "remove-btn";
+      removeBtn.className = "remove-button";
       removeBtn.textContent = "✖";
       removeBtn.onclick = () => {
         undoStack.push({ type: "remove", seatId, playerId });
@@ -131,14 +145,13 @@ function renderSeats() {
         renderSeats();
       };
 
-      span.appendChild(removeBtn);
-      seatDiv.appendChild(span);
+      entryDiv.appendChild(removeBtn);
+      seatDiv.appendChild(entryDiv);
     });
 
     seatList.appendChild(seatDiv);
   }
 }
-
       /* --- プレイヤー --- */
       seatMap[seatId].forEach(pid => {
         const p = playerData[pid];
@@ -159,7 +172,6 @@ function renderSeats() {
       });
 
       seatList.appendChild(block);
-}
 
   function removePlayer(seatId, playerId) {
     const idx = seatMap[seatId]?.indexOf(playerId);
