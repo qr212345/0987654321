@@ -6,7 +6,7 @@
 <title>ババ抜き大会管理</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <link rel="stylesheet" href="./style.css" />
-<script src="./app.js"></script>
+<script type="module" src="./app.js"></script>
 </head>
 <body>
 
@@ -42,9 +42,8 @@
         <button id="exportLeaveBtn">🚪 離席履歴CSV</button>
         <button id="undoBtn">↩ Undo</button>
         <button id="redoBtn">↪ Redo</button>
-        <button onclick="saveToGAS()">☁ データをGASに保存</button>
-        <button onclick="loadFromGAS()">🔄 GASから読み込み</button>
-        <pre id="output"></pre>
+        <button id="saveToGAS()">☁ データをGASに保存</button>
+        <button id="loadFromGAS()">🔄 GASから読み込み</button>
   </section>
         <!-- 順位登録UI -->
   <section id="rankingEntrySection" class="section" style="display:none">
@@ -61,42 +60,5 @@
   <button onclick="navigate('scanSection')">⬅ 戻る</button>
 </section>
 </main>
- <script>
-seatMap = {};
-
-const PROXY_URL = "https://gas-proxy-jmxd.onrender.com";
-
-// ✅ seatMap（座席ID → 生徒IDの配列）を保存
-async function saveToGAS() {
-  try {
-    const res = await fetch(`${PROXY_URL}/post`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ seatMap }), // ← seatMap だけ送信
-    });
-    const result = await res.text();
-    console.log("保存結果:", result);
-  } catch (err) {
-    console.error("保存失敗:", err);
-  }
-}
-
-// ✅ seatMap を読み込み
-async function loadFromGAS() {
-  try {
-    const res = await fetch(`${PROXY_URL}/get`);
-    const data = await res.json();
-    if (data.seatMap) {
-      seatMap = data.seatMap; // ← 読み込んだseatMapを代入
-      console.log("読み込んだ seatMap:", seatMap);
-    } else {
-      console.warn("seatMap データがありません");
-    }
-  } catch (err) {
-    console.error("読み込み失敗:", err);
-  }
-}
-
-  </script>
 </body>
 </html>
