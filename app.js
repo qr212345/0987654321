@@ -29,6 +29,8 @@
 
   let lastScrollTop = 0;
   let scrollTimeout;
+
+  let scanQr, rankQr;
   /* ======== ユーティリティ ======== */
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -82,28 +84,37 @@ function handleScanSuccess(decodedText) {
   }
 }
   /* ======== カメラ起動 ======== */
-  function initCamera() {
-    // 既にスキャン中なら再起動しない
-    if (qrActive) {
-      console.log("QR リーダーはすでに起動中です");
-      return;
-    }
-
-    // インスタンス未生成なら作成
-    if (!qrReader) qrReader = new Html5Qrcode("reader");
-
-    qrReader.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 350 },
-      handleScanSuccess
-    ).then(() => {
-      qrActive = true;  // 起動成功したらフラグを立てる
+function initCamera() {
+  // 順位登録用QRリーダーが動いていたら停止
+  if (rankingQrReader) {
+    rankingQrReader.stop().then(() => {
+      rankingQrReader.clear();
+      rankingQrReader = null;
     }).catch(err => {
-      console.error(err);
-      displayMessage("❌ カメラの起動に失敗しました");
+      console.error("rankingQrReader停止エラー:", err);
     });
   }
 
+  // すでにスキャン中なら起動しない
+  if (qrActive) {
+    console.log("QR リーダーはすでに起動中です");
+    return;
+  }
+
+  // インスタンス未生成なら作成
+  if (!qrReader) qrReader = new Html5Qrcode("reader");
+
+  qrReader.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 350 },
+    handleScanSuccess
+  ).then(() => {
+    qrActive = true;
+  }).catch(err => {
+    console.error(err);
+    displayMessage("❌ カメラの起動に失敗しました");
+  });
+}
   /* ======== 座席表示 ======== */ 
 function renderSeats() {
   const seatList = document.getElementById("seatList");
@@ -148,7 +159,7 @@ function renderSeats() {
           delete seatMap[seatId];
         }
 
-        saveState();
+        saveToLocalStorage();
         renderSeats();
       });
 
@@ -485,12 +496,17 @@ function confirmRanking() {
     }
   });
 
-  calculateRate(ordered);     // 既存のレート計算関数
-  saveToLocalStorage();       // 既存の保存関数
+  calculateRate(ordered);
 
-  displayMessage("✅ 順位を保存しました");
+  // 🎯 座席の紐づけを解除（再登録可能にする）
+  delete seatMap[rankingSeatId];
+  rankingSeatId = null;
+
+  saveToLocalStorage();
+  renderSeats();
+
+  displayMessage("✅ 順位を保存し、座席を解放しました");
 }
-
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
