@@ -47,6 +47,36 @@ body {
   z-index: 10;
 }
 
+#rankingEntrySection {
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 1em;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+}
+
+#rankingReader {
+  width: 90vw;        /* 画面幅の90%に自動調整 */
+  max-width: 350px;   /* 最大350px */
+  height: auto;
+  aspect-ratio: 1 / 1; /* 正方形を維持 */
+  border-radius: 8px;
+  background: black;
+}
+
+.ranking-list {
+  width: 100%;
+  max-width: 350px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+
 #sidebar {
   width: 240px;
   background-color: #333;
