@@ -1,6 +1,6 @@
 　let qrReader;
 
-　const GAS_URL = "https://script.google.com/macros/s/AKfycbxNeweJ-iv-BpslyXQenb8Es0jPeeph7Sr0SxR4jvRKaAV6PPENxYglEX7Vuj496EU/exec";
+　const GAS_URL = "https://script.google.com/macros/s/AKfycbxGTXuMOjE9PzD73NHl-grwa0dRNUW9jS_8nu2tWCyT_KsHO-_0Ggr3BovUGBF9UwPK/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -447,15 +447,18 @@ function getTopRatedPlayerId() {
 //---GAS---
 async function saveToGAS() {
   try {
+    const formData = new URLSearchParams();
+    formData.append("secret", SECRET);
+    formData.append("data", JSON.stringify({ seatMap, playerData }));
+
     const res = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        secret: SECRET,
-        seatMap,
-        playerData,
-      }),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: formData.toString()
     });
+
     const json = await res.json();
     console.log('保存成功:', json);
     alert('保存に成功しました');
