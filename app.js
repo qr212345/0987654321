@@ -379,134 +379,137 @@ function loadFromLocalStorage() {
   renderSeats(); // 復元後に描画
 }
 
-    /* ---- 順位登録モードに入るときだけカメラをもう 1 本起動 ---- */
-function enterRankMode() {
-  if (isRankingMode) return;
-  isRankingMode = true;
-  rankingSeatId = null;
+    /* ---- 順位登録モード ---- */
+function handleRankingScan(decodedText) {
+  console.log("順位登録読み取り:", decodedText);
+  const seatId = decodedText.trim();
 
-  document.getElementById("rankingEntrySection").style.display = "block";
+  if (!seatMap[seatId]) {
+    displayMessage(`⚠️ 未登録の座席ID: ${seatId}`);
+    return;
+  }
 
-  // QRコードリーダー初期化（html5-qrcode）
+  const playerIds = seatMap[seatId];
+  if (!playerIds.length) {
+    displayMessage("⚠️ この座席にはプレイヤーが登録されていません");
+    return;
+  }
+
+  const list = document.getElementById("rankingList");
+  list.innerHTML = ""; // 既存リストをクリア
+
+  playerIds.forEach(pid => {
+    const p = playerData[pid] || {};
+    const item = document.createElement("li");
+    item.className = "draggable-item";
+    item.draggable = true;
+    item.dataset.id = pid;
+    item.innerHTML = `
+      <strong>${pid}</strong> ${p.name ? `(${p.name})` : ""}
+      ${p.title ? `<span class="title-badge">${p.title}</span>` : ""}
+      <span class="rate">Rate: ${p.rate ?? 0}</span>
+    `;
+    list.appendChild(item);
+  });
+
+  enableDragSort("rankingList");
+  displayMessage(`✅ 座席 ${seatId} のプレイヤーを読み込みました`);
+}
+
+function enableDragSort(listId) {
+  const list = document.getElementById(listId);
+  let dragged;
+
+  list.querySelectorAll(".draggable-item").forEach(item => {
+    item.addEventListener("dragstart", e => {
+      dragged = item;
+      item.classList.add("dragging");
+    });
+
+    item.addEventListener("dragend", e => {
+      item.classList.remove("dragging");
+    });
+
+    item.addEventListener("dragover", e => e.preventDefault());
+
+    item.addEventListener("drop", e => {
+      e.preventDefault();
+      if (dragged && dragged !== item) {
+        const items = Array.from(list.children);
+        const draggedIndex = items.indexOf(dragged);
+        const dropIndex = items.indexOf(item);
+        if (draggedIndex < dropIndex) {
+          list.insertBefore(dragged, item.nextSibling);
+        } else {
+          list.insertBefore(dragged, item);
+        }
+      }
+    });
+  });
+}
+
+function startRankCamera() {
+  if (rankingQrReader) return;
+
   rankingQrReader = new Html5Qrcode("rankingReader");
-
-  const config = {
-    fps: 10,
-    qrbox: 320,
-    aspectRatio: 1.0,
-  };
 
   rankingQrReader.start(
     { facingMode: "environment" },
-    config,
+    { fps: 10, qrbox: 250 },
     (decodedText, decodedResult) => {
-      handleRankingQrSuccess(decodedText);
-    },
-    errorMessage => {
-      // console.log("QR読み取り失敗", errorMessage);
+      handleRankingScan(decodedText);
     }
   ).catch(err => {
-    console.error("QRリーダー起動失敗", err);
+    console.error("順位カメラ起動失敗:", err);
+    displayMessage("❌ 順位カメラの起動に失敗しました");
   });
-  displayMessage("順位登録モードを開始しました。QRコードを読み取ってください。");
 }
 
-function exitRankMode() {
-  if (!isRankingMode) return;
-
-  // QRリーダー停止
+function stopRankCamera() {
   if (rankingQrReader) {
     rankingQrReader.stop().then(() => {
       rankingQrReader.clear();
       rankingQrReader = null;
     });
   }
-   document.getElementById("rankingEntrySection").style.display = "none";
-   displayMessage("順位登録モードを終了しました。");
-  }
-/** 座席 QR が読み取られたらドラッグ可能な一覧を生成 */
-function handleRankingQrSuccess(tableCode) {
-  if (!isRankingMode) return;
+}
 
-  rankingSeatId = tableCode;
+function enterRankMode() {
+  navigate('rankingEntrySection');
+  stopScanCamera();
+  startRankCamera();
+}
 
+function exitRankMode() {
+  stopRankCamera();
+  navigate('scanSection');
+  startScanCamera();
+}
+
+function finalizeRanking() {
   const list = document.getElementById("rankingList");
-  list.innerHTML = "";
+  const rankedIds = Array.from(list.children).map(li => li.dataset.id);
+  console.log("順位:", rankedIds);
 
-  // seatMap[tableCode] に座席内プレイヤーID配列がある想定
-  (seatMap[tableCode] || []).forEach(pid => {
-    const li = document.createElement("li");
-    li.textContent = pid;
-    li.dataset.playerId = pid;
-    list.appendChild(li);
-  });
-
-  makeListDraggable(list);
-
-  displayMessage(`座席 ${tableCode} の順位を並び替えてください`);
-}
-
-/** HTML5 Drag & Drop で並び替えられる <ul> を作る */
-function makeListDraggable(ul) {
-  let dragging = null;
-
-  ul.querySelectorAll("li").forEach(li => {
-    li.draggable = true;
-
-    li.ondragstart = () => {
-      dragging = li;
-      li.classList.add("dragging");
-    };
-    li.ondragend = () => {
-      dragging = null;
-      li.classList.remove("dragging");
-    };
-
-    li.ondragover = e => {
-      e.preventDefault();
-      const tgt = e.target;
-      if (tgt && tgt !== dragging && tgt.nodeName === "LI") {
-        const r = tgt.getBoundingClientRect();
-        const aft = (e.clientY - r.top) > r.height / 2;
-        tgt.parentNode.insertBefore(dragging, aft ? tgt.nextSibling : tgt);
-      }
-    };
-  });
-}
-
-// 順位確定ボタンの処理
-function confirmRanking() {
-  if (!rankingSeatId) {
-    displayMessage("座席が選択されていません");
+  if (rankedIds.length < 2) {
+    displayMessage("⚠️ 2人以上で順位を登録してください");
     return;
   }
 
-  const ordered = Array.from(document.querySelectorAll("#rankingList li"))
-    .map(li => li.dataset.playerId);
+  calculateRate(rankedIds); // ← ここでレート計算を行う
 
-  if (ordered.length === 0) {
-    displayMessage("順位リストが空です");
-    return;
-  }
-
-  // プレイヤーデータに順位をセット（1位～）
-  ordered.forEach((pid, idx) => {
-    if (playerData[pid]) {
-      playerData[pid].lastRank = idx + 1;
-    }
+  // 順位履歴を保存（次回用）
+  rankedIds.forEach((pid, index) => {
+    const p = playerData[pid];
+    p.lastRank = index + 1; // 1位が1、2位が2…
   });
 
-  calculateRate(ordered);
+  saveToLocalStorage();  // ← 保存（必要なら）
+  renderRankingTable();  // ← 再描画（任意）
 
-  // 🎯 座席の紐づけを解除（再登録可能にする）
-  delete seatMap[rankingSeatId];
-  rankingSeatId = null;
-
-  saveToLocalStorage();
-  renderSeats();
-
-  displayMessage("✅ 順位を保存し、座席を解放しました");
+  displayMessage("✅ 順位を確定しました");
 }
+
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
