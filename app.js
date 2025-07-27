@@ -475,6 +475,48 @@ function startRankCamera() {
   }
 };
 
+function startScanCamera() {
+  const targetId = "reader";  // プレイヤースキャン用QR表示エリアID
+  const el = document.getElementById(targetId);
+  if (!el) {
+    console.error("❌ reader が見つかりません");
+    return;
+  }
+
+  if (scanQr) {
+    console.log("⏹️ すでにプレイヤーカメラ起動中（停止して再起動）");
+    scanQr.stop()
+      .then(() => scanQr.clear())
+      .then(() => {
+        initAndStartScanQr();
+      })
+      .catch(err => {
+        console.error("❌ プレイヤーカメラ再起動エラー:", err);
+        displayMessage("❌ プレイヤーカメラの再起動に失敗しました");
+      });
+  } else {
+    initAndStartScanQr();
+  }
+
+  function initAndStartScanQr() {
+    scanQr = new Html5Qrcode(targetId);
+    const config = {
+      fps: 10,
+      qrbox: 350
+    };
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+      handleScanSuccess(decodedText);
+    };
+
+    scanQr.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+      .then(() => console.log("✅ プレイヤーカメラ起動"))
+      .catch(err => {
+        console.error("❌ プレイヤーカメラ起動エラー:", err);
+        displayMessage("❌ プレイヤーカメラの起動に失敗しました");
+      });
+  }
+}
+
 window.stopScanCamera = async function () {
   if (scanQr) {
     try {
