@@ -800,7 +800,6 @@ document.addEventListener("DOMContentLoaded", () => {
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
-  initCamera();
 });
 
 Object.assign(window, {
