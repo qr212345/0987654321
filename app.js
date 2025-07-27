@@ -567,10 +567,9 @@ window.enterRankMode = async function () {
 };
 
 window.exitRankMode = async function () {
-  await stopRankCamera();
-  navigate('scanSection');
-  await delay(200);
-  startScanCamera();
+  await stopRankCamera();                     // 順位カメラ停止
+  await navigateAsync('scanSection');         // プレイヤーモードに戻る
+  startScanCamera();                          // プレイヤーカメラ起動
 };
 
 function finalizeRanking() {
