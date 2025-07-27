@@ -562,8 +562,8 @@ window.enterScanMode = async function () {
 
 window.enterRankMode = async function () {
   await stopScanCamera();
-  await navigateAsync('rankingEntrySection');  // 画面遷移完了待ち
-  startRankCamera();
+  await navigateAsync('rankingEntrySection');  // <- DOM表示完了を待つ
+  startRankCamera();                           // <- 表示された後に起動
 };
 
 window.exitRankMode = async function () {
