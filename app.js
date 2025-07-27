@@ -45,23 +45,26 @@ function displayMessage(msg) {
   msgTimer = setTimeout(() => (area.textContent = ""), 3000);
 }
 
-function navigate(sectionId) {
-  if (isNavigating) {
-    console.warn("すでに遷移中なのでスキップします");
-    return;
-  }
-  isNavigating = true;
+function navigateAsync(sectionId) {
+  return new Promise(resolve => {
+    if (isNavigating) {
+      console.warn("すでに遷移中なのでスキップします");
+      resolve();
+      return;
+    }
+    isNavigating = true;
 
-  document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
-  const target = document.getElementById(sectionId);
-  if (target) target.style.display = 'block';
+    document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
+    const target = document.getElementById(sectionId);
+    if (target) target.style.display = 'block';
 
-  // 遷移完了後にフラグを戻す（遅延してもOK）
-  setTimeout(() => {
-    isNavigating = false;
-  }, 300); // 画面遷移アニメーション時間に合わせる
+    location.hash = sectionId;
 
-  location.hash = sectionId;
+    setTimeout(() => {
+      isNavigating = false;
+      resolve();
+    }, 300);
+  });
 }
 
 function confirmRanking() {
@@ -559,17 +562,15 @@ window.stopRankCamera = async function () {
 };
 
 window.enterScanMode = async function () {
-  await stopRankCamera();             // カメラ完全停止を待つ
-  navigate('scanSection');           // UI切り替え
-  await delay(200);                  // 少し待ってから起動（delay関数は定義済み）
-  startScanCamera();                 // プレイヤー管理用カメラ起動
+  await stopRankCamera();
+  await navigateAsync('scanSection');   // 遷移完了まで待つ
+  startScanCamera();
 };
 
 window.enterRankMode = async function () {
-  await stopScanCamera();            // 同上
-  navigate('rankingEntrySection');
-  await delay(200);
-  startRankCamera();                 // 順位登録用カメラ起動
+  await stopScanCamera();
+  await navigateAsync('rankingEntrySection');  // 画面遷移完了待ち
+  startRankCamera();
 };
 
 window.exitRankMode = async function () {
