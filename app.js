@@ -476,61 +476,53 @@ function startRankCamera() {
 };
 
 window.stopScanCamera = function () {
-  if (scanQr) {
-    scanQr.stop()
-      .then(() => {
-        scanQr.clear();
-        scanQr = null;
-        console.log("🛑 プレイヤー管理カメラ停止");
-      })
-      .catch(err => {
-        console.error("❌ プレイヤーカメラ停止失敗:", err);
-      });
-  }
+  return scanQr
+    ? scanQr.stop()
+        .then(() => {
+          scanQr.clear();
+          scanQr = null;
+          console.log("🛑 プレイヤー管理カメラ停止");
+        })
+        .catch(err => {
+          console.error("❌ プレイヤーカメラ停止失敗:", err);
+        })
+    : Promise.resolve();
 };
 
 window.stopRankCamera = function () {
-  if (rankQr) {
-    rankQr.stop()
-      .then(() => {
-        rankQr.clear();
-        rankQr = null;
-        console.log("🛑 順位登録カメラ停止");
-      })
-      .catch(err => {
-        console.error("❌ カメラ停止失敗:", err);
-      });
-  }
+  return rankQr
+    ? rankQr.stop()
+        .then(() => {
+          rankQr.clear();
+          rankQr = null;
+          console.log("🛑 順位登録カメラ停止");
+        })
+        .catch(err => {
+          console.error("❌ カメラ停止失敗:", err);
+        })
+    : Promise.resolve();
 };
+
 
 window.enterScanMode = function () {
   navigate('scanSection');
-  if (rankQr) {
-    rankQr.stop()
-      .then(() => rankQr.clear())
-      .then(() => {
-        rankQr = null;
-        startScanCamera();
-      })
-      .catch(err => {
-        console.error("❌ 順位登録カメラの停止エラー:", err);
-        startScanCamera(); // 強行起動（必要に応じて）
-      });
-  } else {
+  stopRankCamera().then(() => {
     startScanCamera();
-  }
+  });
 };
 
 window.enterRankMode = function () {
   navigate('rankingEntrySection');
-  stopScanCamera();    // ← プレイヤー管理カメラ停止
-  startRankCamera();   // ← 順位登録カメラ起動
+  stopScanCamera().then(() => {
+    startRankCamera();
+  });
 };
 
 function exitRankMode() {
-  stopRankCamera();
-  navigate('scanSection');
-  startScanCamera();
+  stopRankCamera().then(() => {
+    navigate('scanSection');
+    startScanCamera();
+  });
 }
 
 function finalizeRanking() {
