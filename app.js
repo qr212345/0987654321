@@ -90,7 +90,7 @@ function handleScanSuccess(decodedText) {
 
     // 座席コードのときだけ順位登録モードが有効なら呼ぶ
     if (isRankingMode) {
-      handleRankingMode(decodedText);
+      handleRankingScan(decodedText);
     }
   } else if (decodedText.startsWith("player")) {
     if (!currentSeatId) {
