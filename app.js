@@ -220,7 +220,7 @@ function navigate(targetId) {
           rankingQrReader = null;
         });
       }
-      if (!qrActive) initCamera();  // QRスキャン画面ならカメラを再起動
+      if (!qrActive) startScanCamera();  // QRスキャン画面ならカメラを再起動
       break;
   }
 }
