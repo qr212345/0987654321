@@ -503,25 +503,30 @@ window.stopRankCamera = function () {
     : Promise.resolve();
 };
 
-
 window.enterScanMode = function () {
-  navigate('scanSection');
   stopRankCamera().then(() => {
-    startScanCamera();
+    navigate('scanSection');
+    setTimeout(() => {
+      startScanCamera();
+    }, 100); // DOM反映の猶予
   });
 };
 
 window.enterRankMode = function () {
-  navigate('rankingEntrySection');
   stopScanCamera().then(() => {
-    startRankCamera();
+    navigate('rankingEntrySection');
+    setTimeout(() => {
+      startRankCamera();
+    }, 100);
   });
 };
 
 function exitRankMode() {
   stopRankCamera().then(() => {
     navigate('scanSection');
-    startScanCamera();
+    setTimeout(() => {
+      startScanCamera();
+    }, 100);
   });
 }
 
