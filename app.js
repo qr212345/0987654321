@@ -606,39 +606,39 @@ function finalizeRanking() {
     };
   });
 
+  // ✅ GAS送信（最大3回までリトライ付き）
+  const sendToGASWithRetry = (data, retriesLeft) => {
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ rankings: data }),
+    })
+      .then(response => {
+        if (!response.ok) throw new Error("レスポンスエラー");
+        return response.json();
+      })
+      .then(result => {
+        console.log("✅ GAS保存成功:", result);
+        displayMessage("✅ ランキング情報をGASへ送信しました");
+      })
+      .catch(error => {
+        console.warn(`⚠️ GAS送信失敗（残り${retriesLeft - 1}回）:`, error);
+        if (retriesLeft > 1) {
+          setTimeout(() => {
+            sendToGASWithRetry(data, retriesLeft - 1);
+          }, 1000); // 1秒後に再送
+        } else {
+          console.error("❌ GAS送信を3回試みましたが失敗しました。");
+          displayMessage("❌ GAS送信失敗（通信エラー）");
+        }
+      });
+  };
+
   sendToGASWithRetry(sendData, 3);
 }
 
-// ✅ GAS送信（最大3回までリトライ）
-function sendToGASWithRetry(data, retriesLeft) {
-  fetch(ENDPOINT, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ rankings: data }),
-  })
-    .then(response => {
-      if (!response.ok) throw new Error("レスポンスエラー");
-      return response.json();
-    })
-    .then(result => {
-      console.log("✅ GAS保存成功:", result);
-      displayMessage("✅ ランキング情報をGASへ送信しました");
-    })
-    .catch(error => {
-      console.warn(`⚠️ GAS送信失敗（残り${retriesLeft - 1}回）:`, error);
-
-      if (retriesLeft > 1) {
-        setTimeout(() => {
-          sendToGASWithRetry(data, retriesLeft - 1); // 再送
-        }, 1000); // 1秒後にリトライ
-      } else {
-        console.error("❌ GAS送信を3回試みましたが失敗しました。");
-        displayMessage("❌ GAS送信失敗（通信エラー）");
-      }
-    });
-}
 
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
