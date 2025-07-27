@@ -475,64 +475,52 @@ function startRankCamera() {
   }
 };
 
-window.stopScanCamera = function () {
+window.stopScanCamera = async function () {
   if (scanQr) {
-    return scanQr.stop()
-      .then(() => scanQr.clear())
-      .then(() => {
-        scanQr = null;
-        console.log("🛑 プレイヤー管理カメラ停止");
-      })
-      .catch(err => {
-        console.error("❌ プレイヤーカメラ停止失敗:", err);
-      });
-  } else {
-    return Promise.resolve(); // ← 忘れずに
+    try {
+      await scanQr.stop();
+      await scanQr.clear();
+      scanQr = null;
+      console.log("🛑 プレイヤー管理カメラ停止");
+    } catch (err) {
+      console.error("❌ プレイヤーカメラ停止失敗:", err);
+    }
   }
 };
 
-window.stopRankCamera = function () {
+window.stopRankCamera = async function () {
   if (rankQr) {
-    return rankQr.stop()
-      .then(() => rankQr.clear())
-      .then(() => {
-        rankQr = null;
-        console.log("🛑 順位登録カメラ停止");
-      })
-      .catch(err => {
-        console.error("❌ カメラ停止失敗:", err);
-      });
-  } else {
-    return Promise.resolve(); // ← 必ず Promise を返すようにする！
+    try {
+      await rankQr.stop();
+      await rankQr.clear();
+      rankQr = null;
+      console.log("🛑 順位登録カメラ停止");
+    } catch (err) {
+      console.error("❌ カメラ停止失敗:", err);
+    }
   }
 };
 
-window.enterScanMode = function () {
-  stopRankCamera().then(() => {
-    navigate('scanSection');
-    setTimeout(() => {
-      startScanCamera();
-    }, 100); // DOM反映の猶予
-  });
+window.enterScanMode = async function () {
+  await stopRankCamera();             // カメラ完全停止を待つ
+  navigate('scanSection');           // UI切り替え
+  await delay(200);                  // 少し待ってから起動（delay関数は定義済み）
+  startScanCamera();                 // プレイヤー管理用カメラ起動
 };
 
-window.enterRankMode = function () {
-  stopScanCamera().then(() => {
-    navigate('rankingEntrySection');
-    setTimeout(() => {
-      startRankCamera();
-    }, 100);
-  });
+window.enterRankMode = async function () {
+  await stopScanCamera();            // 同上
+  navigate('rankingEntrySection');
+  await delay(200);
+  startRankCamera();                 // 順位登録用カメラ起動
 };
 
-function exitRankMode() {
-  stopRankCamera().then(() => {
-    navigate('scanSection');
-    setTimeout(() => {
-      startScanCamera();
-    }, 100);
-  });
-}
+window.exitRankMode = async function () {
+  await stopRankCamera();
+  navigate('scanSection');
+  await delay(200);
+  startScanCamera();
+};
 
 function finalizeRanking() {
   const list = document.getElementById("rankingList");
