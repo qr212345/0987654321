@@ -212,16 +212,23 @@ function navigate(targetId) {
 
       break;
 
-    case 'scanSection':
-      isRankingMode = false;
-      if (rankingQrReader) {
-        rankingQrReader.stop().then(() => {
-          rankingQrReader.clear();
-          rankingQrReader = null;
-        });
-      }
-      if (!qrActive) startScanCamera();  // QRスキャン画面ならカメラを再起動
-      break;
+ case 'scanSection':
+  isRankingMode = false;
+  if (rankingQrReader) {
+    rankingQrReader.stop()
+      .then(() => rankingQrReader.clear())
+      .then(() => {
+        rankingQrReader = null;
+        if (!qrActive) startScanCamera();
+      })
+      .catch(e => {
+        console.error("順位登録カメラ停止エラー:", e);
+        if (!qrActive) startScanCamera();
+      });
+  } else {
+    if (!qrActive) startScanCamera();
+  }
+  break;
   }
 }
 // --- Undo/Redo ---
