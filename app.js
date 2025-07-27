@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxZU5TwFztVGXm1TwMBzso3zxxr0RhrAT7F9KgDD5q_G4jqFwqBjPAZ4i92e249ULQ/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbw28e5sBBlApdwyNory0rQgY-Yx_mvHqAdjqIk4FIX4U0HnSJeW7w_kf65pWsRBISw/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
