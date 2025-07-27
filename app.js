@@ -475,6 +475,20 @@ function startRankCamera() {
   }
 };
 
+window.stopScanCamera = function () {
+  if (scanQr) {
+    scanQr.stop()
+      .then(() => {
+        scanQr.clear();
+        scanQr = null;
+        console.log("🛑 プレイヤー管理カメラ停止");
+      })
+      .catch(err => {
+        console.error("❌ プレイヤーカメラ停止失敗:", err);
+      });
+  }
+};
+
 window.stopRankCamera = function () {
   if (rankQr) {
     rankQr.stop()
@@ -501,6 +515,12 @@ window.enterRankMode = function () {
   startRankCamera();   // ← 順位登録カメラ起動
 };
 
+function exitRankMode() {
+  stopRankCamera();
+  navigate('scanSection');
+  startScanCamera();
+}
+
 function finalizeRanking() {
   const list = document.getElementById("rankingList");
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
@@ -524,6 +544,10 @@ function finalizeRanking() {
 
   displayMessage("✅ 順位を確定しました");
 }
+
+window.onload = function () {
+  enterScanMode(); // ページ読み込み時はプレイヤー管理モードで開始
+};
 
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
