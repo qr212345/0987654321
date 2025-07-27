@@ -476,31 +476,35 @@ function startRankCamera() {
 };
 
 window.stopScanCamera = function () {
-  return scanQr
-    ? scanQr.stop()
-        .then(() => {
-          scanQr.clear();
-          scanQr = null;
-          console.log("🛑 プレイヤー管理カメラ停止");
-        })
-        .catch(err => {
-          console.error("❌ プレイヤーカメラ停止失敗:", err);
-        })
-    : Promise.resolve();
+  if (scanQr) {
+    return scanQr.stop()
+      .then(() => scanQr.clear())
+      .then(() => {
+        scanQr = null;
+        console.log("🛑 プレイヤー管理カメラ停止");
+      })
+      .catch(err => {
+        console.error("❌ プレイヤーカメラ停止失敗:", err);
+      });
+  } else {
+    return Promise.resolve(); // ← 忘れずに
+  }
 };
 
 window.stopRankCamera = function () {
-  return rankQr
-    ? rankQr.stop()
-        .then(() => {
-          rankQr.clear();
-          rankQr = null;
-          console.log("🛑 順位登録カメラ停止");
-        })
-        .catch(err => {
-          console.error("❌ カメラ停止失敗:", err);
-        })
-    : Promise.resolve();
+  if (rankQr) {
+    return rankQr.stop()
+      .then(() => rankQr.clear())
+      .then(() => {
+        rankQr = null;
+        console.log("🛑 順位登録カメラ停止");
+      })
+      .catch(err => {
+        console.error("❌ カメラ停止失敗:", err);
+      });
+  } else {
+    return Promise.resolve(); // ← 必ず Promise を返すようにする！
+  }
 };
 
 window.enterScanMode = function () {
