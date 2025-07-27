@@ -583,25 +583,18 @@ function finalizeRanking() {
     return;
   }
 
-  calculateRate(rankedIds); // レート計算
+  calculateRate(rankedIds);
 
-  // 順位履歴を保存（次回用）
   rankedIds.forEach((pid, index) => {
     const p = playerData[pid];
-    p.lastRank = index + 1; // 1位が1、2位が2…
+    p.lastRank = index + 1;
   });
 
-  saveToLocalStorage();  // ローカル保存
-  renderRankingTable();  // 再描画
-
+  saveToLocalStorage();
+  renderRankingTable();
   displayMessage("✅ 順位を確定しました");
 
-  // GASへ送信する処理を追加
-  SEndRankingToGAS(rankedIds);
-}
-
-function SEndRankingToGAS(rankedIds) {
-  // 送信データ作成（例：id, rank, rate, bonus）
+  // GAS送信用データ作成
   const sendData = rankedIds.map((pid, index) => {
     const p = playerData[pid];
     return {
@@ -610,24 +603,41 @@ function SEndRankingToGAS(rankedIds) {
       rate: p.rate,
       bonus: p.bonus,
       lastRank: p.lastRank,
-      // 必要に応じて他の情報も追加してください
     };
   });
 
+  sendToGASWithRetry(sendData, 3);
+}
+
+// ✅ GAS送信（最大3回までリトライ）
+function sendToGASWithRetry(data, retriesLeft) {
   fetch(ENDPOINT, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ rankings: sendData }),
+    body: JSON.stringify({ rankings: data }),
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log("GAS保存成功:", data);
-  })
-  .catch(err => {
-    console.error("GAS保存エラー:", err);
-  });
+    .then(response => {
+      if (!response.ok) throw new Error("レスポンスエラー");
+      return response.json();
+    })
+    .then(result => {
+      console.log("✅ GAS保存成功:", result);
+      displayMessage("✅ ランキング情報をGASへ送信しました");
+    })
+    .catch(error => {
+      console.warn(`⚠️ GAS送信失敗（残り${retriesLeft - 1}回）:`, error);
+
+      if (retriesLeft > 1) {
+        setTimeout(() => {
+          sendToGASWithRetry(data, retriesLeft - 1); // 再送
+        }, 1000); // 1秒後にリトライ
+      } else {
+        console.error("❌ GAS送信を3回試みましたが失敗しました。");
+        displayMessage("❌ GAS送信失敗（通信エラー）");
+      }
+    });
 }
 
 /* ---------- レート計算まわり ---------- */
