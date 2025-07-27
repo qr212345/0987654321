@@ -1,6 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxZU5TwFztVGXm1TwMBzso3zxxr0RhrAT7F9KgDD5q_G4jqFwqBjPAZ4i92e249ULQ/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -582,7 +583,7 @@ function finalizeRanking() {
     return;
   }
 
-  calculateRate(rankedIds); // ← ここでレート計算を行う
+  calculateRate(rankedIds); // レート計算
 
   // 順位履歴を保存（次回用）
   rankedIds.forEach((pid, index) => {
@@ -590,15 +591,44 @@ function finalizeRanking() {
     p.lastRank = index + 1; // 1位が1、2位が2…
   });
 
-  saveToLocalStorage();  // ← 保存（必要なら）
-  renderRankingTable();  // ← 再描画（任意）
+  saveToLocalStorage();  // ローカル保存
+  renderRankingTable();  // 再描画
 
   displayMessage("✅ 順位を確定しました");
+
+  // GASへ送信する処理を追加
+  SEndRankingToGAS(rankedIds);
 }
 
-window.onload = async function() {
-  await enterScanMode();
-};
+function SEndRankingToGAS(rankedIds) {
+  // 送信データ作成（例：id, rank, rate, bonus）
+  const sendData = rankedIds.map((pid, index) => {
+    const p = playerData[pid];
+    return {
+      playerId: pid,
+      rank: index + 1,
+      rate: p.rate,
+      bonus: p.bonus,
+      lastRank: p.lastRank,
+      // 必要に応じて他の情報も追加してください
+    };
+  });
+
+  fetch(ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ rankings: sendData }),
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log("GAS保存成功:", data);
+  })
+  .catch(err => {
+    console.error("GAS保存エラー:", err);
+  });
+}
 
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
