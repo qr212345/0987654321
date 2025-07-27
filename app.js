@@ -32,6 +32,8 @@
 
   let scanQr;
   let rankQr;
+
+  let isNavigating = false;
   /* ======== ユーティリティ ======== */
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -43,11 +45,24 @@ function displayMessage(msg) {
   msgTimer = setTimeout(() => (area.textContent = ""), 3000);
 }
 
-window.navigate = function (sectionId) {
+function navigate(sectionId) {
+  if (isNavigating) {
+    console.warn("すでに遷移中なのでスキップします");
+    return;
+  }
+  isNavigating = true;
+
   document.querySelectorAll('.section').forEach(el => el.style.display = 'none');
   const target = document.getElementById(sectionId);
   if (target) target.style.display = 'block';
-};
+
+  // 遷移完了後にフラグを戻す（遅延してもOK）
+  setTimeout(() => {
+    isNavigating = false;
+  }, 300); // 画面遷移アニメーション時間に合わせる
+
+  location.hash = sectionId;
+}
 
 function confirmRanking() {
   return window.confirm("この順位で確定してもよろしいですか？");
@@ -588,8 +603,8 @@ function finalizeRanking() {
   displayMessage("✅ 順位を確定しました");
 }
 
-window.onload = function () {
-  enterScanMode(); // ページ読み込み時はプレイヤー管理モードで開始
+window.onload = async function() {
+  await enterScanMode();
 };
 
 /* ---------- レート計算まわり ---------- */
