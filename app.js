@@ -505,8 +505,20 @@ window.stopRankCamera = function () {
 
 window.enterScanMode = function () {
   navigate('scanSection');
-  stopRankCamera();    // ← 順位登録カメラ停止
-  startScanCamera();   // ← プレイヤー管理カメラ起動
+  if (rankQr) {
+    rankQr.stop()
+      .then(() => rankQr.clear())
+      .then(() => {
+        rankQr = null;
+        startScanCamera();
+      })
+      .catch(err => {
+        console.error("❌ 順位登録カメラの停止エラー:", err);
+        startScanCamera(); // 強行起動（必要に応じて）
+      });
+  } else {
+    startScanCamera();
+  }
 };
 
 window.enterRankMode = function () {
