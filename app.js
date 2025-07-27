@@ -116,37 +116,7 @@ function handleScanSuccess(decodedText) {
 }
 
 /* ======== カメラ起動 ======== */
-function initCamera() {
-  // 順位登録用QRリーダーが動いていたら停止
-  if (rankingQrReader) {
-    rankingQrReader.stop().then(() => {
-      rankingQrReader.clear();
-      rankingQrReader = null;
-    }).catch(err => {
-      console.error("rankingQrReader停止エラー:", err);
-    });
-  }
 
-  // すでにスキャン中なら起動しない
-  if (qrActive) {
-    console.log("QR リーダーはすでに起動中です");
-    return;
-  }
-
-  // インスタンス未生成なら作成
-  if (!qrReader) qrReader = new Html5Qrcode("reader");
-
-  qrReader.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 350 },
-    handleScanSuccess
-  ).then(() => {
-    qrActive = true;
-  }).catch(err => {
-    console.error(err);
-    displayMessage("❌ カメラの起動に失敗しました");
-  });
-}
   /* ======== 座席表示 ======== */ 
 function renderSeats() {
   const seatList = document.getElementById("seatList");
