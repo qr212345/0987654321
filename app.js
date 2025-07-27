@@ -16,6 +16,8 @@
 
   let qrActive = false;         // ← グローバル保持して二重起動防止
   let rankingQrReader = null;
+  let isRankCameraStarting = false;
+  let isScanCameraStarting = false;
 
   let isRankingMode   =false;
   let rankingSeatId   = null;
@@ -457,32 +459,35 @@ function startRankCamera() {
     return;
   }
 
+  if (isRankCameraStarting) {
+    console.log("順位登録カメラ起動中または起動処理中のためスキップ");
+    return;
+  }
+  isRankCameraStarting = true;
+
   if (rankQr) {
     console.log("⏹️ すでにカメラ起動中（停止して再起動）");
     rankQr.stop()
-      .then(() => {
-        return rankQr.clear();
-      })
-      .then(() => {
-        initAndStartRankQr();
-      })
+      .then(() => rankQr.clear())
+      .then(() => initAndStartRankQr())
       .catch(err => {
         console.error("❌ カメラ再起動エラー:", err);
         displayMessage("❌ 順位登録カメラの再起動に失敗しました");
+      })
+      .finally(() => {
+        isRankCameraStarting = false; // 処理終了後にフラグ戻す
       });
   } else {
     initAndStartRankQr();
+    isRankCameraStarting = false;
   }
 
-    function initAndStartRankQr() {
+  function initAndStartRankQr() {
     rankQr = new Html5Qrcode(targetId);
-    const config = {
-  　　fps: 10,
-  　　qrbox: { width: 200, height: 200 } // ← 固定サイズで表示が安定
-　　};
+    const config = { fps: 10, qrbox: { width: 200, height: 200 } };
     const qrCodeSuccessCallback = (decodedText, decodedResult) => {
       console.log("🎯 順位登録 QR:", decodedText);
-      handleRankingScan(decodedText); // ← ここを自分の関数に合わせて変えてOK
+      handleRankingScan(decodedText);
     };
     rankQr.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
       .then(() => console.log("✅ 順位登録カメラ起動"))
@@ -491,7 +496,7 @@ function startRankCamera() {
         displayMessage("❌ 順位登録カメラの起動に失敗しました");
       });
   }
-};
+}
 
 function startScanCamera() {
   const targetId = "reader";  // プレイヤースキャン用QR表示エリアID
@@ -500,6 +505,12 @@ function startScanCamera() {
     console.error("❌ reader が見つかりません");
     return;
   }
+
+  if (isScanCameraStarting) {
+    console.log("プレイヤーカメラ起動中または起動処理中のためスキップ");
+    return;
+  }
+  isScanCameraStarting = true;
 
   if (scanQr) {
     console.log("⏹️ すでにプレイヤーカメラ起動中（停止して再起動）");
@@ -511,9 +522,13 @@ function startScanCamera() {
       .catch(err => {
         console.error("❌ プレイヤーカメラ再起動エラー:", err);
         displayMessage("❌ プレイヤーカメラの再起動に失敗しました");
+      })
+      .finally(() => {
+        isScanCameraStarting = false;
       });
   } else {
     initAndStartScanQr();
+    isScanCameraStarting = false;
   }
 
   function initAndStartScanQr() {
