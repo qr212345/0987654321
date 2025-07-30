@@ -594,8 +594,8 @@ function finalizeRanking() {
   renderRankingTable();
   displayMessage("✅ 順位を確定しました");
 
-  // GAS送信用データ作成
-  const sendData = rankedIds.map((pid, index) => {
+  // --- ① ランキング用データ送信 ---
+  const rankingData = rankedIds.map((pid, index) => {
     const p = playerData[pid];
     return {
       playerId: pid,
@@ -606,13 +606,10 @@ function finalizeRanking() {
     };
   });
 
-  // ✅ GAS送信（最大3回までリトライ付き）
-  const sendToGASWithRetry = (data, retriesLeft) => {
+  const sendToGASWithRetry = (data, retriesLeft, onSuccess) => {
     fetch(ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ rankings: data }),
     })
       .then(response => {
@@ -620,25 +617,45 @@ function finalizeRanking() {
         return response.json();
       })
       .then(result => {
-        console.log("✅ GAS保存成功:", result);
+        console.log("✅ ランキング送信成功:", result);
         displayMessage("✅ ランキング情報をGASへ送信しました");
+        onSuccess?.(); // 成功時コールバック
       })
       .catch(error => {
-        console.warn(`⚠️ GAS送信失敗（残り${retriesLeft - 1}回）:`, error);
+        console.warn(`⚠️ ランキング送信失敗（残り${retriesLeft - 1}回）:`, error);
         if (retriesLeft > 1) {
-          setTimeout(() => {
-            sendToGASWithRetry(data, retriesLeft - 1);
-          }, 1000); // 1秒後に再送
+          setTimeout(() => sendToGASWithRetry(data, retriesLeft - 1, onSuccess), 1000);
         } else {
-          console.error("❌ GAS送信を3回試みましたが失敗しました。");
-          displayMessage("❌ GAS送信失敗（通信エラー）");
+          console.error("❌ ランキング送信を3回試みましたが失敗しました。");
+          displayMessage("❌ ランキング送信失敗（通信エラー）");
         }
       });
   };
 
-  sendToGASWithRetry(sendData, 3);
-}
+  // --- ② playerData 送信用データ作成 ---
+  const sendPlayerData = () => {
+    const minimalData = {};
+    rankedIds.forEach(pid => {
+      minimalData[pid] = playerData[pid]; // 全情報送信、必要に応じてフィルター可能
+    });
 
+    fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerData: minimalData }),
+    })
+      .then(res => res.json())
+      .then(result => {
+        console.log("✅ playerData送信成功:", result);
+      })
+      .catch(err => {
+        console.warn("⚠️ playerData送信失敗:", err);
+      });
+  };
+
+  // ③ ランキング送信成功後に playerData を送信
+  sendToGASWithRetry(rankingData, 3, sendPlayerData);
+}
 
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
