@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbw28e5sBBlApdwyNory0rQgY-Yx_mvHqAdjqIk4FIX4U0HnSJeW7w_kf65pWsRBISw/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzb8W_SyoT3avmJZEkfaYPXTj9PUP_GZ1CISCk13PRMhjo4lqdJ9CP2hMCa-75wmC8/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -633,13 +633,13 @@ function finalizeRanking() {
   };
 
   // --- ② playerData 送信用データ作成 ---
-  const sendPlayerData = () => {
+    const sendPlayerData = () => {
     const minimalData = {};
     rankedIds.forEach(pid => {
       minimalData[pid] = playerData[pid]; // 全情報送信、必要に応じてフィルター可能
     });
 
-    fetch(GAS_URL, {
+    fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ playerData: minimalData }),
