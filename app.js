@@ -624,6 +624,27 @@ function finalizeRanking() {
     };
   });
 
+    // ① playerData送信用関数（←この位置に移動）
+  const sendPlayerData = () => {
+    const minimalData = {};
+    rankedIds.forEach(pid => {
+      minimalData[pid] = playerData[pid];
+    });
+
+    fetch(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ playerData: minimalData }),
+    })
+      .then(res => res.json())
+      .then(result => {
+        console.log("✅ playerData送信成功:", result);
+      })
+      .catch(err => {
+        console.warn("⚠️ playerData送信失敗:", err);
+      });
+  };
+  
   const sendToGASWithRetry = (data, retriesLeft, onSuccess) => {
     fetch(ENDPOINT, {
       method: "POST",
@@ -649,6 +670,7 @@ function finalizeRanking() {
         }
       });
   };
+  
 // 送信成功時に座席の結びつきを解除し再登録可能にする処理
 const onSendSuccess = () => {
   if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
@@ -659,38 +681,11 @@ const onSendSuccess = () => {
     if (list) list.innerHTML = "";
     currentRankingSeatId = null;
   }
-};
-
-sendToGASWithRetry(rankingData, 3, () => {
-  onSendSuccess();
-  sendPlayerData();
-});
-
-  // --- ② playerData 送信用データ作成 ---
-    const sendPlayerData = () => {
-    const minimalData = {};
-    rankedIds.forEach(pid => {
-      minimalData[pid] = playerData[pid]; // 全情報送信、必要に応じてフィルター可能
-    });
-
-    fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerData: minimalData }),
-    })
-      .then(res => res.json())
-      .then(result => {
-        console.log("✅ playerData送信成功:", result);
-      })
-      .catch(err => {
-        console.warn("⚠️ playerData送信失敗:", err);
-      });
+    sendPlayerData();
   };
-
-  // ③ ランキング送信成功後に playerData を送信
-  sendToGASWithRetry(rankingData, 3, sendPlayerData);
+  // 実行開始
+  sendToGASWithRetry(rankingData, 3, onSendSuccess);
 }
-
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
