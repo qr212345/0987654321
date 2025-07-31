@@ -905,6 +905,3 @@ Object.assign(window, {
   exportLeaveCSV,
   confirmRanking
 });
-
-
-};
