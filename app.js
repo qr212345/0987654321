@@ -661,10 +661,6 @@ const onSendSuccess = () => {
   }
 };
 
-const sendPlayerData = () => {
-  // playerData送信処理
-};
-
 sendToGASWithRetry(rankingData, 3, () => {
   onSendSuccess();
   sendPlayerData();
