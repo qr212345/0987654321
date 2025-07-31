@@ -132,9 +132,7 @@ function handleScanSuccess(decodedText) {
     }
   }
 }
-
-/* ======== カメラ起動 ======== */
-
+}
   /* ======== 座席表示 ======== */ 
 function renderSeats() {
   const seatList = document.getElementById("seatList");
