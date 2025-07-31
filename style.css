@@ -58,6 +58,17 @@ body {
   gap: 1em;
 }
 
+#rankingReader {
+  width: 90vw;
+  max-width: 250px;
+  height: 90vw;
+  max-height: 250px;
+  border-radius: 8px;
+  background: black;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
 .ranking-list {
   width: 100%;
   max-width: 250px;
