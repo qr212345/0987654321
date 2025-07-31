@@ -37,6 +37,8 @@
   let rankQr;
 
   let isNavigating = false;
+
+  let currentRankingSeatId = null;
   /* ======== ユーティリティ ======== */
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
@@ -113,6 +115,21 @@ function handleScanSuccess(decodedText) {
     displayMessage(`✅ ${decodedText} 追加`);
     saveToLocalStorage();
     renderSeats();
+
+    const seatList = document.getElementById("seatList");
+  if (seatList) {
+    const seatDiv = [...seatList.children].find(div => div.querySelector("strong")?.textContent === currentSeatId);
+    if (seatDiv) {
+      const playerEntry = [...seatDiv.querySelectorAll(".player-entry")].find(entry =>
+        entry.querySelector("strong")?.textContent === decodedText
+      );
+      if (playerEntry) {
+        playerEntry.classList.add("highlighted");
+        setTimeout(() => {
+          playerEntry.classList.remove("highlighted");
+        }, 1500);
+      }
+    }
   }
 }
 
@@ -364,7 +381,8 @@ function loadFromLocalStorage() {
 function handleRankingScan(decodedText) {
   console.log("順位登録読み取り:", decodedText);
   const seatId = decodedText.trim();
-
+  currentRankingSeatId = seatId;
+  
   if (!seatMap[seatId]) {
     displayMessage(`⚠️ 未登録の座席ID: ${seatId}`);
     return;
@@ -631,6 +649,26 @@ function finalizeRanking() {
         }
       });
   };
+// 送信成功時に座席の結びつきを解除し再登録可能にする処理
+const onSendSuccess = () => {
+  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
+    seatMap[currentRankingSeatId] = [];
+    saveToLocalStorage();
+    displayMessage(`✅ 座席 ${currentRankingSeatId} の結びつきを解除しました。再登録可能です。`);
+    const list = document.getElementById("rankingList");
+    if (list) list.innerHTML = "";
+    currentRankingSeatId = null;
+  }
+};
+
+const sendPlayerData = () => {
+  // playerData送信処理
+};
+
+sendToGASWithRetry(rankingData, 3, () => {
+  onSendSuccess();
+  sendPlayerData();
+});
 
   // --- ② playerData 送信用データ作成 ---
     const sendPlayerData = () => {
