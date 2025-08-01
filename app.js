@@ -777,7 +777,7 @@ async function loadFromGAS() {
 
 // 既にある関数 sendSeatData をここにコピペしてください
 async function sendSeatData(tableID, playerIds, operator = 'webUser') {
-  const url = '【あなたのGASのデプロイURL】'; // ここにGASのWebアプリURLをセット
+  const url = 'https://script.google.com/macros/s/AKfycbwnWq1mjqWjm-il7Y0_8Ozq7uHn-SZNKuOjQyMS2pa8MEm4bv8hhZLafSth8SRZqg4/exec'; // ここにGASのWebアプリURLをセット
 
   const postData = {
     mode: 'updatePlayers',
