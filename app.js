@@ -85,13 +85,12 @@ function handleScanSuccess(decodedText) {
 
   const resultEl = document.getElementById("result");
   if (resultEl) resultEl.textContent = `📷 ${decodedText} を読み取りました`;
-  
+
   if (decodedText.startsWith("table")) {
     currentSeatId = decodedText;
     seatMap[currentSeatId] ??= [];
     displayMessage(`✅ 座席セット: ${currentSeatId}`);
 
-    // 座席コードのときだけ順位登録モードが有効なら呼ぶ
     if (isRankingMode) {
       handleRankingScan(decodedText);
     }
@@ -116,22 +115,26 @@ function handleScanSuccess(decodedText) {
     saveToLocalStorage();
     renderSeats();
 
+    // ここでGASに送信
+    sendSeatData(currentSeatId, seatMap[currentSeatId], 'イチゴ大福');
+
+    // 以下はハイライト処理のまま
     const seatList = document.getElementById("seatList");
-  if (seatList) {
-    const seatDiv = [...seatList.children].find(div => div.querySelector("strong")?.textContent === currentSeatId);
-    if (seatDiv) {
-      const playerEntry = [...seatDiv.querySelectorAll(".player-entry")].find(entry =>
-        entry.querySelector("strong")?.textContent === decodedText
-      );
-      if (playerEntry) {
-        playerEntry.classList.add("highlighted");
-        setTimeout(() => {
-          playerEntry.classList.remove("highlighted");
-        }, 1500);
+    if (seatList) {
+      const seatDiv = [...seatList.children].find(div => div.querySelector("strong")?.textContent === currentSeatId);
+      if (seatDiv) {
+        const playerEntry = [...seatDiv.querySelectorAll(".player-entry")].find(entry =>
+          entry.querySelector("strong")?.textContent === decodedText
+        );
+        if (playerEntry) {
+          playerEntry.classList.add("highlighted");
+          setTimeout(() => {
+            playerEntry.classList.remove("highlighted");
+          }, 1500);
+        }
       }
     }
   }
-}
 }
   /* ======== 座席表示 ======== */ 
 function renderSeats() {
@@ -769,6 +772,38 @@ async function loadFromGAS() {
   } catch (err) {
     console.error('読み込みエラー:', err);
     alert('読み込みに失敗しました');
+  }
+}
+
+// 既にある関数 sendSeatData をここにコピペしてください
+async function sendSeatData(tableID, playerIds, operator = 'webUser') {
+  const url = '【あなたのGASのデプロイURL】'; // ここにGASのWebアプリURLをセット
+
+  const postData = {
+    mode: 'updatePlayers',
+    tableID: tableID,
+    players: playerIds,
+    operator: operator,
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('GAS送信成功:', result);
+    return result;
+  } catch (error) {
+    console.error('GAS送信失敗:', error);
+    return null;
   }
 }
 
