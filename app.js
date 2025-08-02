@@ -2,6 +2,7 @@
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbxmwhP8STmIUtypIMSFuiltAWOiQDlvPaVNAWT_5D7jGCM-xbAz44N2mStbideuckw/exec";
+  const gas_URL = "https://script.google.com/macros/s/AKfycbzlN9qjI_5aqbXKmpCrD1MNaLG6tdT_X_QpPVF9YVu77a-SgFp9yErXOzPQfacunQ/exec"
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
@@ -777,36 +778,28 @@ async function loadFromGAS() {
 
 // 既にある関数 sendSeatData をここにコピペしてください
 async function sendSeatData(tableID, playerIds, operator = 'webUser') {
-  const url = 'https://script.google.com/macros/s/AKfycbwnWq1mjqWjm-il7Y0_8Ozq7uHn-SZNKuOjQyMS2pa8MEm4bv8hhZLafSth8SRZqg4/exec'; // GASのWebアプリURL
-
   const postData = {
     mode: 'updatePlayers',
     tableID: tableID,
-    players: playerIds,
+    players: JSON.stringify(playerIds),  // 配列は文字列に
     operator: operator,
   };
 
+  const formBody = new URLSearchParams(postData).toString();
+
   try {
-    const response = await fetch(url, {
+    const response = await fetch(gas_URL, {
       method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(postData),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody,
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
     const result = await response.json();
-    console.log('GAS送信成功:', result);
-    return result;
-  } catch (error) {
-    console.error('GAS送信失敗:', error);
-    return null;
+    console.log('送信結果:', result);
+  } catch (e) {
+    console.error('送信失敗:', e);
   }
 }
-
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
