@@ -180,6 +180,9 @@ function renderSeats() {
         if (seatMap[seatId].length === 0) {
           delete seatMap[seatId];
         }
+        if (seatMap[seatId]) {
+          seatMap[seatId] = seatMap[seatId].filter(id => id !== playerId);
+        }
 
         saveToLocalStorage();
         renderSeats();
