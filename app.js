@@ -777,7 +777,36 @@ async function loadFromGAS() {
 
 // 既にある関数 sendSeatData をここにコピペしてください
 async function sendSeatData(tableID, playerIds, operator = 'webUser') {
+  const url = 'async function sendSeatData(tableID, playerIds, operator = 'webUser') {
   const url = 'https://script.google.com/macros/s/AKfycbwnWq1mjqWjm-il7Y0_8Ozq7uHn-SZNKuOjQyMS2pa8MEm4bv8hhZLafSth8SRZqg4/exec'; // ここにGASのWebアプリURLをセット
+
+  const postData = {
+    mode: 'updatePlayers',
+    tableID: tableID,
+    players: playerIds,
+    operator: operator,
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('GAS送信成功:', result);
+    return result;
+  } catch (error) {
+    console.error('GAS送信失敗:', error);
+    return null;
+  }
+}'; // ここにGASのWebアプリURLをセット
 
   const postData = {
     mode: 'updatePlayers',
