@@ -787,19 +787,15 @@ async function sendSeatData(tableID, playerIds, operator = 'webUser') {
 
   const formBody = new URLSearchParams(postData).toString();
 
-  try {
-    const response = await fetch(gas_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formBody,
-    });
+  fetch(GAS_URL, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: formBody,
+  })
+  .then(res => res.json())
+  .then(json => console.log('送信結果:', json))
+  .catch(e => console.error('送信失敗:', e));
 
-    const result = await response.json();
-    console.log('送信結果:', result);
-  } catch (e) {
-    console.error('送信失敗:', e);
-  }
-}
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
