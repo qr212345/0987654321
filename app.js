@@ -787,7 +787,7 @@ async function sendSeatData(tableID, playerIds, operator = 'webUser') {
 
   const formBody = new URLSearchParams(postData).toString();
 
-  fetch(GAS_URL, {
+  fetch(gas_URL, {
   method: 'POST',
   headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
   body: formBody,
