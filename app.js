@@ -798,7 +798,7 @@ async function sendSeatData(tableID, playerIds, operator = 'webUser') {
   .then(res => res.json())
   .then(json => console.log('送信結果:', json))
   .catch(e => console.error('送信失敗:', e));
-
+  }
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
