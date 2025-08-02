@@ -2,7 +2,7 @@
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbxmwhP8STmIUtypIMSFuiltAWOiQDlvPaVNAWT_5D7jGCM-xbAz44N2mStbideuckw/exec";
-  const gas_URL = "https://script.google.com/macros/s/AKfycbzlN9qjI_5aqbXKmpCrD1MNaLG6tdT_X_QpPVF9YVu77a-SgFp9yErXOzPQfacunQ/exec"
+  const gas_URL = "https://script.google.com/macros/s/AKfycbza3MwtSu_QCN_ZZKg7BnkBtUL3wTaZmtkRgymRGv-7PQnsd6piwbxmMu_uOZGfvfA/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
