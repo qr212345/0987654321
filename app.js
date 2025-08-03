@@ -614,7 +614,6 @@ function finalizeRanking() {
   });
 
   saveToLocalStorage();
-  renderRankingTable();
   displayMessage("✅ 順位を確定しました");
 
   // --- ① ランキング用データ送信 ---
