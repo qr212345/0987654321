@@ -599,7 +599,6 @@ window.exitRankMode = async function () {
 function finalizeRanking() {
   const list = document.getElementById("rankingList");
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
-  console.log("順位:", rankedIds);
 
   if (rankedIds.length < 2) {
     displayMessage("⚠️ 2人以上で順位を登録してください");
@@ -616,80 +615,73 @@ function finalizeRanking() {
   saveToLocalStorage();
   displayMessage("✅ 順位を確定しました");
 
-  // --- ① ランキング用データ送信 ---
-  const rankingData = rankedIds.map((pid, index) => {
+  // rankings配列を作る（ランキング用）
+  const rankings = rankedIds.map((pid, index) => {
     const p = playerData[pid];
     return {
       playerId: pid,
       rank: index + 1,
       rate: p.rate,
+      rateDelta: p.rateDelta,
       bonus: p.bonus,
       lastRank: p.lastRank,
+      title: p.title || null,
     };
   });
 
-    // ① playerData送信用関数（←この位置に移動）
-  const sendPlayerData = () => {
-    const minimalData = {};
-    rankedIds.forEach(pid => {
-      minimalData[pid] = playerData[pid];
-    });
+  // playerDataオブジェクトを作る（詳細なプレイヤーデータ）
+  const minimalPlayerData = {};
+  rankedIds.forEach(pid => {
+    minimalPlayerData[pid] = playerData[pid];
+  });
 
-    fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playerData: minimalData }),
-    })
-      .then(res => res.json())
-      .then(result => {
-        console.log("✅ playerData送信成功:", result);
-      })
-      .catch(err => {
-        console.warn("⚠️ playerData送信失敗:", err);
-      });
+  const postData = {
+    rankings,
+    playerData: minimalPlayerData
   };
-  
+
+  // 成功時の処理
+  const onSendSuccess = () => {
+    if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
+      seatMap[currentRankingSeatId] = [];
+      saveToLocalStorage();
+      displayMessage(`✅ 座席 ${currentRankingSeatId} の結びつきを解除しました。再登録可能です。`);
+      if (list) list.innerHTML = "";
+      currentRankingSeatId = null;
+    }
+  };
+
+  // リトライ付き送信関数
   const sendToGASWithRetry = (data, retriesLeft, onSuccess) => {
     fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rankings: data }),
+      body: JSON.stringify(data),
     })
-      .then(response => {
-        if (!response.ok) throw new Error("レスポンスエラー");
-        return response.json();
+      .then(res => {
+        if (!res.ok) throw new Error("レスポンスエラー");
+        return res.json();
       })
       .then(result => {
-        console.log("✅ ランキング送信成功:", result);
-        displayMessage("✅ ランキング情報をGASへ送信しました");
-        onSuccess?.(); // 成功時コールバック
+        console.log("✅ データ送信成功:", result);
+        displayMessage("✅ データをGASへ送信しました");
+        if (onSuccess) onSuccess();
       })
-      .catch(error => {
-        console.warn(`⚠️ ランキング送信失敗（残り${retriesLeft - 1}回）:`, error);
+      .catch(err => {
+        console.warn(`⚠️ データ送信失敗（残り${retriesLeft - 1}回）:`, err);
         if (retriesLeft > 1) {
           setTimeout(() => sendToGASWithRetry(data, retriesLeft - 1, onSuccess), 1000);
         } else {
-          console.error("❌ ランキング送信を3回試みましたが失敗しました。");
-          displayMessage("❌ ランキング送信失敗（通信エラー）");
+          console.error("❌ データ送信を3回試みましたが失敗しました。");
+          displayMessage("❌ データ送信失敗（通信エラー）");
         }
       });
   };
-  
-// 送信成功時に座席の結びつきを解除し再登録可能にする処理
-const onSendSuccess = () => {
-  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
-    seatMap[currentRankingSeatId] = [];
-    saveToLocalStorage();
-    displayMessage(`✅ 座席 ${currentRankingSeatId} の結びつきを解除しました。再登録可能です。`);
-    const list = document.getElementById("rankingList");
-    if (list) list.innerHTML = "";
-    currentRankingSeatId = null;
-  }
-    sendPlayerData();
-  };
-  // 実行開始
-  sendToGASWithRetry(rankingData, 3, onSendSuccess);
+
+  // 実行
+  sendToGASWithRetry(postData, 3, onSendSuccess);
 }
+
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
