@@ -654,19 +654,40 @@ function finalizeRanking() {
 
   // ランキング用送信関数
 async function savePlayerResult(playerId, rank, rate) {
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    mode: "cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ playerId, rank, rate })
-  });
+    try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        secret: "kosen-brain-super-secret",
+        entries: entries
+      })
+    });
 
-  const result = await res.json();
-  console.log("保存結果:", result);
+    if (!res.ok) {
+      // ステータスコードが200番台以外
+      throw new Error(`HTTPエラー: ${res.status}`);
+    }
+
+    const result = await res.json();
+
+    if (result.result === "ok") {
+      console.log("✅ データ保存に成功しました");
+      alert("✅ ランキング結果を保存しました！");
+    } else {
+      console.error("⚠️ 保存エラー:", result);
+      alert("⚠️ 保存に失敗しました: " + (result.error || "不明なエラー"));
+    }
+
+  } catch (err) {
+    console.error("❌ 保存中に例外が発生:", err);
+    alert("❌ 保存中にエラーが発生しました: " + err.message);
+  }
 }
-
+  
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
