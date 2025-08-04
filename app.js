@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbywqouAfwHYv6awCSW9qN-mMlJC6Uz61qpmDfWYbfg24oaZPfq4RRnlrgDf9aXpV48/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzZT1p6YVJJBToQY2tNyueJo9ls9jFav_FQSA5bUzmoXqquHkbn2c_uqxD7ST2QC8FB/exec";
   const gas_URL = "https://script.google.com/macros/s/AKfycbzPUOz4eCsZ7RVm4Yf_VPu1OC5nn2yIOPa5U-tT7ZMHpw0FRNsHaqovbX7vSaEHjPc/exec";
   const SECRET = 'kosen-brain-super-secret';
   const SCAN_COOLDOWN_MS = 1500;
@@ -607,11 +607,15 @@ function finalizeRanking() {
 
   calculateRate(rankedIds);
  
-  rankedIds.forEach((playerId, index) => {
-    const rank = index + 1;
-    const rate = playerData[playerId]?.rate ?? 100;
-    savePlayerResult(playerId, rank, rate); // ← POST送信
-  });
+const entries = rankedIds.map((playerId, index) => {
+  return {
+    playerId,
+    rank: index + 1,
+    rate: playerData[playerId]?.rate ?? 100
+  };
+});
+
+await saveRankingData(entries); // 1回だけPOST送信
 
   saveToLocalStorage();
   displayMessage("✅ 順位を確定しました");
@@ -653,40 +657,46 @@ function finalizeRanking() {
   };
 
   // ランキング用送信関数
-async function savePlayerResult(playerId, rank, rate) {
-    try {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      mode: "cors",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        secret: "kosen-brain-super-secret",
-        entries: entries
-      })
+// 既存の saveRankingData は複数エントリーの配列を受け取ってPOST送信する関数
+async function saveRankingData(entries) {
+  const payload = {
+    secret: SECRET,
+    entries: entries
+  };
+
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      mode: 'cors'
     });
-
-    if (!res.ok) {
-      // ステータスコードが200番台以外
-      throw new Error(`HTTPエラー: ${res.status}`);
-    }
-
-    const result = await res.json();
-
-    if (result.result === "ok") {
-      console.log("✅ データ保存に成功しました");
-      alert("✅ ランキング結果を保存しました！");
+    const json = await res.json();
+    if (json.result === 'ok') {
+      console.log('保存成功:', json.fileName);
+      return json.fileName;
     } else {
-      console.error("⚠️ 保存エラー:", result);
-      alert("⚠️ 保存に失敗しました: " + (result.error || "不明なエラー"));
+      console.error('保存失敗:', json.error);
+      throw new Error(json.error || '保存失敗');
     }
-
-  } catch (err) {
-    console.error("❌ 保存中に例外が発生:", err);
-    alert("❌ 保存中にエラーが発生しました: " + err.message);
+  } catch (e) {
+    console.error('通信エラー:', e);
+    throw e;
   }
 }
+
+// playerId, rank, rate の単一データを渡すと saveRankingData に配列化して渡す関数
+async function savePlayerResult(playerId, rank, rate) {
+  const entries = [{ playerId, rank, rate }];  // 配列化
+  try {
+    await saveRankingData(entries);
+    alert("✅ ランキング結果を保存しました！");
+  } catch (err) {
+    console.error("❌ 保存中に例外が発生:", err);
+    alert("❌ 保存に失敗しました: " + err.message);
+  }
+}
+
   
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
