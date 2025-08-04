@@ -1,9 +1,10 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzZT1p6YVJJBToQY2tNyueJo9ls9jFav_FQSA5bUzmoXqquHkbn2c_uqxD7ST2QC8FB/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycby2St4CxTrThBx7FNzHmu5A7FhPe0UtdBChmvkaX2y4luX9r49SzPyF1IDABb6-cb4/exec";
   const gas_URL = "https://script.google.com/macros/s/AKfycbzPUOz4eCsZ7RVm4Yf_VPu1OC5nn2yIOPa5U-tT7ZMHpw0FRNsHaqovbX7vSaEHjPc/exec";
   const SECRET = 'kosen-brain-super-secret';
+　const secret = 'kosen'
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
   const MAX_PLAYERS_PER_SEAT = 6;
@@ -615,7 +616,7 @@ const entries = rankedIds.map((playerId, index) => {
   };
 });
 
-await saveRankingData(entries); // 1回だけPOST送信
+aawait postRankingUpdate(entries); // 1回だけPOST送信
 
   saveToLocalStorage();
   displayMessage("✅ 順位を確定しました");
@@ -657,45 +658,58 @@ await saveRankingData(entries); // 1回だけPOST送信
   };
 
   // ランキング用送信関数
-// 既存の saveRankingData は複数エントリーの配列を受け取ってPOST送信する関数
-async function saveRankingData(entries) {
-  const payload = {
-    secret: SECRET,
-    entries: entries
-  };
-
+/**
+ * プレイヤー順位＆レート情報を一括でGASに送信する関数
+ * @param {Array} entries - 例: [{playerId: "id1", rank: 1, rate: 1500}, ...]
+ * @returns {Promise<boolean>} - 成功したらtrue、失敗したらfalseを返す
+ */
+async function postRankingUpdate(entries) {
   try {
-    const res = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      mode: 'cors'
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        secret: SECRET,
+        entries: entries
+      })
     });
-    const json = await res.json();
-    if (json.result === 'ok') {
-      console.log('保存成功:', json.fileName);
-      return json.fileName;
-    } else {
-      console.error('保存失敗:', json.error);
-      throw new Error(json.error || '保存失敗');
+
+    if (!res.ok) {
+      console.error(`HTTP error: ${res.status}`);
+      return false;
     }
-  } catch (e) {
-    console.error('通信エラー:', e);
-    throw e;
+
+    const data = await res.json();
+
+    if (data.error) {
+      console.error("サーバーエラー:", data.error);
+      return false;
+    }
+
+    return true;
+
+  } catch (err) {
+    console.error("送信エラー:", err);
+    return false;
   }
 }
 
-// playerId, rank, rate の単一データを渡すと saveRankingData に配列化して渡す関数
-async function savePlayerResult(playerId, rank, rate) {
-  const entries = [{ playerId, rank, rate }];  // 配列化
-  try {
-    await saveRankingData(entries);
-    alert("✅ ランキング結果を保存しました！");
-  } catch (err) {
-    console.error("❌ 保存中に例外が発生:", err);
-    alert("❌ 保存に失敗しました: " + err.message);
+// 使い方例
+(async () => {
+  const entries = [
+    { playerId: "player1", rank: 1, rate: 1500 },
+    { playerId: "player2", rank: 2, rate: 1400 },
+    // ...他のプレイヤーデータ
+  ];
+
+  const success = await postRankingUpdate(entries);
+  if (success) {
+    alert("順位とレートの登録が完了しました！");
+  } else {
+    alert("登録に失敗しました。");
   }
-}
+})();
 
   
 /* ---------- レート計算まわり ---------- */
