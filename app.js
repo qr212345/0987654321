@@ -606,10 +606,11 @@ function finalizeRanking() {
   }
 
   calculateRate(rankedIds);
-
-  rankedIds.forEach((pid, index) => {
-    const p = playerData[pid];
-    p.lastRank = index + 1;
+ 
+  rankedIds.forEach((playerId, index) => {
+    const rank = index + 1;
+    const rate = playerData[playerId]?.rate ?? 100;
+    savePlayerResult(playerId, rank, rate); // ← POST送信
   });
 
   saveToLocalStorage();
@@ -651,37 +652,19 @@ function finalizeRanking() {
     }
   };
 
-  // リトライ付き送信関数
-async function sendToGASWithRetry(data, retriesLeft, onSuccess) {
-  try {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
+  // ランキング用送信関数
+async function savePlayerResult(playerId, rank, rate) {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ playerId, rank, rate })
+  });
 
-    if (!res.ok) throw new Error("レスポンスエラー");
-
-    const result = await res.json();
-    console.log("✅ データ送信成功:", result);
-    displayMessage("✅ データをGASへ送信しました");
-    if (onSuccess) onSuccess();
-  } catch (err) {
-    console.warn(`⚠️ データ送信失敗（残り${retriesLeft - 1}回）:`, err);
-
-    if (retriesLeft > 1) {
-      setTimeout(() => {
-        sendToGASWithRetry(data, retriesLeft - 1, onSuccess);
-      }, 1000);
-    } else {
-      console.error("❌ データ送信を3回試みましたが失敗しました。");
-      displayMessage("❌ データ送信失敗（通信エラー）");
-    }
-  }
-}
-
-  // 実行
-  sendToGASWithRetry(postData, 3, onSendSuccess);
+  const result = await res.json();
+  console.log("保存結果:", result);
 }
 
 /* ---------- レート計算まわり ---------- */
