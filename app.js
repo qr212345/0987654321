@@ -597,7 +597,7 @@ window.exitRankMode = async function () {
   startScanCamera();                          // プレイヤーカメラ起動
 };
 
-function finalizeRanking() {
+async function finalizeRanking() {
   const list = document.getElementById("rankingList");
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
 
@@ -607,21 +607,23 @@ function finalizeRanking() {
   }
 
   calculateRate(rankedIds);
- 
-const entries = rankedIds.map((playerId, index) => {
-  return {
+
+  const entries = rankedIds.map((playerId, index) => ({
     playerId,
     rank: index + 1,
     rate: playerData[playerId]?.rate ?? 100
-  };
-});
+  }));
 
-aawait postRankingUpdate(entries); // 1回だけPOST送信
+  const success = await postRankingUpdate(entries);
+
+  if (!success) {
+    displayMessage("❌ 順位の送信に失敗しました");
+    return;
+  }
 
   saveToLocalStorage();
   displayMessage("✅ 順位を確定しました");
 
-  // rankings配列を作る（ランキング用）
   const rankings = rankedIds.map((pid, index) => {
     const p = playerData[pid];
     return {
@@ -635,18 +637,13 @@ aawait postRankingUpdate(entries); // 1回だけPOST送信
     };
   });
 
-  // playerDataオブジェクトを作る（詳細なプレイヤーデータ）
   const minimalPlayerData = {};
   rankedIds.forEach(pid => {
     minimalPlayerData[pid] = playerData[pid];
   });
 
-  const postData = {
-    rankings,
-    playerData: minimalPlayerData
-  };
+  const postData = { rankings, playerData: minimalPlayerData };
 
-  // 成功時の処理
   const onSendSuccess = () => {
     if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
       seatMap[currentRankingSeatId] = [];
@@ -657,12 +654,10 @@ aawait postRankingUpdate(entries); // 1回だけPOST送信
     }
   };
 
+  onSendSuccess(); // 今は成功直後に実行
+}
+
   // ランキング用送信関数
-/**
- * プレイヤー順位＆レート情報を一括でGASに送信する関数
- * @param {Array} entries - 例: [{playerId: "id1", rank: 1, rate: 1500}, ...]
- * @returns {Promise<boolean>} - 成功したらtrue、失敗したらfalseを返す
- */
 async function postRankingUpdate(entries) {
   try {
     const res = await fetch(GAS_URL, {
@@ -694,24 +689,6 @@ async function postRankingUpdate(entries) {
     return false;
   }
 }
-
-// 使い方例
-(async () => {
-  const entries = [
-    { playerId: "player1", rank: 1, rate: 1500 },
-    { playerId: "player2", rank: 2, rate: 1400 },
-    // ...他のプレイヤーデータ
-  ];
-
-  const success = await postRankingUpdate(entries);
-  if (success) {
-    alert("順位とレートの登録が完了しました！");
-  } else {
-    alert("登録に失敗しました。");
-  }
-})();
-
-  
 /* ---------- レート計算まわり ---------- */
 function calculateRate(rankedIds) {
   rankedIds.forEach((pid, i) => {
