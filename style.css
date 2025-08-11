@@ -239,7 +239,8 @@ body {
 
 /* ===== 固定ボタン群 ===== */
 /* 共通ボタンスタイル */
-button, .remove-button {
+/* 全ボタン共通 */
+button, .remove-button, .fixed-controls button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -252,63 +253,47 @@ button, .remove-button {
   transition: all 0.2s ease;
   min-width: 44px;
   min-height: 44px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* 強調色ボタン */
-button.primary {
-  background-color: #ff9800;
-  color: #fff;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+/* 中立ボタン */
+button {
+  background-color: #e0e0e0;
+  color: #333;
 }
-
-button.primary:hover {
-  background-color: #e68900;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+button:hover {
+  background-color: #d5d5d5;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-
-button.primary:active {
+button:active {
   transform: scale(0.96);
 }
 
-/* 削除ボタン */
-.remove-button {
-  background-color: #f44336;
+/* 強調ボタン（保存・確定など） */
+button.primary {
+  background-color: #ff9800;
   color: #fff;
-  border-radius: 50%;
-  width: 44px;
-  height: 44px;
-  font-size: 18px;
-  line-height: 1;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+button.primary:hover {
+  background-color: #e68900;
 }
 
-.remove-button:hover {
+/* 危険ボタン（削除など） */
+button.danger, .remove-button {
+  background-color: #f44336;
+  color: #fff;
+}
+button.danger:hover, .remove-button:hover {
   background-color: #d32f2f;
 }
 
-.remove-button:active {
-  transform: scale(0.9);
-}
-
-/* 固定ボタン群の見た目強化 */
+/* 固定ボタン群は丸型に */
 .fixed-controls button {
   border-radius: 50%;
-  background-color: #4caf50;
-  color: #fff;
   width: 56px;
   height: 56px;
   font-size: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
-
-.fixed-controls button:hover {
-  background-color: #43a047;
-}
-
-.fixed-controls button:active {
-  transform: scale(0.94);
-}
-
 
 /* ===== レート変動表示 ===== */
 .rate-change {
