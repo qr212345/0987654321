@@ -180,12 +180,6 @@ body {
   font-weight: bold;
 }
 
-.remove-button {
-  color: red;
-  cursor: pointer;
-  margin-left: 10px;
-}
-
 .highlighted {
   background-color: #ffff99;
   transition: background-color 1.5s ease;
@@ -244,14 +238,77 @@ body {
 }
 
 /* ===== 固定ボタン群 ===== */
-.fixed-controls {
-  position: fixed;
-  bottom: 16px;
-  right: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+/* 共通ボタンスタイル */
+button, .remove-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 44px;
+  min-height: 44px;
 }
+
+/* 強調色ボタン */
+button.primary {
+  background-color: #ff9800;
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+button.primary:hover {
+  background-color: #e68900;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+}
+
+button.primary:active {
+  transform: scale(0.96);
+}
+
+/* 削除ボタン */
+.remove-button {
+  background-color: #f44336;
+  color: #fff;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  line-height: 1;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+.remove-button:hover {
+  background-color: #d32f2f;
+}
+
+.remove-button:active {
+  transform: scale(0.9);
+}
+
+/* 固定ボタン群の見た目強化 */
+.fixed-controls button {
+  border-radius: 50%;
+  background-color: #4caf50;
+  color: #fff;
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.fixed-controls button:hover {
+  background-color: #43a047;
+}
+
+.fixed-controls button:active {
+  transform: scale(0.94);
+}
+
 
 /* ===== レート変動表示 ===== */
 .rate-change {
