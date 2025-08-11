@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycby2St4CxTrThBx7FNzHmu5A7FhPe0UtdBChmvkaX2y4luX9r49SzPyF1IDABb6-cb4/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbzTIu-me-XtueawkikqQZlnCM3vMVdmghX6zti1HgpmflKYJqG8I2tEA8QaV6mYWSB0/exec";
   const gas_URL = "https://script.google.com/macros/s/AKfycbzPUOz4eCsZ7RVm4Yf_VPu1OC5nn2yIOPa5U-tT7ZMHpw0FRNsHaqovbX7vSaEHjPc/exec";
   const SECRET = 'kosen-brain-super-secret';
 　const secret = 'kosen'
