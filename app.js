@@ -660,7 +660,7 @@ async function finalizeRanking() {
   // ランキング用送信関数
 async function postRankingUpdate(entries) {
   try {
-    const res = await fetch(GAS_URL, {
+    const res = await fetch(ENDPOINT, {
       method: "POST",
       mode: "cors",
       headers: { "Content-Type": "application/json" },
