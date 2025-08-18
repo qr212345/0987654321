@@ -677,8 +677,14 @@ async function postRankingUpdate(entries) {
 
     const data = await res.json();
 
+    // GAS 側は { result: "ok" } を返す想定
     if (data.error) {
       console.error("サーバーエラー:", data.error);
+      return false;
+    }
+
+    if (data.result !== "ok") {
+      console.error("予期しないレスポンス:", data);
       return false;
     }
 
