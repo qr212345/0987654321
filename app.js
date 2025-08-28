@@ -1,7 +1,7 @@
 　let qrReader;
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxZY-0YVYMyJI9dUtF7y6-vSWhbztaVoWN2hTt7zf-CHKkuCZm6WOgVFUuQb1LlWyA/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbwC4RScJxeEqSnvGtqCn4P5451iGrmbjhjCgbswOFWrUiRavYKWU9J-yaMsSwer44lk/exec";
   const gas_URL = "https://script.google.com/macros/s/AKfycbzPUOz4eCsZ7RVm4Yf_VPu1OC5nn2yIOPa5U-tT7ZMHpw0FRNsHaqovbX7vSaEHjPc/exec";
   const SECRET = 'kosen-brain-super-secret';
 　const secret = 'kosen'
@@ -660,14 +660,18 @@ async function finalizeRanking() {
   // ランキング用送信関数
 async function postRankingUpdate(entries) {
   try {
+    // CSV形式に変換
+    // 1行目は secret
+    const lines = [`secret=${SECRET}`];
+    entries.forEach(({ playerId, rank, rate }) => {
+      lines.push([playerId, rank, rate].join(","));
+    });
+    const csvText = lines.join("\n");
+
     const res = await fetch(ENDPOINT, {
       method: "POST",
-      mode: "cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        secret: SECRET,
-        entries: entries
-      })
+      headers: { "Content-Type": "text/plain" },
+      body: csvText
     });
 
     if (!res.ok) {
@@ -675,16 +679,10 @@ async function postRankingUpdate(entries) {
       return false;
     }
 
-    const data = await res.json();
+    const text = await res.text();
 
-    // GAS 側は { result: "ok" } を返す想定
-    if (data.error) {
-      console.error("サーバーエラー:", data.error);
-      return false;
-    }
-
-    if (data.result !== "ok") {
-      console.error("予期しないレスポンス:", data);
+    if (text.trim() !== "ok") {
+      console.error("サーバーエラー:", text);
       return false;
     }
 
