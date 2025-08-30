@@ -2,12 +2,14 @@
 
 　const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbxnqDdZJPE0BPN5TRpqR49ejScQKyKADygXzw5tcp6RdCauKbeTfeQTWpP6WAKYK7Ue/exec";
-  const gas_URL = "https://script.google.com/macros/s/AKfycbzPUOz4eCsZ7RVm4Yf_VPu1OC5nn2yIOPa5U-tT7ZMHpw0FRNsHaqovbX7vSaEHjPc/exec";
+  const gas_URL = "https://script.google.com/macros/s/AKfycbxHBADXalkfU1N5EEjvpWaQg-P_z_jnBhuKJRa5FGpuFhJ3xKwBBqgvFHhjGXKryy0/exec";
   const SECRET = 'kosen-brain-super-secret';
 　const secret = 'kosen'
   const SCAN_COOLDOWN_MS = 1500;
   const POLL_INTERVAL_MS = 20_000;
   const MAX_PLAYERS_PER_SEAT = 6;
+  const SPREADSHEET_ID = "1k8pBDSejBPASmfu6qKkqv3elYgBOF-nyXOUXZWPMN6c";
+  const ESP32_URL = "http://esp32.local/led"; // ESP32のAPI URL
 // データ構造と状態
   let currentSeatId   = null;
   let seatMap         = {};      // { table01: [player01, …] }
@@ -793,24 +795,43 @@ async function loadFromGAS() {
 
 // 既にある関数 sendSeatData をここにコピペしてください
 async function sendSeatData(tableID, playerIds, operator = 'webUser') {
-  const postData = {
-    mode: 'updatePlayers',
-    tableID: tableID,
-    players: JSON.stringify(playerIds),  // 配列は文字列に
-    operator: operator,
-  };
+  try {
+    // GASに送るデータ
+    const postData = {
+      mode: 'updatePlayers',
+      sheetId: SPREADSHEET_ID,
+      tableID: tableID,
+      players: JSON.stringify(playerIds),
+      operator: operator,
+    };
 
-  const formBody = new URLSearchParams(postData).toString();
+    const formBody = new URLSearchParams(postData).toString();
 
-  fetch(gas_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  body: formBody,
-  })
-  .then(res => res.json())
-  .then(json => console.log('送信結果:', json))
-  .catch(e => console.error('送信失敗:', e));
+    // GASに送信
+    const res = await fetch(gas_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formBody,
+    });
+
+    if (!res.ok) throw new Error(`GAS送信失敗: ${res.status}`);
+    const json = await res.json();
+    console.log('GAS送信結果:', json);
+
+    // ESP32ランプ点灯処理
+    if (playerIds.length > 0) {
+      const ledRes = await fetch(`${ESP32_URL}?tableID=${tableID}`, { method: 'GET' });
+      if (!ledRes.ok) throw new Error(`ESP32点灯失敗: ${ledRes.status}`);
+      console.log(`✅ ESP32ランプ点灯: ${tableID}`);
+    }
+
+    return { success: true, message: `座席 ${tableID} に ${playerIds.length} 名登録完了` };
+
+  } catch (err) {
+    console.error('送信エラー:', err);
+    return { success: false, message: err.message };
   }
+}
   // --- CSVエクスポート ---
   window.exportPlayerCSV = () => {
     const players = [];
