@@ -602,59 +602,62 @@ async function finalizeRanking() {
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
 
   if (rankedIds.length < 2) {
-    displayMessage("⚠️ 2人以上で順位を登録してください");
+    addMessageToHistory("⚠️ 2人以上で順位を登録してください");
     return;
   }
 
+  // レート計算
   calculateRate(rankedIds);
 
+  // 送信用データ作成
   const entries = rankedIds.map((playerId, index) => ({
     playerId,
     rank: index + 1,
     rate: playerData[playerId]?.rate ?? 100
   }));
 
+  // GASへ送信
   const success = await postRankingUpdate(entries);
 
   if (!success) {
-    displayMessage("❌ 順位の送信に失敗しました");
+    addMessageToHistory("❌ 順位の送信に失敗しました");
     return;
   }
 
+  // 成功時の保存
   saveToLocalStorage();
-  displayMessage("✅ 順位を確定しました");
 
-  const rankings = rankedIds.map((pid, index) => {
-    const p = playerData[pid];
-    return {
-      playerId: pid,
-      rank: index + 1,
-      rate: p.rate,
-      rateDelta: p.rateDelta,
-      bonus: p.bonus,
-      lastRank: p.lastRank,
-      title: p.title || null,
-    };
-  });
+  // プレイヤー解除（座席は残す）
+  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
+    seatMap[currentRankingSeatId] = []; // プレイヤー削除
+    saveToLocalStorage();               // ローカル保存更新
+    renderSeats();                      // UI更新
+    if (list) list.innerHTML = "";      // 順位リストクリア
 
-  const minimalPlayerData = {};
-  rankedIds.forEach(pid => {
-    minimalPlayerData[pid] = playerData[pid];
-  });
+    // メッセージ履歴に追加（銅鐸風）
+    addMessageToHistory(
+      `✅ 順位を確定しました\n` +
+      `✅ 座席 ${currentRankingSeatId} の結びつきを解除しました。再登録が可能です`
+    );
 
-  const postData = { rankings, playerData: minimalPlayerData };
+    currentRankingSeatId = null;
+  }
+}
 
-  const onSendSuccess = () => {
-    if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
-      seatMap[currentRankingSeatId] = [];
-      saveToLocalStorage();
-      displayMessage(`✅ 座席 ${currentRankingSeatId} の結びつきを解除しました。再登録可能です。`);
-      if (list) list.innerHTML = "";
-      currentRankingSeatId = null;
-    }
-  };
+function addMessageToHistory(msg) {
+  const area = document.getElementById("messageArea");
+  const history = document.getElementById("messageHistory"); // 履歴表示用要素
+  if (!area || !history) return;
 
-  onSendSuccess(); // 今は成功直後に実行
+  // 最新メッセージを一時表示
+  area.textContent = msg;
+  clearTimeout(area._timer);
+  area._timer = setTimeout(() => (area.textContent = ""), 4000);
+
+  // 履歴に追加（上に積む）
+  const div = document.createElement("div");
+  div.textContent = `${new Date().toLocaleTimeString()} 🔔 ${msg}`;
+  history.prepend(div);
 }
 
   // ランキング用送信関数
