@@ -646,18 +646,25 @@ async function finalizeRanking() {
 
 function addMessageToHistory(msg) {
   const area = document.getElementById("messageArea");
-  const history = document.getElementById("messageHistory"); // 履歴表示用要素
-  if (!area || !history) return;
+  const history = document.getElementById("messageHistory");
+  const historyList = document.getElementById("historyList"); // 追加
 
-  // 最新メッセージを一時表示
+  if (!area || !history || !historyList) return;
+
+  // 一時表示
   area.textContent = msg;
   clearTimeout(area._timer);
   area._timer = setTimeout(() => (area.textContent = ""), 4000);
 
-  // 履歴に追加（上に積む）
+  // メッセージ履歴（画面用）
   const div = document.createElement("div");
   div.textContent = `${new Date().toLocaleTimeString()} 🔔 ${msg}`;
   history.prepend(div);
+
+  // 銅鐸履歴（historySection用）
+  const entry = document.createElement("div");
+  entry.textContent = `${new Date().toLocaleTimeString()} 🔔 ${msg}`;
+  historyList.prepend(entry);
 }
 
   // ランキング用送信関数
