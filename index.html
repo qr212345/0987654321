@@ -1,68 +1,69 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ババ抜き大会管理システム</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="app.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ババ抜き大会管理</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link rel="stylesheet" href="./style.css" />
+  <script type="module" src="./app.js"></script>
 </head>
 <body>
-<div id="sidebar">
-  <h2>メニュー</h2>
-  <ul>
-    <li><button onclick="navigate('scanSection')">🎮 プレイヤー管理</button></li>
-    <li><button onclick="enterRankMode()">🏆 順位登録</button></li>
-    <li><button onclick="navigate('historySection')">🔔 履歴</button></li>
-    <li><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button></li>
-    <li><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button></li>
-  </ul>
-</div>
-
-<main id="mainContent">
-  <!-- プレイヤー管理 -->
-  <section id="scanSection" class="section" style="display:block;">
-    <h2>QRコードスキャン</h2>
-    <div id="messageArea"></div>
-    <div id="seatList"></div>
-    <div id="readerContainer">
-      <div id="reader" style="width:250px;height:250px;"></div>
-      <div id="overlayBox"></div>
+  <pre id="view" style="white-space:pre-wrap;"></pre>
+  <div id="app">
+    <div id="status" style="margin:8px 0;font-weight:bold;"></div>
+    <div id="sidebar">
+      <h2>メニュー</h2>
+      <ul>
+        <li><button onclick="navigate('scanSection')">🎮 プレイヤー管理</button>
+        <li><button onclick="enterRankMode()">🏆 順位登録</button>
+        <li><button onclick="navigate('historySection')">🔔 銅鐸履歴</button>
+        <li><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
+        <li><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
+      </ul>
     </div>
-    <div class="button-row">
-      <button id="undoBtn">↩ Undo</button>
-      <button id="redoBtn">↪ Redo</button>
-      <button id="exportPlayerBtn">🎓 プレイヤーCSV</button>
-      <button id="exportSeatBtn">🪑 座席CSV</button>
-      <button id="exportLeaveBtn">🚪 離席CSV</button>
-      <button id="exportDouTakuBtn">🔔 銅鐸CSV</button>
-      <button id="saveToGASBtn">☁ GASに保存</button>
-      <button id="loadFromGASBtn">🔄 GASから読み込み</button>
-    </div>
-  </section>
+    <main id="mainContent">
+      <!-- 手動保存ボタン・CSVエクスポートボタン -->
+      <section id="scanSection" class="section" style="display: block;">
+        <h2>QRコードスキャン</h2>
+        <div id="messageArea"></div>
+        <div id="messageHistory" class="message-history"></div>
+        <!-- 履歴表示用 -->
+        <div id="seatList"></div>
+        <div id="readerContainer">
+          <div id="werder"></div>
+          <div id="reader" style="width: 250px; height: 250px;"></div>
+          <div id="overlayBox"></div>
+        </div>
+        <button id="exportPlayerBtn">🎓 プレイヤーCSV</button>
+        <button id="exportSeatBtn">🪑 座席CSV</button>
+        <button id="exportLeaveBtn">🚪 離席履歴CSV</button>
+        <button id="undoBtn">↩ Undo</button>
+        <button id="redoBtn">↪ Redo</button>
+        <button id="saveToGASBtn">☁ データをGASに保存</button>
+        <button id="loadFromGASBtn">🔄 GASから読み込み</button>
+      </section>
 
-  <!-- 順位登録 -->
-  <section id="rankingEntrySection" class="section" style="display:none;">
-    <h2>🏆 順位登録モード</h2>
-    <p>QRコードで座席を読み込んでください。</p>
-    <div id="rankingReader" style="width:250px;height:250px;"></div>
-    <ul id="rankingList" class="ranking-list"></ul>
-    <div class="button-row">
-      <button id="exitRankBtn">🔙 戻る</button>
-      <button id="confirmRankingBtn">✅ 確定</button>
-    </div>
-  </section>
+      <!-- 順位登録UI -->
+      <section id="rankingEntrySection" class="section" style="display: none;">
+        <h2>🏆順位登録モード</h2>
+        <p>QRコードで座席を読み込んでください。</p>
+        <div id="readerContainer">
+          <div id="werder"></div>
+          <div id="rankingReader" style="width: 250px; height: 250px;"></div>
+          <div id="overlayBox"></div>
+        </div>
+        <ul id="rankingList" class="ranking-list"></ul>
+        <button id="exitRankBtn">🔙戻る</button>
+        <button id="confirmRankingBtn">✅ 順位を決定</button>
+      </section>
 
-  <!-- 履歴 -->
-  <section id="historySection" class="section" style="display:none;">
-    <h2>履歴</h2>
-    <h3>離席記録</h3>
-    <div id="leaveHistoryList"></div>
-    <h3>銅鐸記録</h3>
-    <div id="douTakuHistoryList"></div>
-    <button onclick="navigate('scanSection')">⬅ 戻る</button>
-  </section>
-</main>
+      <section id="historySection" class="section" style="display: none;">
+        <h2>🔔 銅鐸履歴</h2>
+        <div id="historyList"></div>
+        <button onclick="navigate('scanSection')">⬅ 戻る</button>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
