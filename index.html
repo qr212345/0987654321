@@ -15,56 +15,68 @@
 <div id="app">
   <div id="status" style="margin:8px 0;font-weight:bold;"></div>
 
-<div id="sidebar">
-  <h2>メニュー</h2>
-  <ul>
-    <li><button onclick="navigate('scanSection')">🎮 プレイヤー管理</button>
-    <li><button onclick="enterRankMode()">🏆 順位登録</button>
-    <li><button onclick="navigate('historySection')">🔔 銅鐸履歴</button>
-    <li><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
-    <li><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
-  </ul>
+  <!-- ===== サイドバー ===== -->
+  <div id="sidebar">
+    <h2>メニュー</h2>
+    <ul>
+      <li><button onclick="navigate('scanSection')">🎮 プレイヤー管理</button></li>
+      <li><button onclick="enterRankMode()">🏆 順位登録</button></li>
+      <li><button onclick="navigate('historySection')">🔔 銅鐸履歴</button></li>
+      <li><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button></li>
+      <li><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button></li>
+    </ul>
+  </div>
+
+  <!-- ===== メインコンテンツ ===== -->
+  <main id="mainContent">
+
+    <!-- プレイヤー管理 / QRスキャン -->
+    <section id="scanSection" class="section" style="display: block;">
+      <h2>QRコードスキャン</h2>
+      <div id="messageArea"></div>
+      <div id="messageHistory" class="message-history"></div>
+      <div id="seatList"></div>
+      <div id="readerContainer">
+        <div id="werder"></div>
+        <div id="reader" style="width: 250px; height: 250px;"></div>
+        <div id="overlayBox"></div>
+      </div>
+      <div class="fixed-controls">
+        <button id="exportPlayerBtn" title="プレイヤーCSV">🎓</button>
+        <button id="exportSeatBtn" title="座席CSV">🪑</button>
+        <button id="exportLeaveBtn" title="離席履歴CSV">🚪</button>
+        <button id="undoBtn" title="Undo">↩</button>
+        <button id="redoBtn" title="Redo">↪</button>
+        <button id="saveToGASBtn" title="データをGASに保存">☁</button>
+        <button id="loadFromGASBtn" title="GASから読み込み">🔄</button>
+      </div>
+    </section>
+
+    <!-- 順位登録モード -->
+    <section id="rankingEntrySection" class="section" style="display: none;">
+      <h2>🏆 順位登録モード</h2>
+      <p>QRコードで座席を読み込んでください。</p>
+      <div id="readerContainer">
+        <div id="werder"></div>
+        <div id="rankingReader" style="width: 250px; height: 250px;"></div>
+        <div id="overlayBox"></div>
+      </div>
+      <ul id="rankingList" class="ranking-list"></ul>
+      <div class="fixed-controls">
+        <button id="exitRankBtn">🔙</button>
+        <button id="confirmRankingBtn" class="primary">✅</button>
+      </div>
+    </section>
+
+    <!-- 履歴表示 -->
+    <section id="historySection" class="section" style="display: none;">
+      <h2>🔔 銅鐸履歴</h2>
+      <div id="historyList"></div>
+      <button onclick="navigate('scanSection')">⬅ 戻る</button>
+    </section>
+
+  </main>
 </div>
 
-<main id="mainContent">
-  <!-- 手動保存ボタン・CSVエクスポートボタン -->
-  <section id="scanSection" class="section" style="display: block;">
-        <h2>QRコードスキャン</h2>
-        <div id="messageArea"></div>
-        <div id="messageHistory" class="message-history"></div> <!-- 履歴表示用 -->
-        <div id="seatList"></div>
-        <div id="readerContainer">
-           <div id="werder"></div>
-           <div id="reader" style="width: 250px; height: 250px;"></div>
-           <div id="overlayBox"></div>
-        </div>
-        <button id="exportPlayerBtn">🎓 プレイヤーCSV</button>
-        <button id="exportSeatBtn">🪑 座席CSV</button>
-        <button id="exportLeaveBtn">🚪 離席履歴CSV</button>
-        <button id="undoBtn">↩ Undo</button>
-        <button id="redoBtn">↪ Redo</button>
-        <button id="saveToGASBtn">☁ データをGASに保存</button>
-        <button id="loadFromGASBtn">🔄 GASから読み込み</button>
-　  </section>
-        <!-- 順位登録UI -->
- 　 <section id="rankingEntrySection" class="section" style="display: none;">
-     　<h2>🏆順位登録モード</h2>
-   　  <p>QRコードで座席を読み込んでください。</p>
-   　   <div id="readerContainer">
-           <div id="werder"></div>
-           <div id="rankingReader" style="width: 250px; height: 250px;"></div>
-           <div id="overlayBox"></div>
-       </div>
-       <ul id="rankingList" class="ranking-list"></ul>
-  　   <button id="exitRankBtn">🔙戻る</button>
-  　   <button id="confirmRankingBtn">✅ 順位を決定</button>
-　  </section>
-
-　　<section id="historySection" class="section" style="display: none;">
- 　　 <h2>🔔 銅鐸履歴</h2>
-　　  <div id="historyList"></div>
- 　　 <button onclick="navigate('scanSection')">⬅ 戻る</button>
-　　</section>
-</main>
 </body>
 </html>
