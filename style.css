@@ -15,7 +15,7 @@ body {
   color: white;
   padding: 20px;
   flex-shrink: 0;
-  position: fixed; /* 固定化 */
+  position: fixed;
   top: 0;
   left: 0;
   height: 100vh;
@@ -38,22 +38,32 @@ body {
 }
 
 #sidebar li {
-  padding: 10px;
-  cursor: pointer;
+  padding: 10px 0;
+}
+
+#sidebar li button {
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
   border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: inherit;
+  font-size: 15px;
   transition: background 0.2s;
 }
 
-#sidebar li:hover {
+#sidebar li button:hover {
   background-color: #555;
 }
 
-/* メインコンテンツ（PC時は右側に余白） */
+/* メインコンテンツ */
 #mainContent {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  margin-left: 240px; /* サイドバー分右にオフセット */
+  margin-left: 240px;
   box-sizing: border-box;
 }
 
@@ -61,11 +71,11 @@ body {
   margin-bottom: 40px;
 }
 
-/* ===== カメラ表示 ===== */
+/* カメラ表示 */
 #readerContainer {
   width: 250px;
   height: 250px;
-  margin: 0 auto;
+  margin: 0 auto 16px auto;
   position: relative;
   background: black;
   overflow: hidden;
@@ -87,36 +97,12 @@ body {
   left: 0;
   width: 250px;
   height: 250px;
-  box-sizing: border-box;
   border: 3px solid limegreen;
   pointer-events: none;
   z-index: 10;
 }
 
-/* ===== 順位エントリーセクション ===== */
-#rankingEntrySection {
-  max-height: 100vh;
-  overflow-y: auto;
-  padding: 1em;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1em;
-}
-
-#rankingReader {
-  width: 90vw;
-  max-width: 250px;
-  height: 90vw;
-  max-height: 250px;
-  border-radius: 8px;
-  background: black;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
-
-/* ===== 順位リスト ===== */
+/* ランキングリスト */
 .ranking-list {
   width: 100%;
   max-width: 250px;
@@ -139,7 +125,7 @@ body {
   opacity: 0.5;
 }
 
-/* ===== 座席リスト ===== */
+/* 座席リスト */
 #seatList {
   margin-top: 20px;
 }
@@ -168,10 +154,6 @@ body {
   margin-bottom: 6px;
 }
 
-.player-entry:last-child {
-  border-bottom: none;
-}
-
 .player-entry span.title-badge {
   margin-left: 8px;
   padding: 2px 6px;
@@ -185,62 +167,15 @@ body {
   transition: background-color 1.5s ease;
 }
 
-/* ===== ランキング称号エフェクト ===== */
-.title-gold {
-  position: relative;
-  background: gold;
-  color: black;
-  overflow: visible;
-}
-.title-gold::before {
-  content: "⚡";
-  position: absolute;
-  left: -1.5em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.3em;
-  color: #ffff33;
-  text-shadow: 0 0 5px #fff, 0 0 10px #ff0, 0 0 15px #ff0;
-  animation: lightning-flicker 1.2s infinite;
+/* 固定ボタン群 */
+.fixed-controls {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.title-silver {
-  position: relative;
-  background: silver;
-  color: black;
-  overflow: visible;
-}
-.title-silver::before {
-  content: "🍃";
-  position: absolute;
-  left: -1.5em;
-  top: 50%;
-  transform: translateY(-50%) rotate(0deg);
-  font-size: 1.2em;
-  animation: wind-sway 3s ease-in-out infinite;
-}
-
-.title-bronze {
-  position: relative;
-  background: #cd7f32;
-  color: white;
-  overflow: visible;
-  text-shadow: 0 0 8px #aa0000;
-}
-.title-bronze::before {
-  content: "👹";
-  position: absolute;
-  left: -1.7em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.3em;
-  animation: fire-flicker 2s ease-in-out infinite;
-}
-
-/* ===== 固定ボタン群 ===== */
-/* 共通ボタンスタイル */
-/* 全ボタン共通 */
-button, .remove-button, .fixed-controls button {
+.fixed-controls button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -248,7 +183,7 @@ button, .remove-button, .fixed-controls button {
   font-size: 15px;
   font-weight: bold;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 44px;
@@ -256,61 +191,25 @@ button, .remove-button, .fixed-controls button {
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-/* 中立ボタン */
-button {
-  background-color: #e0e0e0;
-  color: #333;
-}
-button:hover {
-  background-color: #d5d5d5;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-button:active {
-  transform: scale(0.96);
-}
-
-/* 強調ボタン（保存・確定など） */
-button.primary {
+.fixed-controls button.primary {
   background-color: #ff9800;
   color: #fff;
 }
-button.primary:hover {
+
+.fixed-controls button.primary:hover {
   background-color: #e68900;
 }
 
-/* 危険ボタン（削除など） */
-button.danger, .remove-button {
+.fixed-controls button.danger {
   background-color: #f44336;
   color: #fff;
 }
-button.danger:hover, .remove-button:hover {
+
+.fixed-controls button.danger:hover {
   background-color: #d32f2f;
 }
 
-/* 固定ボタン群は丸型に */
-.fixed-controls button {
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  font-size: 20px;
-}
-
-/* ===== レート変動表示 ===== */
-.rate-change {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: bold;
-  vertical-align: middle;
-}
-
-.rate-up   { background-color: #e0f2f1; color: #00796b; }
-.rate-down { background-color: #ffebee; color: #c62828; }
-.rate-zero { background-color: #eeeeee; color: #666; }
-
-/* ===== メッセージ表示 ===== */
+/* メッセージ */
 #messageArea {
   padding: 10px 14px;
   margin: 12px 0;
@@ -325,47 +224,19 @@ button.danger:hover, .remove-button:hover {
 #messageArea.warning { background-color: #fff8e1; color: #f9a825; border-color: #ffeb3b; }
 #messageArea.error   { background-color: #ffebee; color: #c62828; border-color: #f44336; }
 
-/* ===== アニメーション ===== */
-@keyframes lightning-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes wind-sway {
-  0%, 100% { transform: translateY(-50%) rotate(-10deg); }
-  50% { transform: translateY(-50%) rotate(10deg); }
-}
-
-@keyframes fire-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* ===== メディアクエリ（PC専用調整） ===== */
-@media (min-width: 768px) {
-  #werder {
-    transform: scale(1.15);
-    transform-origin: top;
-    max-height: 100%;
-    height: auto;
-  }
-}
-
-/* ===== スマホ用レイアウト（1カラム） ===== */
+/* メディアクエリ */
 @media (max-width: 768px) {
   body {
     flex-direction: column;
     height: auto;
   }
-
   #sidebar {
-    position: relative; /* 固定解除 */
+    position: relative;
     width: 100%;
     height: auto;
     overflow-y: visible;
   }
-
   #mainContent {
-    margin-left: 0; /* 余白削除 */
+    margin-left: 0;
   }
 }
