@@ -69,16 +69,31 @@ function applyTheme() {
 }
 
 function createThemePanel() {
+  // 既に存在する場合は削除
+  const existing = document.getElementById("themePanel");
+  if (existing) existing.remove();
+
   const panel = document.createElement("div");
   panel.id = "themePanel";
   Object.assign(panel.style,{
-    position:"fixed",top:"10px",right:"10px",width:"250px",
-    backgroundColor:"#fff",border:"1px solid #ccc",padding:"10px",
-    borderRadius:"8px",boxShadow:"0 2px 6px rgba(0,0,0,0.2)",zIndex:1000
+    position:"fixed",
+    top:"10px",
+    right:"10px",
+    width:"250px",
+    backgroundColor:"#fff",
+    border:"1px solid #ccc",
+    padding:"10px",
+    borderRadius:"8px",
+    boxShadow:"0 2px 6px rgba(0,0,0,0.2)",
+    zIndex:1000,
+    display:"none" // 初期は非表示
   });
 
   panel.innerHTML=`
-    <h4 style="margin-top:0;">テーマ編集</h4>
+    <h4 style="margin-top:0;">
+      テーマ編集
+      <button id="closeThemeBtn" style="float:right; background:#f44336; color:#fff; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">×</button>
+    </h4>
     <label>座席背景: <input type="color" id="seatBgColor" value="${themeConfig.seatBox.backgroundColor}"></label><br>
     <label>プレイヤー背景: <input type="color" id="playerBgColor" value="${themeConfig.playerEntry.backgroundColor}"></label><br>
     <label>ボタン背景: <input type="color" id="buttonBgColor" value="${themeConfig.button.backgroundColor}"></label><br>
@@ -89,14 +104,33 @@ function createThemePanel() {
 
   document.body.appendChild(panel);
 
-  document.getElementById("applyThemeBtn").addEventListener("click",()=>{
-    themeConfig.seatBox.backgroundColor=document.getElementById("seatBgColor").value;
-    themeConfig.playerEntry.backgroundColor=document.getElementById("playerBgColor").value;
-    themeConfig.button.backgroundColor=document.getElementById("buttonBgColor").value;
-    themeConfig.button.color=document.getElementById("buttonColor").value;
-    themeConfig.fontSize=document.getElementById("fontSizeInput").value+"px";
+  // 適用ボタン
+  document.getElementById("applyThemeBtn").addEventListener("click", ()=>{
+    themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
+    themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
+    themeConfig.button.backgroundColor = document.getElementById("buttonBgColor").value;
+    themeConfig.button.color = document.getElementById("buttonColor").value;
+    themeConfig.fontSize = document.getElementById("fontSizeInput").value + "px";
     applyTheme();
   });
+
+  // 閉じるボタン
+  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{
+    panel.style.display = "none";
+  });
+
+  // ヘッダーに「テーマ編集」ボタンを追加
+  const header = document.querySelector("header");
+  if (!document.getElementById("openThemeBtn")) {
+    const openBtn = document.createElement("button");
+    openBtn.id = "openThemeBtn";
+    openBtn.textContent = "テーマ編集";
+    openBtn.style.marginLeft = "10px";
+    openBtn.addEventListener("click", ()=>{
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
+    });
+    header.appendChild(openBtn);
+  }
 }
 
 // =====================
