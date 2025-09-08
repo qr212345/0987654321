@@ -131,6 +131,13 @@ function createThemePanel() {
   }
 }
 
+// app.js 側に追加
+function toggleThemePanel(){
+  const panel = document.getElementById("themePanel");
+  if(!panel) return;
+  panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
+}
+
 // =====================
 // ユーティリティ
 // =====================
