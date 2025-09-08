@@ -871,10 +871,10 @@ function bindButtons() {
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-  document.getElementById("startTimerBtn")?.addEventListener("click", startTimerFromDisplay);
-  document.getElementById("resetTimerBtn")?.addEventListener("click", resetTimer); 
-  document.getElementById("pauseTimerBtn")?.addEventListener("click", pauseTimer);
-  document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
+  document.getElementById("startTimerFromDisplay").addEventListener("click", startTimerFromDisplay);
+  document.getElementById("pauseTimer").addEventListener("click", pauseTimer);
+  document.getElementById("resumeTimer").addEventListener("click", resumeTimer);
+  document.getElementById("resetTimer").addEventListener("click", resetTimer);
 
 document.addEventListener("DOMContentLoaded", async () => {
   try { 
