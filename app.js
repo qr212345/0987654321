@@ -44,12 +44,21 @@ let passwordValidated = false;
 // テーマ設定
 // =====================
 let themeConfig = {
-  seatBox: { backgroundColor: "#f5f5f5", color: "#000" },
-  playerEntry: { backgroundColor: "#d0f0c0", color: "#000" },
-  button: { backgroundColor: "#4CAF50", color: "#fff" },
+  seatBox: { backgroundColor: "#f5f5f5", color: "#000000" },
+  playerEntry: { backgroundColor: "#d0f0c0", color: "#000000" },
+  button: { backgroundColor: "#4CAF50", color: "#ffffff" },
   fontSize: "14px"
 };
 
+// HEXを6桁に統一
+function expandHexColor(hex) {
+  if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
+    return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+  }
+  return hex;
+}
+
+// テーマを適用
 function applyTheme() {
   document.querySelectorAll(".seat-box").forEach(el=>{
     el.style.backgroundColor = themeConfig.seatBox.backgroundColor;
@@ -68,8 +77,9 @@ function applyTheme() {
   });
 }
 
+// テーマパネル作成
 function createThemePanel() {
-  // 既に存在する場合は削除
+  // 既存パネルがあれば削除
   const existing = document.getElementById("themePanel");
   if (existing) existing.remove();
 
@@ -94,10 +104,10 @@ function createThemePanel() {
       テーマ編集
       <button id="closeThemeBtn" style="float:right; background:#f44336; color:#fff; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">×</button>
     </h4>
-    <label>座席背景: <input type="color" id="seatBgColor" value="${themeConfig.seatBox.backgroundColor}"></label><br>
-    <label>プレイヤー背景: <input type="color" id="playerBgColor" value="${themeConfig.playerEntry.backgroundColor}"></label><br>
-    <label>ボタン背景: <input type="color" id="buttonBgColor" value="${themeConfig.button.backgroundColor}"></label><br>
-    <label>ボタン文字色: <input type="color" id="buttonColor" value="${themeConfig.button.color}"></label><br>
+    <label>座席背景: <input type="color" id="seatBgColor" value="${expandHexColor(themeConfig.seatBox.backgroundColor)}"></label><br>
+    <label>プレイヤー背景: <input type="color" id="playerBgColor" value="${expandHexColor(themeConfig.playerEntry.backgroundColor)}"></label><br>
+    <label>ボタン背景: <input type="color" id="buttonBgColor" value="${expandHexColor(themeConfig.button.backgroundColor)}"></label><br>
+    <label>ボタン文字色: <input type="color" id="buttonColor" value="${expandHexColor(themeConfig.button.color)}"></label><br>
     <label>フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label><br>
     <button id="applyThemeBtn">適用</button>
   `;
