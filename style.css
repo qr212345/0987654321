@@ -1,371 +1,102 @@
-/* ===== 基本レイアウト ===== */
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f7f3e9;
-  color: #333;
-  display: flex;
-  height: 100vh;
-}
+/* =====================
+   全体リセット & フォント統一
+===================== */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+body { display:flex; min-height:100vh; flex-direction:column; background:#f0f0f0; }
 
-/* サイドバー（PC時固定） */
-#sidebar {
-  width: 240px;
-  background-color: #333;
-  color: white;
-  padding: 20px;
-  flex-shrink: 0;
-  position: fixed; /* 固定化 */
-  top: 0;
-  left: 0;
-  height: 100vh;
-  overflow-y: auto;
-  box-sizing: border-box;
-}
+/* =====================
+   ヘッダー & サイドバー
+===================== */
+header { background:#333; color:#fff; padding:10px; display:flex; align-items:center; }
+header h1 { flex:1; font-size:1.5rem; }
+#sidebar { display:flex; gap:10px; transition:transform 0.3s, opacity 0.3s; }
+#sidebar.closed { transform:translateY(-100%); opacity:0; }
+#sidebar button { cursor:pointer; padding:5px 10px; border:none; border-radius:6px; background:#4CAF50; color:#fff; font-weight:bold; transition:0.2s; }
+#sidebar button:hover { background:#45a049; opacity:0.9; }
 
-#sidebar h2 {
-  font-family: 'Rock Salt', cursive;
-  font-size: 24px;
-  border-bottom: 2px solid #b8860b;
-  padding-bottom: 6px;
-  margin-bottom: 16px;
-  color: #b8860b;
-}
+/* =====================
+   メイン
+===================== */
+main { flex:1; padding:10px; }
+.section { margin-bottom:20px; }
+.message-area { margin-bottom:10px; min-height:24px; font-weight:bold; transition: color 0.3s, opacity 0.5s; }
+.message-success { color:green; }
+.message-error { color:red; }
 
-#sidebar ul {
-  list-style: none;
-  padding: 0;
-}
+/* =====================
+   QRリーダー
+===================== */
+.qr-reader { width:100%; max-width:500px; margin-bottom:10px; border:2px solid #ccc; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
 
-#sidebar li {
-  padding: 10px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background 0.2s;
+/* =====================
+   座席リスト
+===================== */
+.seat-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; }
+.seat-box {
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  background:#f5f5f5;
+  box-shadow:0 2px 4px rgba(0,0,0,0.1);
+  transition:transform 0.2s, box-shadow 0.2s;
 }
-
-#sidebar li:hover {
-  background-color: #555;
-}
-
-/* メインコンテンツ（PC時は右側に余白） */
-#mainContent {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  margin-left: 240px; /* サイドバー分右にオフセット */
-  box-sizing: border-box;
-}
-
-.section {
-  margin-bottom: 40px;
-}
-
-/* ===== カメラ表示 ===== */
-#readerContainer {
-  width: 250px;
-  height: 250px;
-  margin: 0 auto;
-  position: relative;
-  background: black;
-  overflow: hidden;
-  border-radius: 8px;
-}
-
-#werder {
-  width: 250px;
-  height: auto;
-  object-fit: contain;
-  background: black;
-  box-shadow: 0 0 0 2px limegreen;
-  margin: 0 auto;
-}
-
-#overlayBox {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 250px;
-  height: 250px;
-  box-sizing: border-box;
-  border: 3px solid limegreen;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* ===== 順位エントリーセクション ===== */
-#rankingEntrySection {
-  max-height: 100vh;
-  overflow-y: auto;
-  padding: 1em;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1em;
-}
-
-#rankingReader {
-  width: 90vw;
-  max-width: 250px;
-  height: 90vw;
-  max-height: 250px;
-  border-radius: 8px;
-  background: black;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-}
-
-/* ===== 順位リスト ===== */
-.ranking-list {
-  width: 100%;
-  max-width: 250px;
-  list-style: none;
-  padding: 0;
-  margin: 1em 0 0 0;
-  max-height: 30vh;
-  overflow-y: auto;
-}
-
-.draggable-item {
-  padding: 8px 12px;
-  background: #eee;
-  border: 1px solid #ccc;
-  margin-bottom: 5px;
-  cursor: grab;
-}
-
-.draggable-item.dragging {
-  opacity: 0.5;
-}
-
-/* ===== 座席リスト ===== */
-#seatList {
-  margin-top: 20px;
-}
-
-.seat-block {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border: 1px solid #d4cfc4;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #fffefb;
-  border-radius: 10px;
-}
-
-.seat-block h3 {
-  margin-top: 0;
-}
+.seat-box:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,0.2); }
 
 .player-entry {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px;
-  border: 1px solid #ddd;
-  background-color: #fafafa;
-  border-radius: 6px;
-  margin-bottom: 6px;
+  margin-top:6px;
+  padding:4px 6px;
+  border-radius:6px;
+  position:relative;
+  background:#d0f0c0;
+  transition:background 0.5s;
 }
+.player-entry.new { animation:highlightPlayer 1s ease; }
+@keyframes highlightPlayer { 0% { background:yellow; } 100% { background:#d0f0c0; } }
 
-.player-entry:last-child {
-  border-bottom: none;
-}
+.remove-button { position:absolute; top:2px; right:4px; cursor:pointer; color:red; font-weight:bold; }
 
-.player-entry span.title-badge {
-  margin-left: 8px;
-  padding: 2px 6px;
-  font-size: 12px;
-  border-radius: 5px;
-  font-weight: bold;
+/* =====================
+   順位登録リスト
+===================== */
+.ranking-list { list-style:none; padding:0; margin-top:10px; }
+.draggable-item {
+  padding:6px 12px;
+  margin-bottom:6px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  cursor:move;
+  background:#d0f0c0;
+  transition:opacity 0.2s, border 0.2s;
 }
+.draggable-item.dragging { opacity:0.5; }
+.draggable-item.drop-target { border:2px dashed #4CAF50; }
 
-.highlighted {
-  background-color: #ffff99;
-  transition: background-color 1.5s ease;
-}
+/* =====================
+   履歴リスト
+===================== */
+.history-list { display:flex; flex-direction:column; gap:5px; max-height:200px; overflow-y:auto; padding-right:4px; }
+.history-entry { padding:4px 6px; border-bottom:1px solid #ccc; background:#fff; border-radius:4px; }
 
-/* ===== ランキング称号エフェクト ===== */
-.title-gold {
-  position: relative;
-  background: gold;
-  color: black;
-  overflow: visible;
-}
-.title-gold::before {
-  content: "⚡";
-  position: absolute;
-  left: -1.5em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.3em;
-  color: #ffff33;
-  text-shadow: 0 0 5px #fff, 0 0 10px #ff0, 0 0 15px #ff0;
-  animation: lightning-flicker 1.2s infinite;
-}
+/* =====================
+   ボタン共通
+===================== */
+button { cursor:pointer; padding:6px 12px; border:none; border-radius:6px; font-size:14px; font-weight:bold; transition:0.2s; }
+button:hover { opacity:0.9; }
 
-.title-silver {
-  position: relative;
-  background: silver;
-  color: black;
-  overflow: visible;
+/* =====================
+   テーマパネル
+===================== */
+#themePanel {
+  position:fixed; top:10px; right:10px; width:260px;
+  background:#fff; border:1px solid #ccc; padding:12px;
+  border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.2); z-index:1000;
 }
-.title-silver::before {
-  content: "🍃";
-  position: absolute;
-  left: -1.5em;
-  top: 50%;
-  transform: translateY(-50%) rotate(0deg);
-  font-size: 1.2em;
-  animation: wind-sway 3s ease-in-out infinite;
-}
+#themePanel h4 { margin-top:0; font-size:1rem; }
+#themePanel label { display:block; margin-bottom:6px; font-size:0.9rem; }
+#themePanel input[type=color], #themePanel input[type=number] { margin-left:4px; }
+#themePanel button { margin-top:6px; width:100%; }
 
-.title-bronze {
-  position: relative;
-  background: #cd7f32;
-  color: white;
-  overflow: visible;
-  text-shadow: 0 0 8px #aa0000;
-}
-.title-bronze::before {
-  content: "👹";
-  position: absolute;
-  left: -1.7em;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.3em;
-  animation: fire-flicker 2s ease-in-out infinite;
-}
-
-/* ===== 固定ボタン群 ===== */
-/* 共通ボタンスタイル */
-/* 全ボタン共通 */
-button, .remove-button, .fixed-controls button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  font-size: 15px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 44px;
-  min-height: 44px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-
-/* 中立ボタン */
-button {
-  background-color: #e0e0e0;
-  color: #333;
-}
-button:hover {
-  background-color: #d5d5d5;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-button:active {
-  transform: scale(0.96);
-}
-
-/* 強調ボタン（保存・確定など） */
-button.primary {
-  background-color: #ff9800;
-  color: #fff;
-}
-button.primary:hover {
-  background-color: #e68900;
-}
-
-/* 危険ボタン（削除など） */
-button.danger, .remove-button {
-  background-color: #f44336;
-  color: #fff;
-}
-button.danger:hover, .remove-button:hover {
-  background-color: #d32f2f;
-}
-
-/* 固定ボタン群は丸型に */
-.fixed-controls button {
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  font-size: 20px;
-}
-
-/* ===== レート変動表示 ===== */
-.rate-change {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: bold;
-  vertical-align: middle;
-}
-
-.rate-up   { background-color: #e0f2f1; color: #00796b; }
-.rate-down { background-color: #ffebee; color: #c62828; }
-.rate-zero { background-color: #eeeeee; color: #666; }
-
-/* ===== メッセージ表示 ===== */
-#messageArea {
-  padding: 10px 14px;
-  margin: 12px 0;
-  border-left: 5px solid;
-  font-weight: bold;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-
-#messageArea.info    { background-color: #e3f2fd; color: #0d47a1; border-color: #2196f3; }
-#messageArea.success { background-color: #e8f5e9; color: #2e7d32; border-color: #4caf50; }
-#messageArea.warning { background-color: #fff8e1; color: #f9a825; border-color: #ffeb3b; }
-#messageArea.error   { background-color: #ffebee; color: #c62828; border-color: #f44336; }
-
-/* ===== アニメーション ===== */
-@keyframes lightning-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes wind-sway {
-  0%, 100% { transform: translateY(-50%) rotate(-10deg); }
-  50% { transform: translateY(-50%) rotate(10deg); }
-}
-
-@keyframes fire-flicker {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* ===== メディアクエリ（PC専用調整） ===== */
-@media (min-width: 768px) {
-  #werder {
-    transform: scale(1.15);
-    transform-origin: top;
-    max-height: 100%;
-    height: auto;
-  }
-}
-
-/* ===== スマホ用レイアウト（1カラム） ===== */
-@media (max-width: 768px) {
-  body {
-    flex-direction: column;
-    height: auto;
-  }
-
-  #sidebar {
-    position: relative; /* 固定解除 */
-    width: 100%;
-    height: auto;
-    overflow-y: visible;
-  }
-
-  #mainContent {
-    margin-left: 0; /* 余白削除 */
-  }
-}
+/* =====================
+   アニメーション & フェード
+===================== */
+.fade-out { opacity:0; transition:opacity 0.5s ease; }
