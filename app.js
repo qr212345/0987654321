@@ -3,7 +3,7 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyhciLPC0TJ8QYbKHWQ1JqxLgt0N58GGGRdW1YnJ3YR_Fx1AkF6R2Uh2Ze5jnUWa5E/exec";
 const SECRET = "your-secret-key";
 const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
