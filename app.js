@@ -48,7 +48,7 @@ let themeConfig = {
 
 // HEXを6桁に統一
 function expandHexColor(hex) {
-  if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
+  if (/^#([0-9a-fA-F]{3})$/.test(hex)) {
     return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
   }
   return hex;
@@ -56,45 +56,44 @@ function expandHexColor(hex) {
 
 // テーマを適用
 function applyTheme() {
-  document.querySelectorAll(".seat-box").forEach(el=>{
-    el.style.backgroundColor = themeConfig.seatBox.backgroundColor;
-    el.style.color = themeConfig.seatBox.color;
-    el.style.fontSize = themeConfig.fontSize;
+  document.querySelectorAll(".seat-box").forEach(el => {
+    el.style.setProperty("background-color", themeConfig.seatBox.backgroundColor, "important");
+    el.style.setProperty("color", themeConfig.seatBox.color, "important");
+    el.style.setProperty("font-size", themeConfig.fontSize, "important");
   });
-  document.querySelectorAll(".player-entry").forEach(el=>{
-    el.style.backgroundColor = themeConfig.playerEntry.backgroundColor;
-    el.style.color = themeConfig.playerEntry.color;
-    el.style.fontSize = themeConfig.fontSize;
+  document.querySelectorAll(".player-entry").forEach(el => {
+    el.style.setProperty("background-color", themeConfig.playerEntry.backgroundColor, "important");
+    el.style.setProperty("color", themeConfig.playerEntry.color, "important");
+    el.style.setProperty("font-size", themeConfig.fontSize, "important");
   });
-  document.querySelectorAll("button").forEach(el=>{
-    el.style.backgroundColor = themeConfig.button.backgroundColor;
-    el.style.color = themeConfig.button.color;
-    el.style.fontSize = themeConfig.fontSize;
+  document.querySelectorAll("button").forEach(el => {
+    el.style.setProperty("background-color", themeConfig.button.backgroundColor, "important");
+    el.style.setProperty("color", themeConfig.button.color, "important");
+    el.style.setProperty("font-size", themeConfig.fontSize, "important");
   });
 }
 
 // テーマパネル作成
 function createThemePanel() {
-  const existing = document.getElementById("themePanel");
-  if (existing) existing.remove();
+  if (document.getElementById("themePanel")) return;
 
   const panel = document.createElement("div");
   panel.id = "themePanel";
-  Object.assign(panel.style,{
-    position:"fixed",
-    top:"10px",
-    right:"10px",
-    width:"250px",
-    backgroundColor:"#fff",
-    border:"1px solid #ccc",
-    padding:"10px",
-    borderRadius:"8px",
-    boxShadow:"0 2px 6px rgba(0,0,0,0.2)",
-    zIndex:1000,
-    display:"none"
+  Object.assign(panel.style, {
+    position: "fixed",
+    top: "10px",
+    right: "10px",
+    width: "250px",
+    backgroundColor: "#fff",
+    border: "1px solid #ccc",
+    padding: "10px",
+    borderRadius: "8px",
+    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+    zIndex: 1000,
+    display: "none"
   });
 
-  panel.innerHTML=`
+  panel.innerHTML = `
     <h4 style="margin-top:0;">
       テーマ編集
       <button id="closeThemeBtn" style="float:right; background:#f44336; color:#fff; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">×</button>
@@ -109,7 +108,13 @@ function createThemePanel() {
 
   document.body.appendChild(panel);
 
-  document.getElementById("applyThemeBtn").addEventListener("click", ()=>{
+  // 閉じるボタン
+  panel.querySelector("#closeThemeBtn").addEventListener("click", () => {
+    panel.style.display = "none";
+  });
+
+  // 適用ボタン
+  panel.querySelector("#applyThemeBtn").addEventListener("click", () => {
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
     themeConfig.button.backgroundColor = document.getElementById("buttonBgColor").value;
@@ -118,29 +123,25 @@ function createThemePanel() {
     applyTheme();
   });
 
-  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{ panel.style.display="none"; });
-
+  // ヘッダーに開くボタンを追加
   const header = document.querySelector("header");
-  if (!document.getElementById("openThemeBtn")) {
+  if (header && !document.getElementById("openThemeBtn")) {
     const openBtn = document.createElement("button");
     openBtn.id = "openThemeBtn";
     openBtn.textContent = "テーマ編集";
     openBtn.style.marginLeft = "10px";
-    openBtn.addEventListener("click", ()=>{ panel.style.display = panel.style.display==="none"?"block":"none"; });
+    openBtn.addEventListener("click", toggleThemePanel);
     header.appendChild(openBtn);
   }
 }
 
-// app.js 側に追加
-function toggleThemePanel(){
+// パネル表示切替
+function toggleThemePanel() {
   let panel = document.getElementById("themePanel");
-  if(!panel){
-    createThemePanel();  // 存在しなければ作成
-    panel = document.getElementById("themePanel");
-  }
+  if (!panel) createThemePanel();
+  panel = document.getElementById("themePanel");
   panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
 }
-
 
 // =====================
 // ユーティリティ
