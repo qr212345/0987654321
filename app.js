@@ -196,26 +196,54 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// タイマー表示を編集可能に
+// グローバル状態（既に宣言されている場合は再宣言しない）
+// =====================
+if (typeof timerInterval === "undefined") var timerInterval = null;
+if (typeof remaining === "undefined") var remaining = 0;
+if (typeof paused === "undefined") var paused = false;
+if (typeof countingUp === "undefined") var countingUp = false;
+
+// =====================
+// タイマー表示編集可能
 // =====================
 const timerDisplay = document.getElementById("timerDisplay");
 timerDisplay.contentEditable = true;
 timerDisplay.spellcheck = false;
 
-// 入力時に MM:SS 形式チェック
-timerDisplay.addEventListener("input", () => {
-  let text = timerDisplay.textContent.replace(/[^0-9:]/g, ""); // 数字とコロンのみ
-  const parts = text.split(":").map(p => p.padStart(2, "0")); // 2桁揃え
-  if (parts.length > 2) parts.splice(2); // MM:SS のみ
-  while (parts.length < 2) parts.unshift("00"); // 足りなければ補完
-  timerDisplay.textContent = parts.join(":");
+// カーソル位置保持関数
+function setCaretPosition(el, pos) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.setStart(el.firstChild || el, pos);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// 入力時に MM:SS 形式を強制
+timerDisplay.addEventListener("input", (e) => {
+  const sel = window.getSelection();
+  let caretPos = sel.focusOffset;
+
+  let text = timerDisplay.textContent.replace(/[^0-9]/g, "");
+  if (text.length > 4) text = text.slice(0, 4);
+
+  let minutes = text.slice(0, text.length - 2) || "0";
+  let seconds = text.slice(-2) || "0";
+  minutes = minutes.padStart(2, "0");
+  seconds = seconds.padStart(2, "0");
+  timerDisplay.textContent = `${minutes}:${seconds}`;
+
+  caretPos = Math.min(timerDisplay.textContent.length, caretPos);
+  setCaretPosition(timerDisplay, caretPos);
 });
 
 // フォーカスアウトで整形
 timerDisplay.addEventListener("blur", () => {
-  const parts = timerDisplay.textContent.split(":").map(p => p.padStart(2, "0"));
-  while (parts.length < 2) parts.unshift("00");
-  timerDisplay.textContent = parts.join(":");
+  let [m, s] = timerDisplay.textContent.split(":");
+  m = (parseInt(m) || 0).toString().padStart(2, "0");
+  s = (parseInt(s) || 0).toString().padStart(2, "0");
+  timerDisplay.textContent = `${m}:${s}`;
 });
 
 // =====================
