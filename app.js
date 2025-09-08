@@ -3,8 +3,9 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/統合GASのURL/exec";
-const SECRET  = "kosen-brain-super-secret";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
+const SECRET = "your-secret-key"; // GAS側と共通
+const CORS_PROXY = "https://cors-anywhere.herokuapp.com/"; // CORS回避
 
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
@@ -165,6 +166,8 @@ async function requireAuth(callback){
   if(pw==="supersecret"){ passwordValidated=true; callback(); }
   else alert("認証失敗");
 }
+
+function delay(ms){ return new Promise(res=>setTimeout(res, ms)); }
 
 // =====================
 // ナビゲーション
@@ -499,62 +502,151 @@ async function callGAS(payload={}, options={}) {
   const maxRetries = options.retries ?? 3;
   const timeoutMs  = options.timeout ?? 8000;
   let attempt=0;
+
   while(attempt<maxRetries){
-    const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),timeoutMs);
-    try{
-      const res=await fetch(GAS_URL,{
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(CORS_PROXY + GAS_URL,{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({...payload,secret:SECRET}),
-        signal:controller.signal
+        body:JSON.stringify({...payload, secret:SECRET}),
+        signal: controller.signal
       });
       clearTimeout(timer);
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
-    }catch(e){ attempt++; await delay(1000); if(attempt>=maxRetries) throw e; }
+    } catch(e){
+      attempt++;
+      console.warn("GAS通信リトライ", attempt, e);
+      await delay(1000);
+      if(attempt >= maxRetries) throw e;
+    }
   }
 }
 
+// =====================
+// データ同期用
+// =====================
+async function syncSeatData(localSeatMap){
+  try {
+    const res = await callGAS({mode:"loadData"});
+    const remoteSeatMap = res.seatMap || {};
+    const mergedSeatMap = {...remoteSeatMap};
+
+    // 他端末で登録済みの座席を優先
+    for(const seatId in localSeatMap){
+      const players = localSeatMap[seatId];
+      if(!mergedSeatMap[seatId] || mergedSeatMap[seatId].length===0){
+        mergedSeatMap[seatId] = players;
+      } else {
+        // 同端末で同じ座席登録されている場合は登録不可
+        localSeatMap[seatId] = mergedSeatMap[seatId];
+      }
+    }
+
+    seatMap = mergedSeatMap;
+    renderSeats();
+    displayMessage("✅ データ同期完了");
+    return mergedSeatMap;
+
+  } catch(err){
+    console.error("データ同期失敗", err);
+    displayMessage("❌ データ同期失敗");
+    return null;
+  }
+}
+
+// =====================
+// 保存
+// =====================
 async function saveToGAS(seatMapData, playerDataObj){
   try{
     await callGAS({mode:"saveData", seatMap:seatMapData, playerData:playerDataObj});
     displayMessage("✅ データ保存成功");
   }catch(err){
-    displayMessage("❌ 保存失敗");
+    displayMessage("❌ データ保存失敗");
     console.error(err);
   }
 }
 
+// =====================
+// 読み込み
+// =====================
 async function loadFromGAS(){
   try{
-    const res=await callGAS({mode:"loadData"});
-    seatMap=res.seatMap||{};
-    playerData=res.playerData||{};
+    const res = await callGAS({mode:"loadData"});
+    seatMap = res.seatMap || {};
+    playerData = res.playerData || {};
     renderSeats();
     displayMessage("✅ データ読み込み成功");
-  }catch(err){
+  } catch(err){
     displayMessage("❌ データ読み込み失敗");
     console.error(err);
   }
 }
 
+// =====================
+// 座席更新（重複制御・通知対応）
+// =====================
 async function sendSeatData(tableID, playerIds, operator='webUser'){
   try{
-    await callGAS({mode:"updatePlayers", tableID, players:playerIds, operator});
-  }catch(err){
+    // 同座席・他端末重複チェック
+    await syncSeatData(seatMap);
+
+    const filteredPlayers = playerIds.filter(pid=>{
+      for(const seat in seatMap){
+        if(seatMap[seat]?.includes(pid)) return false; // 他テーブルで登録済み
+      }
+      return true;
+    });
+
+    if(filteredPlayers.length === 0){
+      displayMessage("⚠ このプレイヤーはすでに登録されています");
+      return;
+    }
+
+    seatMap[tableID] = filteredPlayers;
+
+    await callGAS({mode:"updatePlayers", tableID, players:filteredPlayers, operator});
+
+    renderSeats();
+    displayMessage(`✅ 座席 ${tableID} 更新成功`);
+    playNotification(); // 鳴らす
+  } catch(err){
     console.error('座席送信失敗', err);
+    displayMessage("❌ 座席送信失敗");
   }
 }
 
+// =====================
+// 順位更新
+// =====================
 async function postRankingUpdate(entries){
   try{
     await callGAS({mode:"updateRanking", rankings:entries});
+    displayMessage("✅ 順位送信成功");
     return true;
   }catch(err){
     console.error('順位送信失敗', err);
+    displayMessage("❌ 順位送信失敗");
     return false;
   }
+}
+
+// =====================
+// 通知（ベル）
+// =====================
+function playNotification(){
+  const audio = new Audio("bell.mp3"); // 任意の通知音
+  audio.play().catch(()=>{});
+}
+
+// =====================
+// 削除確認ダイアログ
+// =====================
+function confirmAction(message){
+  return confirm(`⚠️ ${message}`);
 }
 
 // =====================
