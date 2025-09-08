@@ -851,7 +851,6 @@ function bindButtons() {
   }
   loadFromLocalStorage();
   renderSeats();
-  createThemePanel();
   applyTheme();
   bindButtons();
   startScanCamera();
