@@ -10,6 +10,10 @@ const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
 
+const timerDisplay = document.getElementById("timerDisplay");
+timerDisplay.contentEditable = true;
+timerDisplay.spellcheck = false;
+
 // =====================
 // データ構造と状態
 // =====================
@@ -195,13 +199,8 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// タイマー表示編集可能
+// カーソル位置保持
 // =====================
-const timerDisplay = document.getElementById("timerDisplay");
-timerDisplay.contentEditable = true;
-timerDisplay.spellcheck = false;
-
-// カーソル位置保持関数
 function setCaretPosition(el, pos) {
   const range = document.createRange();
   const sel = window.getSelection();
@@ -211,8 +210,10 @@ function setCaretPosition(el, pos) {
   sel.addRange(range);
 }
 
-// 入力時に MM:SS 形式を強制
-timerDisplay.addEventListener("input", (e) => {
+// =====================
+// 入力を MM:SS に整形
+// =====================
+timerDisplay.addEventListener("input", () => {
   const sel = window.getSelection();
   let caretPos = sel.focusOffset;
 
@@ -229,7 +230,6 @@ timerDisplay.addEventListener("input", (e) => {
   setCaretPosition(timerDisplay, caretPos);
 });
 
-// フォーカスアウトで整形
 timerDisplay.addEventListener("blur", () => {
   let [m, s] = timerDisplay.textContent.split(":");
   m = (parseInt(m) || 0).toString().padStart(2, "0");
@@ -238,27 +238,20 @@ timerDisplay.addEventListener("blur", () => {
 });
 
 // =====================
-// タイマー開始（表示値から判定）
+// タイマー開始
 // =====================
 function startTimerFromDisplay() {
   clearInterval(timerInterval);
   paused = false;
 
-  const display = timerDisplay.textContent.trim();
-  const parts = display.split(":").map(p => parseInt(p, 10));
-  let minutes = 0, seconds = 0;
-
-  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-    minutes = parts[0];
-    seconds = parts[1];
-  }
-
-  if (minutes === 0 && seconds === 0) {
+  const [m, s] = timerDisplay.textContent.split(":").map(n => parseInt(n, 10) || 0);
+  if (m === 0 && s === 0) {
     // ストップウォッチモード
     remaining = 0;
     countingUp = true;
   } else {
-    remaining = minutes * 60 + seconds;
+    // タイマーモード
+    remaining = m * 60 + s;
     countingUp = false;
   }
 
@@ -282,7 +275,7 @@ function startTimerFromDisplay() {
 }
 
 // =====================
-// タイマー表示更新
+// 表示更新
 // =====================
 function updateTimer() {
   const m = String(Math.floor(remaining / 60)).padStart(2, "0");
@@ -307,6 +300,12 @@ function resetTimer() {
   updateTimer();
 }
 
+// =====================
+// 終了通知（カスタム可）
+// =====================
+function notifyAction(msg) {
+  alert(msg);
+}
 
 // =====================
 // QRスキャン
