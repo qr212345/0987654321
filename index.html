@@ -58,17 +58,22 @@
     </section>
 
     <!-- 操作ヘルプセクション -->
-    <section id="helpSection" class="section" style="display:none;">
-      <h2>操作手順</h2>
-      <ol>
-        <li>1.QRコードをスキャンして座席とプレイヤーを登録</li>
-        <li>2.必要に応じてUndo/Redoで操作を修正</li>
-        <li>3.順位登録モードで座席QRをスキャンし、ドラッグで順位確定</li>
-        <li>4.CSVエクスポートやGAS保存でデータを管理</li>
-        <li>5.テーマパネルで座席・プレイヤーの色やフォントサイズを変更可能</li>
-        <li>6.履歴セクションで登録・鳴らした記録を確認可能</li>
-      </ol>
-    </section>
+    <!-- 操作ヘルプセクション（ここを追加） -->
+　　<section id="helpSection" class="section" style="display:none;">
+  　　<button id="closeHelpBtn">閉じる ✖</button>
+  　　<div class="help-container">
+    　　<h2>操作手順</h2>
+    　　<ol>
+      　　<li>1.QRコードをスキャンして座席とプレイヤーを登録</li>
+      　　<li>2.必要に応じてUndo/Redoで操作を修正</li>
+      　　<li>3.順位登録モードで座席QRをスキャンし、ドラッグで順位確定</li>
+      　　<li>4.CSVエクスポートやGAS保存でデータを管理</li>
+      　　<li>5.テーマパネルで座席・プレイヤーの色やフォントサイズを変更可能</li>
+      　　<li>6.履歴セクションで登録・鳴らした記録を確認可能</li>
+    　　</ol>
+  　　</div>
+　　</section>
+
 
     <!-- カメラ切替モーダル（非表示） -->
     <div id="cameraModal" class="modal" style="display:none;">
