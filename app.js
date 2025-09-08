@@ -878,7 +878,11 @@ function bindButtons() {
   document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
 
 document.addEventListener("DOMContentLoaded", async () => {
-  try { await loadFromGAS(); } catch (e) { console.warn("GASロード失敗,ローカル使用", e); }
+  try { 
+    await loadFromGAS(); 
+  } catch (e) { 
+    console.warn("GASロード失敗,ローカル使用", e); 
+  }
   loadFromLocalStorage();
   renderSeats();
   bindButtons();
@@ -890,12 +894,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.addEventListener("scroll", () => {
     if (scrollTimeout) clearTimeout(scrollTimeout);
     const st = window.pageYOffset || document.documentElement.scrollTop;
-    if (st > lastScrollTop) sidebar?.classList.add("closed"); else sidebar?.classList.remove("closed");
+    if (st > lastScrollTop) sidebar?.classList.add("closed"); 
+    else sidebar?.classList.remove("closed");
     lastScrollTop = st <= 0 ? 0 : st;
     scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
   });
-});
+}); // ここでDOMContentLoadedの括弧を閉じる
 
+// window に関数を登録
 Object.assign(window, {
   navigate,
   undoAction,
@@ -906,4 +912,4 @@ Object.assign(window, {
   startTimer: startTimerFromDisplay,
   pauseTimer,
   resumeTimer
-});
+}); // Object.assignの括弧を閉じる
