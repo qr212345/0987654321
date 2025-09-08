@@ -46,7 +46,6 @@ let themeConfig = {
   fontSize: "14px"
 };
 
-// HEXを6桁に統一
 function expandHexColor(hex) {
   if (/^#([0-9a-fA-F]{3})$/.test(hex)) {
     return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
@@ -54,7 +53,6 @@ function expandHexColor(hex) {
   return hex;
 }
 
-// テーマを適用
 function applyTheme() {
   document.querySelectorAll(".seat-box").forEach(el => {
     el.style.setProperty("background-color", themeConfig.seatBox.backgroundColor, "important");
@@ -73,7 +71,9 @@ function applyTheme() {
   });
 }
 
-// テーマパネル作成
+// =====================
+// パネル作成
+// =====================
 function createThemePanel() {
   if (document.getElementById("themePanel")) return;
 
@@ -81,39 +81,39 @@ function createThemePanel() {
   panel.id = "themePanel";
   Object.assign(panel.style, {
     position: "fixed",
-    top: "10px",
+    bottom: "10px",
     right: "10px",
-    width: "250px",
+    width: "90%",
+    maxWidth: "300px",
+    maxHeight: "80%",
+    overflowY: "auto",
     backgroundColor: "#fff",
     border: "1px solid #ccc",
-    padding: "10px",
-    borderRadius: "8px",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-    zIndex: 1000,
-    display: "none"
+    padding: "12px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+    zIndex: 10000,
+    display: "none",
+    transition: "all 0.25s ease"
   });
 
   panel.innerHTML = `
-    <h4 style="margin-top:0;">
-      テーマ編集
-      <button id="closeThemeBtn" style="float:right; background:#f44336; color:#fff; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">×</button>
-    </h4>
-    <label>座席背景: <input type="color" id="seatBgColor" value="${expandHexColor(themeConfig.seatBox.backgroundColor)}"></label><br>
-    <label>プレイヤー背景: <input type="color" id="playerBgColor" value="${expandHexColor(themeConfig.playerEntry.backgroundColor)}"></label><br>
-    <label>ボタン背景: <input type="color" id="buttonBgColor" value="${expandHexColor(themeConfig.button.backgroundColor)}"></label><br>
-    <label>ボタン文字色: <input type="color" id="buttonColor" value="${expandHexColor(themeConfig.button.color)}"></label><br>
-    <label>フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label><br>
-    <button id="applyThemeBtn">適用</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <h4 style="margin:0; font-size:16px;">テーマ編集</h4>
+      <button id="closeThemeBtn" style="background:#f44336; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold;">×</button>
+    </div>
+    <label style="display:block; margin-bottom:6px;">座席背景: <input type="color" id="seatBgColor" value="${expandHexColor(themeConfig.seatBox.backgroundColor)}"></label>
+    <label style="display:block; margin-bottom:6px;">プレイヤー背景: <input type="color" id="playerBgColor" value="${expandHexColor(themeConfig.playerEntry.backgroundColor)}"></label>
+    <label style="display:block; margin-bottom:6px;">ボタン背景: <input type="color" id="buttonBgColor" value="${expandHexColor(themeConfig.button.backgroundColor)}"></label>
+    <label style="display:block; margin-bottom:6px;">ボタン文字色: <input type="color" id="buttonColor" value="${expandHexColor(themeConfig.button.color)}"></label>
+    <label style="display:block; margin-bottom:6px;">フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label>
+    <button id="applyThemeBtn" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; background:#4CAF50; color:#fff; font-weight:bold; cursor:pointer;">適用</button>
   `;
 
   document.body.appendChild(panel);
 
-  // 閉じるボタン
-  panel.querySelector("#closeThemeBtn").addEventListener("click", () => {
-    panel.style.display = "none";
-  });
+  panel.querySelector("#closeThemeBtn").addEventListener("click", () => panel.style.display = "none");
 
-  // 適用ボタン
   panel.querySelector("#applyThemeBtn").addEventListener("click", () => {
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
@@ -123,19 +123,30 @@ function createThemePanel() {
     applyTheme();
   });
 
-  // ヘッダーに開くボタンを追加
-  const header = document.querySelector("header");
-  if (header && !document.getElementById("openThemeBtn")) {
+  // 開くボタン
+  if (!document.getElementById("openThemeBtn")) {
     const openBtn = document.createElement("button");
     openBtn.id = "openThemeBtn";
     openBtn.textContent = "テーマ編集";
-    openBtn.style.marginLeft = "10px";
+    Object.assign(openBtn.style, {
+      position: "fixed",
+      bottom: "10px",
+      right: "10px",
+      zIndex: 10001,
+      padding: "8px 12px",
+      borderRadius: "8px",
+      border: "none",
+      backgroundColor: "#2196F3",
+      color: "#fff",
+      cursor: "pointer",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+      fontWeight: "bold"
+    });
     openBtn.addEventListener("click", toggleThemePanel);
-    header.appendChild(openBtn);
+    document.body.appendChild(openBtn);
   }
 }
 
-// パネル表示切替
 function toggleThemePanel() {
   let panel = document.getElementById("themePanel");
   if (!panel) createThemePanel();
