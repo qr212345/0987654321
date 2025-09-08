@@ -79,12 +79,13 @@ function applyTheme() {
 
 // テーマパネル作成
 function createThemePanel() {
+  // 既存パネルがあれば削除
   const existing = document.getElementById("themePanel");
   if (existing) existing.remove();
 
   const panel = document.createElement("div");
   panel.id = "themePanel";
-  Object.assign(panel.style, {
+  Object.assign(panel.style,{
     position:"fixed",
     top:"10px",
     right:"10px",
@@ -95,7 +96,7 @@ function createThemePanel() {
     borderRadius:"8px",
     boxShadow:"0 2px 6px rgba(0,0,0,0.2)",
     zIndex:1000,
-    display:"none"
+    display:"none" // 初期は非表示
   });
 
   panel.innerHTML=`
@@ -113,6 +114,7 @@ function createThemePanel() {
 
   document.body.appendChild(panel);
 
+  // 適用ボタン
   document.getElementById("applyThemeBtn").addEventListener("click", ()=>{
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
@@ -122,23 +124,22 @@ function createThemePanel() {
     applyTheme();
   });
 
-  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{ panel.style.display="none"; });
+  // 閉じるボタン
+  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{
+    panel.style.display = "none";
+  });
 
-  // サイドバー内のボタン
-  const sidebar = document.getElementById("sidebar");
+  // ヘッダーに「テーマ編集」ボタンを追加
+  const header = document.querySelector("header");
   if (!document.getElementById("openThemeBtn")) {
     const openBtn = document.createElement("button");
     openBtn.id = "openThemeBtn";
-    openBtn.textContent = "📚テーマ編集";
-    openBtn.addEventListener("click", ()=>{ 
-      panel.style.display = panel.style.display==="none"?"block":"none"; 
+    openBtn.textContent = "テーマ編集";
+    openBtn.style.marginLeft = "10px";
+    openBtn.addEventListener("click", ()=>{
+      panel.style.display = panel.style.display === "none" ? "block" : "none";
     });
-    sidebar.appendChild(openBtn);
-  } else {
-    // 既存ボタンがあればクリックでパネル表示
-    document.getElementById("openThemeBtn").addEventListener("click", ()=>{
-      panel.style.display = panel.style.display==="none"?"block":"none"; 
-    });
+    header.appendChild(openBtn);
   }
 }
 
@@ -892,6 +893,8 @@ function bindButtons() {
   }
   loadFromLocalStorage();
   renderSeats();
+  createThemePanel();
+  applyTheme();
   bindButtons();
   startScanCamera();
   createThemePanel();
