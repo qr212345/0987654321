@@ -100,6 +100,7 @@ function createThemePanel() {
     <label>ボタン文字色: <input type="color" id="buttonColor" value="${themeConfig.button.color}"></label><br>
     <label>フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label><br>
     <button id="applyThemeBtn">適用</button>
+    <button id="closeThemeBtn">閉じる ✖</button>
   `;
 
   document.body.appendChild(panel);
