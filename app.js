@@ -44,6 +44,11 @@ let countingUp = false;
 // テーマ設定
 // =====================
 // HEXを6桁に統一
+// =====================
+// テーマ設定
+// =====================
+
+// HEXを6桁に統一
 function expandHexColor(hex) {
   if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
     return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
@@ -77,19 +82,25 @@ function applyTheme() {
   });
 }
 
+// =====================
 // イベントバインド
+// =====================
 window.addEventListener("DOMContentLoaded", ()=>{
-  // パネル開閉
-  document.getElementById("openThemeBtn").addEventListener("click", ()=>{
-    const panel = document.getElementById("themePanel");
-    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  const themeSection = document.getElementById("themeSection");
+  const openThemeBtn = document.getElementById("openThemeBtn");
+  const closeThemeBtn = document.getElementById("closeThemeBtn");
+  const applyThemeBtn = document.getElementById("applyThemeBtn");
+
+  // 開閉ボタン
+  openThemeBtn.addEventListener("click", ()=>{
+    themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
   });
-  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{
-    document.getElementById("themePanel").style.display = "none";
+  closeThemeBtn.addEventListener("click", ()=>{
+    themeSection.style.display = "none";
   });
 
   // 適用ボタン
-  document.getElementById("applyThemeBtn").addEventListener("click", ()=>{
+  applyThemeBtn.addEventListener("click", ()=>{
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
     themeConfig.button.backgroundColor = document.getElementById("buttonBgColor").value;
