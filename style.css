@@ -100,3 +100,14 @@ button:hover { opacity:0.9; }
    アニメーション & フェード
 ===================== */
 .fade-out { opacity:0; transition:opacity 0.5s ease; }
+
+/* =====================
+   ヘルプ
+===================== */
+.help-content {
+  background-color: #fffbea;
+  border: 1px solid #e0d890;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
