@@ -197,21 +197,9 @@ function notifyAction(message){
 
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
->
-    // =====================
-    // グローバル状態
-    // =====================
-    let timerInterval;
-    let remaining = 0;
-    let paused = false;
-    let countingUp = false;
-
-    const timerDisplay = document.getElementById("timerDisplay");
-    timerDisplay.spellcheck = false;
-
-    // =====================
-    // カーソル位置保持
-    // =====================
+ // =====================
+ // カーソル位置保持
+ // =====================
     function setCaretPosition(el, pos) {
       const range = document.createRange();
       const sel = window.getSelection();
@@ -221,9 +209,9 @@ function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登
       sel.addRange(range);
     }
 
-    // =====================
-    // 入力を MM:SS に整形
-    // =====================
+// =====================
+// 入力を MM:SS に整形
+// =====================
     timerDisplay.addEventListener("input", () => {
       const sel = window.getSelection();
       let caretPos = sel.focusOffset;
@@ -248,9 +236,9 @@ function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登
       timerDisplay.textContent = `${m}:${s}`;
     });
 
-    // =====================
-    // タイマー開始
-    // =====================
+// =====================
+// タイマー開始
+// =====================
     function startTimerFromDisplay() {
       clearInterval(timerInterval);
       paused = false;
@@ -285,18 +273,18 @@ function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登
       }, 1000);
     }
 
-    // =====================
-    // 表示更新
-    // =====================
+// =====================
+// 表示更新
+// =====================
     function updateTimer() {
       const m = String(Math.floor(remaining / 60)).padStart(2, "0");
       const s = String(remaining % 60).padStart(2, "0");
       timerDisplay.textContent = `${m}:${s}`;
     }
 
-    // =====================
-    // 一時停止 / 再開 / リセット
-    // =====================
+// =====================
+// 一時停止 / 再開 / リセット
+// =====================
     function pauseTimer() { paused = true; }
     function resumeTimer() { paused = false; }
     function resetTimer() {
@@ -307,9 +295,9 @@ function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登
       updateTimer();
     }
 
-    // =====================
-    // 終了通知（カスタム可）
-    // =====================
+// =====================
+// 終了通知（カスタム可）
+// =====================
     function notifyAction(msg) {
       alert(msg);
     }
