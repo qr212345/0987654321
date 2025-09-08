@@ -911,5 +911,5 @@ Object.assign(window, {
   exportSeatCSV,
   startTimer: startTimerFromDisplay,
   pauseTimer,
-  resumeTimer
+  resumeTimer,
 }); // Object.assignの括弧を閉じる
