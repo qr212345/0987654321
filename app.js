@@ -10,7 +10,10 @@ const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
 
+const timeInput = document.getElementById("timeInput");
 const timerDisplay = document.getElementById("timerDisplay");
+const alarmSound = document.getElementById("alarmSound");
+const startBtn = document.getElementById("startBtn");
 
 // =====================
 // データ構造と状態
@@ -197,124 +200,85 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// カーソル位置保持
+// タイマー
 // =====================
-function setCaretPosition(el, pos) {
-    const range = document.createRange();
-    const sel = window.getSelection();
-    if (!el.firstChild) {
-    el.textContent = el.textContent; // 修正: 空ならダミーで作る
-  }
-  range.setStart(el.firstChild, Math.min(pos, el.textContent.length));
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
+function normalizeInput(text){
+  text = text.replace(/[：]/g, ":") // 全角コロン → 半角
+             .replace(/[０-９]/g, d=>String.fromCharCode(d.charCodeAt(0)-0xFEE0)) // 全角数字→半角
+             .replace(/[^0-9:]/g,''); // 数字とコロン以外除去
+  return text;
 }
 
-// =====================
-// 入力整形（全角対応）
-// =====================
-function normalizeInput(text) {
-  return text
-  .replace(/[：]/g, ":") // 全角コロン → 半角
-  .replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0)) // 全角数字 → 半角
-  .replace(/[^0-9:]/g, ""); // 数字とコロン以外削除
+function parseTime(text){
+  text = normalizeInput(text);
+  let [m,s] = text.split(':');
+  m = parseInt(m)||0;
+  s = parseInt(s)||0;
+  return m*60 + s;
 }
 
-// 入力中のフォーマット補正
-timerDisplay.addEventListener("input", () => {
-  const sel = window.getSelection();
-  let caretPos = sel.focusOffset;
-
-  let text = normalizeInput(timerDisplay.textContent).replace(/[^0-9]/g, "");
-  if (text.length > 4) text = text.slice(0, 4);
-
-  let minutes = text.slice(0, text.length - 2) || "0";
-  let seconds = text.slice(-2) || "0";
-  minutes = minutes.padStart(2, "0");
-  seconds = seconds.padStart(2, "0");
-  timerDisplay.textContent = `${minutes}:${seconds}`;
-
-  caretPos = Math.min(timerDisplay.textContent.length, caretPos);
-  setCaretPosition(timerDisplay, caretPos);
-});
-
-// フォーカスが外れたらゼロ埋め整形
-timerDisplay.addEventListener("blur", () => {
-  let [m, s] = normalizeInput(timerDisplay.textContent).split(":");
-  m = (parseInt(m) || 0).toString().padStart(2, "0");
-  s = (parseInt(s) || 0).toString().padStart(2, "0");
-  timerDisplay.textContent = `${m}:${s}`;
-});
-
-// =====================
-// タイマー開始
-// =====================
-function startTimerFromDisplay() {
-    clearInterval(timerInterval);
-    paused = false;
-
-    let [m, s] = normalizeInput(timerDisplay.textContent).split(":");
-    let minutes = parseInt(m, 10) || 0;
-    let seconds = parseInt(s, 10) || 0;
-
-    if (minutes === 0 && seconds === 0) {
-      // ストップウォッチモード
-      remaining = 0;
-      countingUp = true;
-    } else {
-      // タイマーモード
-      remaining = minutes * 60 + seconds;
-      countingUp = false;
-    }
-
-    updateTimer();
-
-    timerInterval = setInterval(() => {
-      if (!paused) {
-    　if (countingUp) {
-        remaining++;
-      } else {
-        remaining--;
-        if (remaining <= 0) {
-          clearInterval(timerInterval);
-          remaining = 0;
-          notifyAction("⏰ タイムアップ！");
-        }
-      }
-      updateTimer();
-  　}
-  }, 1000);
+function formatTime(sec){
+  let m = String(Math.floor(sec/60)).padStart(2,'0');
+  let s = String(sec%60).padStart(2,'0');
+  return `${m}:${s}`;
 }
 
-// =====================
-// 表示更新
-// =====================
-function updateTimer() {
-  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
-  const s = String(remaining % 60).padStart(2, "0");
-  timerDisplay.textContent = `${m}:${s}`;
+function updateDisplay(){
+  timerDisplay.textContent = formatTime(remaining);
 }
 
-// =====================
-// 一時停止 / 再開 / リセット
-// =====================
-function pauseTimer() { paused = true; }
-function resumeTimer() { paused = false; }
-function resetTimer() {
+// ボタンの有効/無効制御
+function setButtonsRunning(running){
+  timeInput.disabled = running;
+  startBtn.disabled = running;
+}
+
+function startTimer(){
   clearInterval(timerInterval);
-  paused = false;
-  remaining = 0;
-  countingUp = false;
-  updateTimer();
+  paused=false;
+
+  remaining = parseTime(timeInput.value);
+  countingUp = (remaining===0);
+  updateDisplay();
+  setButtonsRunning(true);
+
+  timerInterval = setInterval(()=>{
+    if(!paused){
+      if(countingUp) remaining++;
+      else remaining--;
+
+      if(remaining<=0 && !countingUp){
+        remaining=0;
+        clearInterval(timerInterval);
+        updateDisplay();
+        alarmSound.play();
+        alert('⏰ タイムアップ！');
+        setButtonsRunning(false);
+      }
+
+      updateDisplay();
+    }
+  },1000);
 }
 
-// =====================
-// 終了通知（カスタマイズ可能）
-// =====================
-function notifyAction(msg) {
-  alert(msg);
+function pauseTimer(){ paused=true; }
+function resumeTimer(){ paused=false; }
+function resetTimer(){
+  clearInterval(timerInterval);
+  paused=false;
+  remaining=0;
+  countingUp=false;
+  updateDisplay();
+  timeInput.value='00:00';
+  setButtonsRunning(false);
 }
+
+timeInput.addEventListener('input', ()=>{
+  let normalized = normalizeInput(timeInput.value);
+  let sec = parseTime(normalized);
+  timeInput.value = formatTime(sec);
+});
+
 
 // =====================
 // QRスキャン
@@ -879,11 +843,11 @@ function bindButtons() {
   document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
-  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-  document.getElementById("startTimerFromDisplay").addEventListener("click", startTimerFromDisplay);
-  document.getElementById("pauseTimer").addEventListener("click", pauseTimer);
-  document.getElementById("resumeTimer").addEventListener("click", resumeTimer);
-  document.getElementById("resetTimer").addEventListener("click", resetTimer);
+  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV)
+  document.getElementById("startBtn").addEventListener("click", startTimer);
+　document.getElementById("pauseBtn").addEventListener("click", pauseTimer);
+　document.getElementById("resumeBtn").addEventListener("click", resumeTimer);
+　document.getElementById("resetBtn").addEventListener("click", resetTimer);
 
   document.addEventListener("DOMContentLoaded", async () => {
     try { 
@@ -897,7 +861,7 @@ function bindButtons() {
     startScanCamera();
     createThemePanel();
     applyTheme();
-    resetTimer();
+    updateDisplay();
 
   // スクロールでサイドバー自動開閉
   window.addEventListener("scroll", () => {
