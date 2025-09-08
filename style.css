@@ -104,25 +104,46 @@ button:hover { opacity:0.9; }
 /* =====================
    ヘルプ
 ===================== */
-.help-content {
-  background-color: #fffbe6;       /* 淡い黄色背景 */
-  border: 1px solid #f0d000;      /* 枠線 */
-  padding: 16px 20px;              /* 十分な余白 */
-  border-radius: 10px;             /* 角丸 */
+/* 操作ヘルプセクション */
+#helpSection {
+  background-color: #fffbe6;        /* 淡い黄色背景 */
+  border: 1px solid #f0d000;       /* 枠線 */
+  padding: 16px 20px;               /* 十分な余白 */
+  border-radius: 10px;              /* 角丸 */
   box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* 軽い影で浮き上がり感 */
-  font-size: 15px;                 /* 読みやすい文字サイズ */
-  line-height: 1.6;                /* 行間広め */
+  font-size: 15px;                  /* 読みやすい文字サイズ */
+  line-height: 1.6;                 /* 行間広め */
   color: #333;
-  max-width: 600px;                /* 横幅制限で読みやすく */
-  margin: 10px auto;               /* 中央寄せ */
+  max-width: 600px;                 /* 横幅制限で読みやすく */
+  margin: 20px auto;                /* 中央寄せ */
 }
 
-.help-content ol {
-  padding-left: 20px;              /* 箇条書きインデント */
+/* 見出しの強調 */
+#helpSection h2 {
+  font-size: 1.3rem;
+  margin-bottom: 12px;
+  color: #333;
+  text-align: center;
+}
+
+/* 手順リスト */
+#helpSection ol {
+  padding-left: 20px;               /* 箇条書きインデント */
   margin-top: 8px;
 }
 
-.help-content li {
-  margin-bottom: 10px;             /* 各手順の間隔 */
+/* 各手順 */
+#helpSection li {
+  margin-bottom: 10px;              /* 手順間隔 */
+  padding: 6px 8px;
+  background-color: #fffaf0;        /* 手順ごとの軽い背景色 */
+  border-left: 4px solid #f0d000;  /* 左ラインで強調 */
+  border-radius: 4px;
 }
+
+/* ホバー効果 */
+#helpSection li:hover {
+  background-color: #fff3c4;        /* ホバー時に少し濃く */
+}
+
 
