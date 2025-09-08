@@ -195,14 +195,6 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// グローバル状態（既に宣言されている場合は再宣言しない）
-// =====================
-if (typeof timerInterval === "undefined") var timerInterval = null;
-if (typeof remaining === "undefined") var remaining = 0;
-if (typeof paused === "undefined") var paused = false;
-if (typeof countingUp === "undefined") var countingUp = false;
-
-// =====================
 // タイマー表示編集可能
 // =====================
 const timerDisplay = document.getElementById("timerDisplay");
