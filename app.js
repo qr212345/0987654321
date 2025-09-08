@@ -36,6 +36,10 @@ let scrollTimeout;
 let passwordValidated = false;
 let timerInterval, remaining = 0;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
+let timerInterval;
+let remaining = 0;
+let countingUp = false; // ストップウォッチ用フラグ
+let paused = false;     // 一時停止フラグ
 
 // =====================
 // テーマ設定
@@ -192,30 +196,59 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// タイマー
+// タイマー / ストップウォッチ
 // =====================
-function startTimer(minutes){
-  remaining = minutes*60; updateTimer();
+function startTimer(minutes) {
   clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    remaining--; updateTimer();
-    if(remaining<=0){ clearInterval(timerInterval); notifyAction("⏰ タイムアップ！"); }
-  },1000);
-}
-function updateTimer(){
-  const m=String(Math.floor(remaining/60)).padStart(2,"0");
-  const s=String(remaining%60).padStart(2,"0");
-  document.getElementById("timerDisplay").textContent=`${m}:${s}`;
+
+  paused = false;
+
+  if (minutes === 0) {
+    // ストップウォッチモード
+    remaining = 0;
+    countingUp = true;
+  } else {
+    // カウントダウンモード
+    remaining = minutes * 60;
+    countingUp = false;
+  }
+
+  updateTimer();
+  timerInterval = setInterval(() => {
+    if (!paused) {
+      if (countingUp) {
+        remaining++;
+      } else {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          notifyAction("⏰ タイムアップ！");
+        }
+      }
+      updateTimer();
+    }
+  }, 1000);
 }
 
-document.getElementById("startTimerBtn")?.addEventListener("click",()=>{
-  const minutes=parseInt(document.getElementById("timerMinutes").value);
-  startTimer(minutes);
-});
-document.getElementById("resetTimerBtn")?.addEventListener("click",()=>{
-  clearInterval(timerInterval);
-  document.getElementById("timerDisplay").textContent="00:00";
-});
+// =====================
+// タイマー表示更新
+// =====================
+function updateTimer() {
+  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const s = String(remaining % 60).padStart(2, "0");
+  document.getElementById("timerDisplay").textContent = `${m}:${s}`;
+}
+
+// =====================
+// 一時停止 / 再開
+// =====================
+function pauseTimer() {
+  paused = true;
+}
+
+function resumeTimer() {
+  paused = false;
+}
 
 // =====================
 // QRスキャン
@@ -781,16 +814,32 @@ function bindButtons(){
   document.getElementById("saveToGASBtn")?.addEventListener("click",()=>requireAuth(()=>saveToGAS(seatMap,playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click",()=>requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-}
 
-document.addEventListener("DOMContentLoaded", async ()=>{
-  try{ await loadFromGAS(); } catch(e){ console.warn("GASロード失敗,ローカル使用", e); }
-  loadFromLocalStorage();
-  renderSeats();
-  bindButtons();
-  startScanCamera();
-  createThemePanel();
-  applyTheme();
+  document.getElementById("startTimerBtn")?.addEventListener("click", () => {
+    const minutes = parseInt(document.getElementById("timerMinutes").value) || 0;
+    startTimer(minutes);
+  });
+
+  document.getElementById("resetTimerBtn")?.addEventListener("click", () => {
+    clearInterval(timerInterval);
+    remaining = 0;
+    countingUp = false;
+    paused = false;
+    document.getElementById("timerDisplay").textContent = "00:00";
+  });
+
+  document.getElementById("pauseTimerBtn")?.addEventListener("click", pauseTimer);
+  document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
+  }
+
+  document.addEventListener("DOMContentLoaded", async ()=>{
+    try{ await loadFromGAS(); } catch(e){ console.warn("GASロード失敗,ローカル使用", e); }
+    loadFromLocalStorage();
+    renderSeats();
+    bindButtons();
+    startScanCamera();
+    createThemePanel();
+    applyTheme();
   window.addEventListener("scroll",()=>{
     if(scrollTimeout) clearTimeout(scrollTimeout);
     const st=window.pageYOffset||document.documentElement.scrollTop;
