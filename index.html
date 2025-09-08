@@ -15,6 +15,7 @@
       <button onclick="navigate('rankingSection')">💾 順位登録</button>
       <button onclick="navigate('historySection')">🔔 履歴</button>
       <button onclick="navigate('helpSection')">🔎 操作ヘルプ</button>
+      <button id="openThemeBtn" style="margin-top:10px;">🎨テーマ編集</button>
       <button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
       <button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
     </nav>
@@ -71,6 +72,22 @@
           <li>タイマーでイベント時間を管理</li>
         </ol>
       </div>
+    </section>
+
+    <section id="themeSection" style="margin-top:20px; border-top:1px solid #ccc; padding-top:10px;">
+    <h3>
+      テーマ編集
+      <button id="closeThemeBtn" style="float:right;">×</button>
+    </h3>
+
+    <div class="theme-controls">
+      <label>座席背景: <input type="color" id="seatBgColor" value="#f5f5f5"></label><br>
+      <label>プレイヤー背景: <input type="color" id="playerBgColor" value="#d0f0c0"></label><br>
+      <label>ボタン背景: <input type="color" id="buttonBgColor" value="#4CAF50"></label><br>
+      <label>ボタン文字色: <input type="color" id="buttonColor" value="#ffffff"></label><br>
+      <label>フォントサイズ: <input type="number" id="fontSizeInput" value="14" style="width:60px">px</label><br>
+      <button id="applyThemeBtn">適用</button>
+    </div>
     </section>
   </main>
 
