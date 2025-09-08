@@ -40,6 +40,9 @@ let scrollTimeout;
 
 let passwordValidated = false;
 
+let timerInterval, remaining = 0;
+
+let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 // =====================
 // テーマ設定
 // =====================
@@ -193,6 +196,60 @@ function navigate(targetId){
 async function navigateAsync(sectionId){ return new Promise(res=>{ navigate(sectionId); setTimeout(res,300); }); }
 
 // =====================
+// 通知
+// =====================
+function notifyAction(message) {
+  // ポップアップ
+  const msg = document.createElement("div");
+  msg.className = "notify-popup";
+  msg.textContent = message;
+  document.body.appendChild(msg);
+
+  setTimeout(() => msg.remove(), 3000);
+
+  // 効果音
+  const audio = new Audio("notify.mp3"); // 任意の効果音ファイル
+  audio.play().catch(()=>{});
+}
+
+// QRスキャン成功時に呼び出す
+function onQrScanSuccess(data) {
+  notifyAction(`この座席で「${data}」を登録しました！`);
+}
+
+// =====================
+// タイマー
+// =====================
+function startTimer(minutes) {
+  remaining = minutes * 60;
+  updateTimer();
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    remaining--;
+    updateTimer();
+    if (remaining <= 0) {
+      clearInterval(timerInterval);
+      notifyAction("⏰ タイムアップ！");
+    }
+  },1000);
+}
+
+function updateTimer(){
+  const m = String(Math.floor(remaining/60)).padStart(2,"0");
+  const s = String(remaining%60).padStart(2,"0");
+  document.getElementById("timerDisplay").textContent = `${m}:${s}`;
+}
+
+document.getElementById("startTimerBtn").addEventListener("click",()=>{
+  const minutes = parseInt(document.getElementById("timerMinutes").value);
+  startTimer(minutes);
+});
+document.getElementById("resetTimerBtn").addEventListener("click",()=>{
+  clearInterval(timerInterval);
+  document.getElementById("timerDisplay").textContent = "00:00";
+});
+
+// =====================
 // QRコード読み取り
 // =====================
 function handleScanSuccess(decodedText){
@@ -228,6 +285,47 @@ function handleScanSuccess(decodedText){
     douTakuRecords.push({seatId: currentSeatId, playerId: decodedText, action: "登録", time: new Date().toLocaleString()});
     localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
   }
+}
+
+// =====================
+// QR紐づけの自動履歴ログ
+// =====================
+function logAction(playerId, seatId, action="参加", extra={}) {
+  const entry = {
+    time: new Date().toLocaleString("ja-JP", { hour12: false }),
+    playerId,
+    seatId,
+    action,
+    rank: extra.rank || null
+  };
+  historyLog.push(entry);
+  localStorage.setItem("historyLog", JSON.stringify(historyLog));
+  renderHistory(); // 履歴セクションへ即時反映
+}
+
+function exportHistoryCSV() {
+  if (historyLog.length === 0) {
+    alert("⚠️ 履歴がありません。");
+    return;
+  }
+
+  const rows = [["時間","プレイヤーID","座席ID","操作","順位"]];
+  historyLog.forEach(e => {
+    rows.push([
+      e.time,
+      e.playerId,
+      e.seatId || "",
+      e.action,
+      e.rank ? e.rank : ""
+    ]);
+  });
+
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "history.csv";
+  a.click();
 }
 
 // =====================
@@ -271,6 +369,7 @@ function renderSeats(){
 // =====================
 function removePlayer(seatId, playerId){
   if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
+  if (!confirm(`⚠️ 本当に座席「${seatId}」からプレイヤー「${playerId}」を削除しますか？`)) return;
   const idx=seatMap[seatId]?.indexOf(playerId);
   if(idx===-1) return;
   seatMap[seatId].splice(idx,1);
@@ -377,6 +476,7 @@ function enableDragSort(listId){
 }
 
 async function finalizeRanking(){
+  if (!confirm("⚠️ この順位を確定します。よろしいですか？")) return;
   const list=document.getElementById("rankingList");
   const rankedIds=Array.from(list.children).map(li=>li.dataset.id);
   if(rankedIds.length<2){ displayMessage("⚠️ 2人以上で順位を登録してください"); return; }
@@ -518,6 +618,20 @@ window.exportSeatCSV = ()=>{
 document.getElementById("closeHelpBtn").addEventListener("click", ()=>{
   document.getElementById("helpSection").style.display = "none";
 });
+
+function renderHistory() {
+  const container = document.getElementById("historyList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  historyLog.slice().reverse().forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "history-entry";
+    div.textContent = `[${entry.time}] ${entry.playerId} → ${entry.seatId || "N/A"} : ${entry.action}`
+      + (entry.rank ? `（順位: ${entry.rank}位）` : "");
+    container.appendChild(div);
+  });
+}
 
 // =====================
 // 初期化
