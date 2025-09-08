@@ -84,7 +84,7 @@ function createThemePanel() {
 
   const panel = document.createElement("div");
   panel.id = "themePanel";
-  Object.assign(panel.style,{
+  Object.assign(panel.style, {
     position:"fixed",
     top:"10px",
     right:"10px",
@@ -124,14 +124,21 @@ function createThemePanel() {
 
   document.getElementById("closeThemeBtn").addEventListener("click", ()=>{ panel.style.display="none"; });
 
-  const header = document.querySelector("header");
+  // サイドバー内のボタン
+  const sidebar = document.getElementById("sidebar");
   if (!document.getElementById("openThemeBtn")) {
     const openBtn = document.createElement("button");
     openBtn.id = "openThemeBtn";
-    openBtn.textContent = "テーマ編集";
-    openBtn.style.marginLeft = "10px";
-    openBtn.addEventListener("click", ()=>{ panel.style.display = panel.style.display==="none"?"block":"none"; });
-    header.appendChild(openBtn);
+    openBtn.textContent = "📚テーマ編集";
+    openBtn.addEventListener("click", ()=>{ 
+      panel.style.display = panel.style.display==="none"?"block":"none"; 
+    });
+    sidebar.appendChild(openBtn);
+  } else {
+    // 既存ボタンがあればクリックでパネル表示
+    document.getElementById("openThemeBtn").addEventListener("click", ()=>{
+      panel.style.display = panel.style.display==="none"?"block":"none"; 
+    });
   }
 }
 
