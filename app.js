@@ -133,10 +133,14 @@ function createThemePanel() {
 
 // app.js 側に追加
 function toggleThemePanel(){
-  const panel = document.getElementById("themePanel");
-  if(!panel) return;
+  let panel = document.getElementById("themePanel");
+  if(!panel){
+    createThemePanel();  // 存在しなければ作成
+    panel = document.getElementById("themePanel");
+  }
   panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
 }
+
 
 // =====================
 // ユーティリティ
@@ -770,10 +774,10 @@ function bindButtons() {
     }
     loadFromLocalStorage();
     renderSeats();
+    createThemePanel();  // ←ここで必ず作成
+    applyTheme();
     bindButtons();
     startScanCamera();
-    createThemePanel();
-    applyTheme();
 
   // スクロールでサイドバー自動開閉
   window.addEventListener("scroll", () => {
