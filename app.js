@@ -900,7 +900,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
   });
 }); // ここでDOMContentLoadedの括弧を閉じる
-
+}
 // window に関数を登録
 Object.assign(window, {
   navigate,
