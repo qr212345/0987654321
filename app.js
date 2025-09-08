@@ -294,16 +294,16 @@ function handleScanSuccess(decodedText){
 // =====================
 function logAction(playerId, seatId, action="参加", extra={}) {
   const entry = {
-    time: new Date().toLocaleString("ja-JP", { hour12: false }),
+    time: new Date().toLocaleString("ja-JP", { hour12:false }),
     playerId,
-    seatId,
+    seatId: seatId || null,
     action,
     rank: extra.rank || null
   };
   historyLog.push(entry);
-  // localStorageへの保存はここで1回だけ
   localStorage.setItem("historyLog", JSON.stringify(historyLog));
   renderHistory();
+  sendHistoryEntry(entry).catch(e => console.warn(`履歴送信失敗: ${playerId}`, e));
 }
 
 // =====================
@@ -402,6 +402,39 @@ function loadDouTakuHistory(){
   });
 }
 
+async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
+  const statusContainer = document.getElementById("historyStatus");
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      if (statusContainer) {
+        statusContainer.textContent = `送信中: ${entry.playerId} (${attempt}/${retries})`;
+      }
+
+      await callGAS({ mode: "addHistory", entry });
+
+      if (statusContainer) {
+        statusContainer.textContent = `✅ 送信成功: ${entry.playerId}`;
+      }
+      console.log(`✅ 履歴送信成功: ${entry.playerId}`);
+      return true;
+
+    } catch (e) {
+      console.warn(`⚠️ 履歴送信失敗 (${attempt}/${retries}): ${entry.playerId}`, e);
+
+      if (attempt < retries) {
+        await new Promise(res => setTimeout(res, delayMs));
+      } else {
+        if (statusContainer) {
+          statusContainer.textContent = `❌ 送信失敗: ${entry.playerId}`;
+        }
+        console.error(`❌ 履歴送信完全に失敗: ${entry.playerId}`);
+        return false;
+      }
+    }
+  }
+}
+
 // =====================
 // ローカル保存・復元
 // =====================
@@ -454,13 +487,11 @@ function enableDragSort(listId){
 }
 
 async function finalizeRanking() {
-  // 確認ダイアログ
   if (!confirm("⚠️ この順位を確定します。よろしいですか？")) return;
 
   const list = document.getElementById("rankingList");
   if (!list) return;
 
-  // ランキングID取得
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
   if (rankedIds.length < 2) {
     displayMessage("⚠️ 2人以上で順位を登録してください");
@@ -470,7 +501,7 @@ async function finalizeRanking() {
   // ランキングエントリー作成
   const entries = rankedIds.map((playerId, index) => ({ playerId, rank: index + 1 }));
 
-  // GASに送信（順位確定）
+  // GASに順位送信
   const success = await postRankingUpdate(entries);
   if (!success) {
     displayMessage("❌ 順位の送信に失敗しました");
@@ -479,43 +510,14 @@ async function finalizeRanking() {
 
   displayMessage("✅ 順位を確定しました");
 
-  // ===========================
-  // 勝敗履歴に記録（ローカル + GAS送信）
-  // ===========================
   const timestamp = new Date().toLocaleString();
-  const historyStatusContainer = document.getElementById("historyStatus");
 
-  const historyPromises = rankedIds.map((playerId, index) => {
-    const entry = {
-      playerId,
-      rank: index + 1,
-      action: "順位確定",
-      seatId: currentRankingSeatId || null,
-      time: timestamp
-    };
-
-    // ローカル保存
-    douTakuRecords.push(entry);
+  // 履歴統合ログ
+  rankedIds.forEach((playerId, index) => {
     logAction(playerId, currentRankingSeatId, "順位確定", { rank: index + 1 });
-
-    // GAS送信（非同期）
-    return sendHistoryEntry(entry).catch(e => {
-      console.warn(`⚠️ 履歴送信失敗: ${playerId}`, e);
-      if (historyStatusContainer) {
-        historyStatusContainer.textContent = `❌ 送信失敗: ${playerId}`;
-      }
-    });
   });
 
-  // 一括ローカル保存（履歴）
-  localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
-
-  // GAS送信完了を待つ
-  await Promise.all(historyPromises);
-
-  // ===========================
   // 座席情報クリア
-  // ===========================
   if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
     seatMap[currentRankingSeatId] = [];
     currentRankingSeatId = null;
@@ -523,11 +525,7 @@ async function finalizeRanking() {
     await stopRankCamera();
   }
 
-  // 最終メッセージ
-  if (historyStatusContainer) {
-    historyStatusContainer.textContent = "🏆 順位確定＆履歴送信完了";
-  }
-  displayMessage("🏆 全員の順位確定と履歴送信が完了しました");
+  displayMessage("🏆 順位確定＆履歴送信完了");
 }
 
 // =====================
@@ -803,19 +801,19 @@ function exportRankingHistoryCSV(){
   displayMessage("✅ 履歴CSVを出力しました");
 }
 
-function exportHistoryCSV(){
-  if(historyLog.length === 0){
+function exportHistoryCSV() {
+  if (historyLog.length === 0) {
     displayMessage("⚠️ 履歴がありません");
     return;
   }
 
-  const header = ["time","playerId","seatId","action","rank"];
+  const header = ["time", "playerId", "seatId", "action", "rank"];
   const rows = historyLog.map(r => [
     r.time, r.playerId, r.seatId ?? "", r.action, r.rank ?? ""
   ]);
 
   const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
-  const blob = new Blob([csvContent], {type: "text/csv"});
+  const blob = new Blob([csvContent], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
