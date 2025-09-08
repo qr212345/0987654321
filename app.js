@@ -301,8 +301,9 @@ function logAction(playerId, seatId, action="参加", extra={}) {
     rank: extra.rank || null
   };
   historyLog.push(entry);
+  // localStorageへの保存はここで1回だけ
   localStorage.setItem("historyLog", JSON.stringify(historyLog));
-  renderHistory(); // 履歴セクションへ即時反映
+  renderHistory();
 }
 
 // =====================
@@ -401,20 +402,6 @@ function loadDouTakuHistory(){
   });
 }
 
-function renderHistory() {
-  const container = document.getElementById("historyList");
-  if (!container) return;
-  container.innerHTML = "";
-
-  historyLog.slice().reverse().forEach(entry => {
-    const div = document.createElement("div");
-    div.className = "history-entry";
-    div.textContent = `[${entry.time}] ${entry.playerId} → ${entry.seatId || "N/A"} : ${entry.action}`
-      + (entry.rank ? `（順位: ${entry.rank}位）` : "");
-    container.appendChild(div);
-  });
-}
-
 // =====================
 // ローカル保存・復元
 // =====================
@@ -466,23 +453,26 @@ function enableDragSort(listId){
   });
 }
 
-async function finalizeRanking(){
+async function finalizeRanking() {
+  // 確認ダイアログ
   if (!confirm("⚠️ この順位を確定します。よろしいですか？")) return;
 
   const list = document.getElementById("rankingList");
-  const rankedIds = Array.from(list.children).map(li => li.dataset.id);
+  if (!list) return;
 
-  if (rankedIds.length < 2){
+  // ランキングID取得
+  const rankedIds = Array.from(list.children).map(li => li.dataset.id);
+  if (rankedIds.length < 2) {
     displayMessage("⚠️ 2人以上で順位を登録してください");
     return;
   }
 
   // ランキングエントリー作成
-  const entries = rankedIds.map((playerId, index) => ({playerId, rank: index+1}));
+  const entries = rankedIds.map((playerId, index) => ({ playerId, rank: index + 1 }));
 
-  // GASに送信
+  // GASに送信（順位確定）
   const success = await postRankingUpdate(entries);
-  if(!success){
+  if (!success) {
     displayMessage("❌ 順位の送信に失敗しました");
     return;
   }
@@ -490,27 +480,54 @@ async function finalizeRanking(){
   displayMessage("✅ 順位を確定しました");
 
   // ===========================
-  // 勝敗履歴に記録
+  // 勝敗履歴に記録（ローカル + GAS送信）
   // ===========================
   const timestamp = new Date().toLocaleString();
-  rankedIds.forEach((playerId, index) => {
-    douTakuRecords.push({
+  const historyStatusContainer = document.getElementById("historyStatus");
+
+  const historyPromises = rankedIds.map((playerId, index) => {
+    const entry = {
       playerId,
-      rank: index+1,
+      rank: index + 1,
       action: "順位確定",
       seatId: currentRankingSeatId || null,
       time: timestamp
+    };
+
+    // ローカル保存
+    douTakuRecords.push(entry);
+    logAction(playerId, currentRankingSeatId, "順位確定", { rank: index + 1 });
+
+    // GAS送信（非同期）
+    return sendHistoryEntry(entry).catch(e => {
+      console.warn(`⚠️ 履歴送信失敗: ${playerId}`, e);
+      if (historyStatusContainer) {
+        historyStatusContainer.textContent = `❌ 送信失敗: ${playerId}`;
+      }
     });
   });
+
+  // 一括ローカル保存（履歴）
   localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
 
+  // GAS送信完了を待つ
+  await Promise.all(historyPromises);
+
+  // ===========================
   // 座席情報クリア
-  if(currentRankingSeatId && seatMap[currentRankingSeatId]){
+  // ===========================
+  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
     seatMap[currentRankingSeatId] = [];
     currentRankingSeatId = null;
     renderSeats();
-    stopRankCamera();
+    await stopRankCamera();
   }
+
+  // 最終メッセージ
+  if (historyStatusContainer) {
+    historyStatusContainer.textContent = "🏆 順位確定＆履歴送信完了";
+  }
+  displayMessage("🏆 全員の順位確定と履歴送信が完了しました");
 }
 
 // =====================
@@ -668,30 +685,6 @@ function confirmAction(message){
 }
 
 // =====================
-// 履歴送信
-// =====================
-async function sendHistoryEntry(entry){
-  try {
-    await callGAS({ mode: "addHistory", entry });
-  } catch(e){
-    console.error("履歴送信失敗", e);
-  }
-}
-
-// 例: 順位確定時
-rankedIds.forEach((playerId, index) => {
-  const entry = {
-    playerId,
-    rank: index+1,
-    action: "順位確定",
-    seatId: currentRankingSeatId || null,
-    time: timestamp
-  };
-  logAction(playerId, currentRankingSeatId, "順位確定", {rank: index+1});
-  sendHistoryEntry(entry);
-});
-
-// =====================
 // リアルタイム同期
 // =====================
 async function pollHistory() {
@@ -846,7 +839,6 @@ function bindButtons(){
   document.getElementById("saveToGASBtn")?.addEventListener("click",()=>requireAuth(()=>saveToGAS(seatMap,playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click",()=>requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-　document.getElementById("exportHistoryBtn")?.addEventListener("click", exportHistoryCSV);
 }
 
 document.addEventListener("DOMContentLoaded", async ()=>{
