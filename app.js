@@ -34,7 +34,6 @@ let sidebar = document.getElementById("sidebar");
 let lastScrollTop = 0;
 let scrollTimeout;
 let passwordValidated = false;
-let timerInterval, remaining = 0;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let timerInterval = null;
 let remaining = 0;
