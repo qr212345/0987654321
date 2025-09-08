@@ -11,7 +11,6 @@ const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
 
 const timerDisplay = document.getElementById("timerDisplay");
-timerDisplay.contentEditable = true;
 timerDisplay.spellcheck = false;
 
 // =====================
@@ -39,7 +38,7 @@ let lastScrollTop = 0;
 let scrollTimeout;
 let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
-let timerInterval = null;
+let timerInterval;
 let remaining = 0;
 let paused = false;
 let countingUp = false;
@@ -198,114 +197,122 @@ function notifyAction(message){
 
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
-// =====================
-// カーソル位置保持
-// =====================
-function setCaretPosition(el, pos) {
-  const range = document.createRange();
-  const sel = window.getSelection();
-  range.setStart(el.firstChild || el, pos);
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
+>
+    // =====================
+    // グローバル状態
+    // =====================
+    let timerInterval;
+    let remaining = 0;
+    let paused = false;
+    let countingUp = false;
 
-// =====================
-// 入力を MM:SS に整形
-// =====================
-timerDisplay.addEventListener("input", () => {
-  const sel = window.getSelection();
-  let caretPos = sel.focusOffset;
+    const timerDisplay = document.getElementById("timerDisplay");
+    timerDisplay.spellcheck = false;
 
-  let text = timerDisplay.textContent.replace(/[^0-9]/g, "");
-  if (text.length > 4) text = text.slice(0, 4);
+    // =====================
+    // カーソル位置保持
+    // =====================
+    function setCaretPosition(el, pos) {
+      const range = document.createRange();
+      const sel = window.getSelection();
+      range.setStart(el.firstChild || el, pos);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
 
-  let minutes = text.slice(0, text.length - 2) || "0";
-  let seconds = text.slice(-2) || "0";
-  minutes = minutes.padStart(2, "0");
-  seconds = seconds.padStart(2, "0");
-  timerDisplay.textContent = `${minutes}:${seconds}`;
+    // =====================
+    // 入力を MM:SS に整形
+    // =====================
+    timerDisplay.addEventListener("input", () => {
+      const sel = window.getSelection();
+      let caretPos = sel.focusOffset;
 
-  caretPos = Math.min(timerDisplay.textContent.length, caretPos);
-  setCaretPosition(timerDisplay, caretPos);
-});
+      let text = timerDisplay.textContent.replace(/[^0-9]/g, "");
+      if (text.length > 4) text = text.slice(0, 4);
 
-timerDisplay.addEventListener("blur", () => {
-  let [m, s] = timerDisplay.textContent.split(":");
-  m = (parseInt(m) || 0).toString().padStart(2, "0");
-  s = (parseInt(s) || 0).toString().padStart(2, "0");
-  timerDisplay.textContent = `${m}:${s}`;
-});
+      let minutes = text.slice(0, text.length - 2) || "0";
+      let seconds = text.slice(-2) || "0";
+      minutes = minutes.padStart(2, "0");
+      seconds = seconds.padStart(2, "0");
+      timerDisplay.textContent = `${minutes}:${seconds}`;
 
-// =====================
-// タイマー開始
-// =====================
-function startTimerFromDisplay() {
-  clearInterval(timerInterval);
-  paused = false;
+      caretPos = Math.min(timerDisplay.textContent.length, caretPos);
+      setCaretPosition(timerDisplay, caretPos);
+    });
 
-  const [m, s] = timerDisplay.textContent.split(":").map(n => parseInt(n, 10) || 0);
-  if (m === 0 && s === 0) {
-    // ストップウォッチモード
-    remaining = 0;
-    countingUp = true;
-  } else {
-    // タイマーモード
-    remaining = m * 60 + s;
-    countingUp = false;
-  }
+    timerDisplay.addEventListener("blur", () => {
+      let [m, s] = timerDisplay.textContent.split(":");
+      m = (parseInt(m) || 0).toString().padStart(2, "0");
+      s = (parseInt(s) || 0).toString().padStart(2, "0");
+      timerDisplay.textContent = `${m}:${s}`;
+    });
 
-  updateTimer();
+    // =====================
+    // タイマー開始
+    // =====================
+    function startTimerFromDisplay() {
+      clearInterval(timerInterval);
+      paused = false;
 
-  timerInterval = setInterval(() => {
-    if (!paused) {
-      if (countingUp) {
-        remaining++;
+      const [m, s] = timerDisplay.textContent.split(":").map(n => parseInt(n, 10) || 0);
+      if (m === 0 && s === 0) {
+        // ストップウォッチモード
+        remaining = 0;
+        countingUp = true;
       } else {
-        remaining--;
-        if (remaining <= 0) {
-          clearInterval(timerInterval);
-          remaining = 0;
-          notifyAction("⏰ タイムアップ！");
-        }
+        // タイマーモード
+        remaining = m * 60 + s;
+        countingUp = false;
       }
+
+      updateTimer();
+
+      timerInterval = setInterval(() => {
+        if (!paused) {
+          if (countingUp) {
+            remaining++;
+          } else {
+            remaining--;
+            if (remaining <= 0) {
+              clearInterval(timerInterval);
+              remaining = 0;
+              notifyAction("⏰ タイムアップ！");
+            }
+          }
+          updateTimer();
+        }
+      }, 1000);
+    }
+
+    // =====================
+    // 表示更新
+    // =====================
+    function updateTimer() {
+      const m = String(Math.floor(remaining / 60)).padStart(2, "0");
+      const s = String(remaining % 60).padStart(2, "0");
+      timerDisplay.textContent = `${m}:${s}`;
+    }
+
+    // =====================
+    // 一時停止 / 再開 / リセット
+    // =====================
+    function pauseTimer() { paused = true; }
+    function resumeTimer() { paused = false; }
+    function resetTimer() {
+      clearInterval(timerInterval);
+      paused = false;
+      remaining = 0;
+      countingUp = false;
       updateTimer();
     }
-  }, 1000);
-}
 
-// =====================
-// 表示更新
-// =====================
-function updateTimer() {
-  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
-  const s = String(remaining % 60).padStart(2, "0");
-  timerDisplay.textContent = `${m}:${s}`;
-}
-
-// =====================
-// 一時停止 / 再開
-// =====================
-function pauseTimer() { paused = true; }
-function resumeTimer() { paused = false; }
-
-// =====================
-// リセット
-// =====================
-function resetTimer() {
-  clearInterval(timerInterval);
-  paused = false;
-  remaining = 0;
-  countingUp = false;
-  updateTimer();
-}
-
-// =====================
-// 終了通知（カスタム可）
-// =====================
-function notifyAction(msg) {
-  alert(msg);
-}
+    // =====================
+    // 終了通知（カスタム可）
+    // =====================
+    function notifyAction(msg) {
+      alert(msg);
+    }
 
 // =====================
 // QRスキャン
@@ -876,18 +883,19 @@ function bindButtons() {
   document.getElementById("resumeTimer").addEventListener("click", resumeTimer);
   document.getElementById("resetTimer").addEventListener("click", resetTimer);
 
-document.addEventListener("DOMContentLoaded", async () => {
-  try { 
-    await loadFromGAS(); 
-  } catch (e) { 
-    console.warn("GASロード失敗,ローカル使用", e); 
-  }
-  loadFromLocalStorage();
-  renderSeats();
-  bindButtons();
-  startScanCamera();
-  createThemePanel();
-  applyTheme();
+  document.addEventListener("DOMContentLoaded", async () => {
+    try { 
+      await loadFromGAS(); 
+    } catch (e) { 
+      console.warn("GASロード失敗,ローカル使用", e); 
+    }
+    loadFromLocalStorage();
+    renderSeats();
+    bindButtons();
+    startScanCamera();
+    createThemePanel();
+    applyTheme();
+    resetTimer();
 
   // スクロールでサイドバー自動開閉
   window.addEventListener("scroll", () => {
