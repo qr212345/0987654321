@@ -33,7 +33,7 @@ let lastScanTime = 0;
 let msgTimer = null;
 
 let pollTimer = null;
-let douTakuRecords = [];
+let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
 
 let sidebar = document.getElementById("sidebar");
 let lastScrollTop = 0;
@@ -44,7 +44,6 @@ let passwordValidated = false;
 let timerInterval, remaining = 0;
 
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
-let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
 
 // =====================
 // テーマ設定
@@ -168,8 +167,6 @@ async function requireAuth(callback){
   if(pw==="supersecret"){ passwordValidated=true; callback(); }
   else alert("認証失敗");
 }
-
-function delay(ms){ return new Promise(res=>setTimeout(res, ms)); }
 
 // =====================
 // ナビゲーション
@@ -308,31 +305,6 @@ function logAction(playerId, seatId, action="参加", extra={}) {
   renderHistory(); // 履歴セクションへ即時反映
 }
 
-function exportHistoryCSV() {
-  if (historyLog.length === 0) {
-    alert("⚠️ 履歴がありません。");
-    return;
-  }
-
-  const rows = [["時間","プレイヤーID","座席ID","操作","順位"]];
-  historyLog.forEach(e => {
-    rows.push([
-      e.time,
-      e.playerId,
-      e.seatId || "",
-      e.action,
-      e.rank ? e.rank : ""
-    ]);
-  });
-
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "history.csv";
-  a.click();
-}
-
 // =====================
 // 座席描画
 // =====================
@@ -429,6 +401,20 @@ function loadDouTakuHistory(){
   });
 }
 
+function renderHistory() {
+  const container = document.getElementById("historyList");
+  if (!container) return;
+  container.innerHTML = "";
+
+  historyLog.slice().reverse().forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "history-entry";
+    div.textContent = `[${entry.time}] ${entry.playerId} → ${entry.seatId || "N/A"} : ${entry.action}`
+      + (entry.rank ? `（順位: ${entry.rank}位）` : "");
+    container.appendChild(div);
+  });
+}
+
 // =====================
 // ローカル保存・復元
 // =====================
@@ -502,30 +488,6 @@ async function finalizeRanking(){
   }
 
   displayMessage("✅ 順位を確定しました");
-
-  // ===========================
-  // 勝敗履歴に記録
-  // ===========================
-  const timestamp = new Date().toLocaleString();
-  rankedIds.forEach((playerId, index) => {
-    douTakuRecords.push({
-      playerId,
-      rank: index+1,
-      action: "順位確定",
-      seatId: currentRankingSeatId || null,
-      time: timestamp
-    });
-  });
-  localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
-
-  // 座席情報クリア
-  if(currentRankingSeatId && seatMap[currentRankingSeatId]){
-    seatMap[currentRankingSeatId] = [];
-    currentRankingSeatId = null;
-    renderSeats();
-    stopRankCamera();
-  }
-}
 
   // ===========================
   // 勝敗履歴に記録
@@ -706,6 +668,30 @@ function confirmAction(message){
 }
 
 // =====================
+// 履歴送信
+// =====================
+async function sendHistoryEntry(entry){
+  try {
+    await callGAS({ mode: "addHistory", entry });
+  } catch(e){
+    console.error("履歴送信失敗", e);
+  }
+}
+
+// 例: 順位確定時
+rankedIds.forEach((playerId, index) => {
+  const entry = {
+    playerId,
+    rank: index+1,
+    action: "順位確定",
+    seatId: currentRankingSeatId || null,
+    time: timestamp
+  };
+  logAction(playerId, currentRankingSeatId, "順位確定", {rank: index+1});
+  sendHistoryEntry(entry);
+});
+
+// =====================
 // リアルタイム同期
 // =====================
 async function pollHistory() {
@@ -824,6 +810,30 @@ function exportRankingHistoryCSV(){
   displayMessage("✅ 履歴CSVを出力しました");
 }
 
+function exportHistoryCSV(){
+  if(historyLog.length === 0){
+    displayMessage("⚠️ 履歴がありません");
+    return;
+  }
+
+  const header = ["time","playerId","seatId","action","rank"];
+  const rows = historyLog.map(r => [
+    r.time, r.playerId, r.seatId ?? "", r.action, r.rank ?? ""
+  ]);
+
+  const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], {type: "text/csv"});
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `history_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+
+  displayMessage("✅ 履歴CSVを出力しました");
+}
+
 // =====================
 // 初期化
 // =====================
@@ -836,6 +846,7 @@ function bindButtons(){
   document.getElementById("saveToGASBtn")?.addEventListener("click",()=>requireAuth(()=>saveToGAS(seatMap,playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click",()=>requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
+　document.getElementById("exportHistoryBtn")?.addEventListener("click", exportHistoryCSV);
 }
 
 document.addEventListener("DOMContentLoaded", async ()=>{
