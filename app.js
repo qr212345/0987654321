@@ -36,10 +36,10 @@ let scrollTimeout;
 let passwordValidated = false;
 let timerInterval, remaining = 0;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
-let timerInterval;
+let timerInterval = null;
 let remaining = 0;
-let countingUp = false; // ストップウォッチ用フラグ
-let paused = false;     // 一時停止フラグ
+let paused = false;
+let countingUp = false;
 
 // =====================
 // テーマ設定
@@ -196,24 +196,55 @@ function notifyAction(message){
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
-// タイマー / ストップウォッチ
+// タイマー表示を編集可能に
 // =====================
-function startTimer(minutes) {
-  clearInterval(timerInterval);
+const timerDisplay = document.getElementById("timerDisplay");
+timerDisplay.contentEditable = true;
+timerDisplay.spellcheck = false;
 
+// 入力時に MM:SS 形式チェック
+timerDisplay.addEventListener("input", () => {
+  let text = timerDisplay.textContent.replace(/[^0-9:]/g, ""); // 数字とコロンのみ
+  const parts = text.split(":").map(p => p.padStart(2, "0")); // 2桁揃え
+  if (parts.length > 2) parts.splice(2); // MM:SS のみ
+  while (parts.length < 2) parts.unshift("00"); // 足りなければ補完
+  timerDisplay.textContent = parts.join(":");
+});
+
+// フォーカスアウトで整形
+timerDisplay.addEventListener("blur", () => {
+  const parts = timerDisplay.textContent.split(":").map(p => p.padStart(2, "0"));
+  while (parts.length < 2) parts.unshift("00");
+  timerDisplay.textContent = parts.join(":");
+});
+
+// =====================
+// タイマー開始（表示値から判定）
+// =====================
+function startTimerFromDisplay() {
+  clearInterval(timerInterval);
   paused = false;
 
-  if (minutes === 0) {
+  const display = timerDisplay.textContent.trim();
+  const parts = display.split(":").map(p => parseInt(p, 10));
+  let minutes = 0, seconds = 0;
+
+  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+    minutes = parts[0];
+    seconds = parts[1];
+  }
+
+  if (minutes === 0 && seconds === 0) {
     // ストップウォッチモード
     remaining = 0;
     countingUp = true;
   } else {
-    // カウントダウンモード
-    remaining = minutes * 60;
+    remaining = minutes * 60 + seconds;
     countingUp = false;
   }
 
   updateTimer();
+
   timerInterval = setInterval(() => {
     if (!paused) {
       if (countingUp) {
@@ -222,6 +253,7 @@ function startTimer(minutes) {
         remaining--;
         if (remaining <= 0) {
           clearInterval(timerInterval);
+          remaining = 0;
           notifyAction("⏰ タイムアップ！");
         }
       }
@@ -236,19 +268,26 @@ function startTimer(minutes) {
 function updateTimer() {
   const m = String(Math.floor(remaining / 60)).padStart(2, "0");
   const s = String(remaining % 60).padStart(2, "0");
-  document.getElementById("timerDisplay").textContent = `${m}:${s}`;
+  timerDisplay.textContent = `${m}:${s}`;
 }
 
 // =====================
 // 一時停止 / 再開
 // =====================
-function pauseTimer() {
-  paused = true;
+function pauseTimer() { paused = true; }
+function resumeTimer() { paused = false; }
+
+// =====================
+// リセット
+// =====================
+function resetTimer() {
+  clearInterval(timerInterval);
+  paused = false;
+  remaining = 0;
+  countingUp = false;
+  updateTimer();
 }
 
-function resumeTimer() {
-  paused = false;
-}
 
 // =====================
 // QRスキャン
@@ -814,22 +853,10 @@ function bindButtons() {
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-
-  // タイマー / ストップウォッチ
-  document.getElementById("startTimerBtn")?.addEventListener("click", () => {
-    const minutes = parseInt(document.getElementById("timerMinutes").value) || 0;
-    startTimer(minutes);
-  });
-  document.getElementById("resetTimerBtn")?.addEventListener("click", () => {
-    clearInterval(timerInterval);
-    remaining = 0;
-    countingUp = false;
-    paused = false;
-    updateTimer();
-  });
+  document.getElementById("startTimerBtn")?.addEventListener("click", startTimerFromDisplay);
+  document.getElementById("resetTimerBtn")?.addEventListener("click", resetTimer); 
   document.getElementById("pauseTimerBtn")?.addEventListener("click", pauseTimer);
   document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
   try { await loadFromGAS(); } catch (e) { console.warn("GASロード失敗,ローカル使用", e); }
