@@ -903,7 +903,7 @@ Object.assign(window, {
   removePlayer,
   exportPlayerCSV,
   exportSeatCSV,
-  startTimer,
+  startTimer: startTimerFromDisplay,
   pauseTimer,
   resumeTimer
 });
