@@ -104,46 +104,74 @@ button:hover { opacity:0.9; }
 /* =====================
    ヘルプ
 ===================== */
-/* 操作ヘルプセクション */
+/* 操作ヘルプセクション（全画面表示） */
 #helpSection {
-  background-color: #fffbe6;        /* 淡い黄色背景 */
-  border: 1px solid #f0d000;       /* 枠線 */
-  padding: 16px 20px;               /* 十分な余白 */
-  border-radius: 10px;              /* 角丸 */
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* 軽い影で浮き上がり感 */
-  font-size: 15px;                  /* 読みやすい文字サイズ */
-  line-height: 1.6;                 /* 行間広め */
-  color: #333;
-  max-width: 600px;                 /* 横幅制限で読みやすく */
-  margin: 20px auto;                /* 中央寄せ */
+  position: fixed;                  /* 画面に固定 */
+  top: 0;
+  left: 0;
+  width: 100%;                      /* 横幅いっぱい */
+  height: 100%;                     /* 高さいっぱい */
+  overflow-y: auto;                 /* 縦スクロール */
+  background-color: rgba(255, 255, 230, 0.95); /* 半透明の淡い背景 */
+  padding: 40px 20px;               /* 十分な余白 */
+  z-index: 2000;                    /* 他の要素より前面 */
+  box-sizing: border-box;
 }
 
-/* 見出しの強調 */
+/* 内部コンテナで読みやすく調整 */
+#helpSection .help-container {
+  max-width: 900px;                 /* 最大幅 */
+  margin: 0 auto;                   /* 横中央寄せ */
+  background-color: #fff;            /* カード風背景 */
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
+
+/* 見出し */
 #helpSection h2 {
-  font-size: 1.3rem;
-  margin-bottom: 12px;
-  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
   text-align: center;
+  color: #333;
 }
 
 /* 手順リスト */
 #helpSection ol {
-  padding-left: 20px;               /* 箇条書きインデント */
-  margin-top: 8px;
+  padding-left: 20px;
+  margin-top: 0;
 }
 
 /* 各手順 */
 #helpSection li {
-  margin-bottom: 10px;              /* 手順間隔 */
-  padding: 6px 8px;
-  background-color: #fffaf0;        /* 手順ごとの軽い背景色 */
-  border-left: 4px solid #f0d000;  /* 左ラインで強調 */
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background-color: #fffaf0;
+  border-left: 6px solid #f0d000;
   border-radius: 4px;
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
 /* ホバー効果 */
 #helpSection li:hover {
-  background-color: #fff3c4;        /* ホバー時に少し濃く */
+  background-color: #fff3c4;
 }
 
+/* 閉じるボタン */
+#helpSection #closeHelpBtn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background-color: #f44336;
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
+#helpSection #closeHelpBtn:hover {
+  background-color: #d32f2f;
+}
