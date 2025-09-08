@@ -667,7 +667,7 @@ async function postRankingUpdate(entries){
 // 通知（ベル）
 // =====================
 function playNotification(){
-  const audio = new Audio("bell.mp3"); // 任意の通知音
+  const audio = new Audio("https://freesound.org/data/previews/170/170186_2437358-lq.mp3"); // 任意の通知音
   audio.play().catch(()=>{});
 }
 
