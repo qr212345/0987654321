@@ -3,7 +3,7 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyhciLPC0TJ8QYbKHWQ1JqxLgt0N58GGGRdW1YnJ3YR_Fx1AkF6R2Uh2Ze5jnUWa5E/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
 const SECRET = "your-secret-key";
 const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
@@ -35,6 +35,10 @@ let lastScrollTop = 0;
 let scrollTimeout;
 let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
+let timerInterval = null;
+let remaining = 0;
+let paused = false;
+let countingUp = false;
 
 // =====================
 // テーマ設定
@@ -46,75 +50,70 @@ let themeConfig = {
   fontSize: "14px"
 };
 
+// HEXを6桁に統一
 function expandHexColor(hex) {
-  if (/^#([0-9a-fA-F]{3})$/.test(hex)) {
+  if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
     return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
   }
   return hex;
 }
 
+// テーマを適用
 function applyTheme() {
-  document.querySelectorAll(".seat-box").forEach(el => {
-    el.style.setProperty("background-color", themeConfig.seatBox.backgroundColor, "important");
-    el.style.setProperty("color", themeConfig.seatBox.color, "important");
-    el.style.setProperty("font-size", themeConfig.fontSize, "important");
+  document.querySelectorAll(".seat-box").forEach(el=>{
+    el.style.backgroundColor = themeConfig.seatBox.backgroundColor;
+    el.style.color = themeConfig.seatBox.color;
+    el.style.fontSize = themeConfig.fontSize;
   });
-  document.querySelectorAll(".player-entry").forEach(el => {
-    el.style.setProperty("background-color", themeConfig.playerEntry.backgroundColor, "important");
-    el.style.setProperty("color", themeConfig.playerEntry.color, "important");
-    el.style.setProperty("font-size", themeConfig.fontSize, "important");
+  document.querySelectorAll(".player-entry").forEach(el=>{
+    el.style.backgroundColor = themeConfig.playerEntry.backgroundColor;
+    el.style.color = themeConfig.playerEntry.color;
+    el.style.fontSize = themeConfig.fontSize;
   });
-  document.querySelectorAll("button").forEach(el => {
-    el.style.setProperty("background-color", themeConfig.button.backgroundColor, "important");
-    el.style.setProperty("color", themeConfig.button.color, "important");
-    el.style.setProperty("font-size", themeConfig.fontSize, "important");
+  document.querySelectorAll("button").forEach(el=>{
+    el.style.backgroundColor = themeConfig.button.backgroundColor;
+    el.style.color = themeConfig.button.color;
+    el.style.fontSize = themeConfig.fontSize;
   });
 }
 
-// =====================
-// パネル作成
-// =====================
+// テーマパネル作成
 function createThemePanel() {
-  if (document.getElementById("themePanel")) return;
+  const existing = document.getElementById("themePanel");
+  if (existing) existing.remove();
 
   const panel = document.createElement("div");
   panel.id = "themePanel";
-  Object.assign(panel.style, {
-    position: "fixed",
-    bottom: "10px",
-    right: "10px",
-    width: "90%",
-    maxWidth: "300px",
-    maxHeight: "80%",
-    overflowY: "auto",
-    backgroundColor: "#fff",
-    border: "1px solid #ccc",
-    padding: "12px",
-    borderRadius: "12px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-    zIndex: 10000,
-    display: "none",
-    transition: "all 0.25s ease"
+  Object.assign(panel.style,{
+    position:"fixed",
+    top:"10px",
+    right:"10px",
+    width:"250px",
+    backgroundColor:"#fff",
+    border:"1px solid #ccc",
+    padding:"10px",
+    borderRadius:"8px",
+    boxShadow:"0 2px 6px rgba(0,0,0,0.2)",
+    zIndex:1000,
+    display:"none"
   });
 
-  panel.innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <h4 style="margin:0; font-size:16px;">テーマ編集</h4>
-      <button id="closeThemeBtn" style="background:#f44336; color:#fff; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold;">×</button>
-    </div>
-    <label style="display:block; margin-bottom:6px;">座席背景: <input type="color" id="seatBgColor" value="${expandHexColor(themeConfig.seatBox.backgroundColor)}"></label>
-    <label style="display:block; margin-bottom:6px;">プレイヤー背景: <input type="color" id="playerBgColor" value="${expandHexColor(themeConfig.playerEntry.backgroundColor)}"></label>
-    <label style="display:block; margin-bottom:6px;">ボタン背景: <input type="color" id="buttonBgColor" value="${expandHexColor(themeConfig.button.backgroundColor)}"></label>
-    <label style="display:block; margin-bottom:6px;">ボタン文字色: <input type="color" id="buttonColor" value="${expandHexColor(themeConfig.button.color)}"></label>
-    <label style="display:block; margin-bottom:6px;">フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label>
-    <button id="applyThemeBtn" style="width:100%; margin-top:8px; padding:8px; border:none; border-radius:6px; background:#4CAF50; color:#fff; font-weight:bold; cursor:pointer;">適用</button>
+  panel.innerHTML=`
+    <h4 style="margin-top:0;">
+      テーマ編集
+      <button id="closeThemeBtn" style="float:right; background:#f44336; color:#fff; border:none; border-radius:4px; padding:2px 6px; cursor:pointer;">×</button>
+    </h4>
+    <label>座席背景: <input type="color" id="seatBgColor" value="${expandHexColor(themeConfig.seatBox.backgroundColor)}"></label><br>
+    <label>プレイヤー背景: <input type="color" id="playerBgColor" value="${expandHexColor(themeConfig.playerEntry.backgroundColor)}"></label><br>
+    <label>ボタン背景: <input type="color" id="buttonBgColor" value="${expandHexColor(themeConfig.button.backgroundColor)}"></label><br>
+    <label>ボタン文字色: <input type="color" id="buttonColor" value="${expandHexColor(themeConfig.button.color)}"></label><br>
+    <label>フォントサイズ: <input type="number" id="fontSizeInput" value="${parseInt(themeConfig.fontSize)}" style="width:60px">px</label><br>
+    <button id="applyThemeBtn">適用</button>
   `;
 
   document.body.appendChild(panel);
 
-  panel.querySelector("#closeThemeBtn").addEventListener("click", () => panel.style.display = "none");
-
-  panel.querySelector("#applyThemeBtn").addEventListener("click", () => {
+  document.getElementById("applyThemeBtn").addEventListener("click", ()=>{
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
     themeConfig.button.backgroundColor = document.getElementById("buttonBgColor").value;
@@ -123,35 +122,17 @@ function createThemePanel() {
     applyTheme();
   });
 
-  // 開くボタン
+  document.getElementById("closeThemeBtn").addEventListener("click", ()=>{ panel.style.display="none"; });
+
+  const header = document.querySelector("header");
   if (!document.getElementById("openThemeBtn")) {
     const openBtn = document.createElement("button");
     openBtn.id = "openThemeBtn";
     openBtn.textContent = "テーマ編集";
-    Object.assign(openBtn.style, {
-      position: "fixed",
-      bottom: "10px",
-      right: "10px",
-      zIndex: 10001,
-      padding: "8px 12px",
-      borderRadius: "8px",
-      border: "none",
-      backgroundColor: "#2196F3",
-      color: "#fff",
-      cursor: "pointer",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-      fontWeight: "bold"
-    });
-    openBtn.addEventListener("click", toggleThemePanel);
-    document.body.appendChild(openBtn);
+    openBtn.style.marginLeft = "10px";
+    openBtn.addEventListener("click", ()=>{ panel.style.display = panel.style.display==="none"?"block":"none"; });
+    header.appendChild(openBtn);
   }
-}
-
-function toggleThemePanel() {
-  let panel = document.getElementById("themePanel");
-  if (!panel) createThemePanel();
-  panel = document.getElementById("themePanel");
-  panel.style.display = (panel.style.display === "none" || panel.style.display === "") ? "block" : "none";
 }
 
 // =====================
@@ -212,6 +193,120 @@ function notifyAction(message){
 }
 
 function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
+
+// =====================
+// タイマー表示編集可能
+// =====================
+const timerDisplay = document.getElementById("timerDisplay");
+timerDisplay.contentEditable = true;
+timerDisplay.spellcheck = false;
+
+// カーソル位置保持関数
+function setCaretPosition(el, pos) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+  range.setStart(el.firstChild || el, pos);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+// 入力時に MM:SS 形式を強制
+timerDisplay.addEventListener("input", (e) => {
+  const sel = window.getSelection();
+  let caretPos = sel.focusOffset;
+
+  let text = timerDisplay.textContent.replace(/[^0-9]/g, "");
+  if (text.length > 4) text = text.slice(0, 4);
+
+  let minutes = text.slice(0, text.length - 2) || "0";
+  let seconds = text.slice(-2) || "0";
+  minutes = minutes.padStart(2, "0");
+  seconds = seconds.padStart(2, "0");
+  timerDisplay.textContent = `${minutes}:${seconds}`;
+
+  caretPos = Math.min(timerDisplay.textContent.length, caretPos);
+  setCaretPosition(timerDisplay, caretPos);
+});
+
+// フォーカスアウトで整形
+timerDisplay.addEventListener("blur", () => {
+  let [m, s] = timerDisplay.textContent.split(":");
+  m = (parseInt(m) || 0).toString().padStart(2, "0");
+  s = (parseInt(s) || 0).toString().padStart(2, "0");
+  timerDisplay.textContent = `${m}:${s}`;
+});
+
+// =====================
+// タイマー開始（表示値から判定）
+// =====================
+function startTimerFromDisplay() {
+  clearInterval(timerInterval);
+  paused = false;
+
+  const display = timerDisplay.textContent.trim();
+  const parts = display.split(":").map(p => parseInt(p, 10));
+  let minutes = 0, seconds = 0;
+
+  if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+    minutes = parts[0];
+    seconds = parts[1];
+  }
+
+  if (minutes === 0 && seconds === 0) {
+    // ストップウォッチモード
+    remaining = 0;
+    countingUp = true;
+  } else {
+    remaining = minutes * 60 + seconds;
+    countingUp = false;
+  }
+
+  updateTimer();
+
+  timerInterval = setInterval(() => {
+    if (!paused) {
+      if (countingUp) {
+        remaining++;
+      } else {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          remaining = 0;
+          notifyAction("⏰ タイムアップ！");
+        }
+      }
+      updateTimer();
+    }
+  }, 1000);
+}
+
+// =====================
+// タイマー表示更新
+// =====================
+function updateTimer() {
+  const m = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const s = String(remaining % 60).padStart(2, "0");
+  timerDisplay.textContent = `${m}:${s}`;
+}
+
+// =====================
+// 一時停止 / 再開
+// =====================
+function pauseTimer() { paused = true; }
+function resumeTimer() { paused = false; }
+
+// =====================
+// リセット
+// =====================
+function resetTimer() {
+  clearInterval(timerInterval);
+  paused = false;
+  remaining = 0;
+  countingUp = false;
+  updateTimer();
+}
+
 
 // =====================
 // QRスキャン
@@ -776,21 +871,25 @@ function bindButtons() {
   document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
-  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV)
- 
+  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
+  document.getElementById("startTimerBtn")?.addEventListener("click", startTimerFromDisplay);
+  document.getElementById("resetTimerBtn")?.addEventListener("click", resetTimer); 
+  document.getElementById("pauseTimerBtn")?.addEventListener("click", pauseTimer);
+  document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
+};
   document.addEventListener("DOMContentLoaded", async () => {
     try { 
       await loadFromGAS(); 
-    } catch (e) { 
-      console.warn("GASロード失敗,ローカル使用", e); 
-    }
-    loadFromLocalStorage();
-    renderSeats();
-    createThemePanel();  // ←ここで必ず作成
-    applyTheme();
-    bindButtons();
-    startScanCamera();
-
+    }   catch (e) { 
+    console.warn("GASロード失敗,ローカル使用", e); 
+  }
+  loadFromLocalStorage();
+  renderSeats();
+  bindButtons();
+  startScanCamera();
+  createThemePanel();
+  applyTheme();
+  
   // スクロールでサイドバー自動開閉
   window.addEventListener("scroll", () => {
     if (scrollTimeout) clearTimeout(scrollTimeout);
@@ -799,9 +898,9 @@ function bindButtons() {
     else sidebar?.classList.remove("closed");
     lastScrollTop = st <= 0 ? 0 : st;
     scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
-  });
+   
 }); // ここでDOMContentLoadedの括弧を閉じる
-}
+})
 // window に関数を登録
 Object.assign(window, {
   navigate,
@@ -810,4 +909,7 @@ Object.assign(window, {
   removePlayer,
   exportPlayerCSV,
   exportSeatCSV,
-}); // Object.assignの括弧を閉じる
+  startTimer: startTimerFromDisplay,
+  pauseTimer,
+  resumeTimer,
+}); 
