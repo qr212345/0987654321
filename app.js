@@ -805,50 +805,59 @@ function exportHistoryCSV(){
 // =====================
 // 初期化
 // =====================
-function bindButtons(){
-  document.getElementById("undoBtn")?.addEventListener("click",undoAction);
-  document.getElementById("redoBtn")?.addEventListener("click",redoAction);
-  document.getElementById("exportPlayerBtn")?.addEventListener("click",exportPlayerCSV);
-  document.getElementById("exportSeatBtn")?.addEventListener("click",exportSeatCSV);
-  document.getElementById("confirmRankingBtn")?.addEventListener("click",finalizeRanking);
-  document.getElementById("saveToGASBtn")?.addEventListener("click",()=>requireAuth(()=>saveToGAS(seatMap,playerData)));
-  document.getElementById("loadFromGASBtn")?.addEventListener("click",()=>requireAuth(loadFromGAS));
+function bindButtons() {
+  document.getElementById("undoBtn")?.addEventListener("click", undoAction);
+  document.getElementById("redoBtn")?.addEventListener("click", redoAction);
+  document.getElementById("exportPlayerBtn")?.addEventListener("click", exportPlayerCSV);
+  document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
+  document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
+  document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
+  document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
 
+  // タイマー / ストップウォッチ
   document.getElementById("startTimerBtn")?.addEventListener("click", () => {
     const minutes = parseInt(document.getElementById("timerMinutes").value) || 0;
     startTimer(minutes);
   });
-
   document.getElementById("resetTimerBtn")?.addEventListener("click", () => {
     clearInterval(timerInterval);
     remaining = 0;
     countingUp = false;
     paused = false;
-    document.getElementById("timerDisplay").textContent = "00:00";
+    updateTimer();
   });
-
   document.getElementById("pauseTimerBtn")?.addEventListener("click", pauseTimer);
   document.getElementById("resumeTimerBtn")?.addEventListener("click", resumeTimer);
-  }
+}
 
-  document.addEventListener("DOMContentLoaded", async ()=>{
-    try{ await loadFromGAS(); } catch(e){ console.warn("GASロード失敗,ローカル使用", e); }
-    loadFromLocalStorage();
-    renderSeats();
-    bindButtons();
-    startScanCamera();
-    createThemePanel();
-    applyTheme();
-  window.addEventListener("scroll",()=>{
-    if(scrollTimeout) clearTimeout(scrollTimeout);
-    const st=window.pageYOffset||document.documentElement.scrollTop;
-    if(st>lastScrollTop) sidebar?.classList.add("closed"); else sidebar?.classList.remove("closed");
-    lastScrollTop=st<=0?0:st;
-    scrollTimeout=setTimeout(()=>sidebar?.classList.remove("closed"),1500);
+document.addEventListener("DOMContentLoaded", async () => {
+  try { await loadFromGAS(); } catch (e) { console.warn("GASロード失敗,ローカル使用", e); }
+  loadFromLocalStorage();
+  renderSeats();
+  bindButtons();
+  startScanCamera();
+  createThemePanel();
+  applyTheme();
+
+  // スクロールでサイドバー自動開閉
+  window.addEventListener("scroll", () => {
+    if (scrollTimeout) clearTimeout(scrollTimeout);
+    const st = window.pageYOffset || document.documentElement.scrollTop;
+    if (st > lastScrollTop) sidebar?.classList.add("closed"); else sidebar?.classList.remove("closed");
+    lastScrollTop = st <= 0 ? 0 : st;
+    scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
   });
 });
 
-Object.assign(window,{
-  navigate,undoAction,redoAction,removePlayer,exportPlayerCSV,exportSeatCSV
+Object.assign(window, {
+  navigate,
+  undoAction,
+  redoAction,
+  removePlayer,
+  exportPlayerCSV,
+  exportSeatCSV,
+  startTimer,
+  pauseTimer,
+  resumeTimer
 });
