@@ -3,9 +3,8 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbygpqW4VYNm__Wip39CwAwoyitrTi4CPAg4N6lH7WPOPkcU37LbzS2XiNn-xvWzEI84/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx-IUlEWa8Xo6HK6fUPttzH3o350pKeqT5-xbp0OTF8j2-Y5b77qkYb1auiqAVdVw/exec";
 const SECRET = "your-secret-key";
-const CORS_PROXY = "https://cors-anywhere.herokuapp.com/";
 
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
