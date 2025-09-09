@@ -747,7 +747,6 @@ function bindButtons() {
   applyTheme();
   bindButtons();
   startScanCamera();
-  createThemePanel();
   applyTheme();
   
   // スクロールでサイドバー自動開閉
