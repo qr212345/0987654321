@@ -441,31 +441,35 @@ async function finalizeRanking(){
 }
 
 // =====================
-// GAS通信
+// GAS通信（CORS対応、プロキシなし）
 // =====================
-async function callGAS(payload={}, options={}) {
+async function callGAS(payload = {}, options = {}) {
   const maxRetries = options.retries ?? 3;
-  const timeoutMs  = options.timeout ?? 8000;
-  let attempt=0;
+  const timeoutMs = options.timeout ?? 8000;
+  let attempt = 0;
 
-  while(attempt<maxRetries){
+  while (attempt < maxRetries) {
     const controller = new AbortController();
-    const timer = setTimeout(()=>controller.abort(), timeoutMs);
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const res = await fetch(CORS_PROXY + GAS_URL,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({...payload, secret:SECRET}),
-        signal: controller.signal
+      const res = await fetch(GAS_URL, {   // ← プロキシなし
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, secret: SECRET }),
+        signal: controller.signal,
+        mode: 'cors'                       // ← CORSモード
       });
+
       clearTimeout(timer);
-      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.json();
-    } catch(e){
+
+    } catch (e) {
       attempt++;
       console.warn("GAS通信リトライ", attempt, e);
       await delay(1000);
-      if(attempt >= maxRetries) throw e;
+      if (attempt >= maxRetries) throw e;
     }
   }
 }
@@ -473,19 +477,19 @@ async function callGAS(payload={}, options={}) {
 // =====================
 // データ同期用
 // =====================
-async function syncSeatData(localSeatMap){
+async function syncSeatData(localSeatMap) {
   try {
-    const res = await callGAS({mode:"loadData"});
-    const remoteSeatMap = res.seatMap || {};
-    const mergedSeatMap = {...remoteSeatMap};
+    const res = await callGAS({ mode: "loadData" });
+    if (!res.success) throw new Error(res.error || "GASからデータ取得失敗");
 
-    // 他端末で登録済みの座席を優先
-    for(const seatId in localSeatMap){
+    const remoteSeatMap = res.seatMap || {};
+    const mergedSeatMap = { ...remoteSeatMap };
+
+    for (const seatId in localSeatMap) {
       const players = localSeatMap[seatId];
-      if(!mergedSeatMap[seatId] || mergedSeatMap[seatId].length===0){
+      if (!mergedSeatMap[seatId] || mergedSeatMap[seatId].length === 0) {
         mergedSeatMap[seatId] = players;
       } else {
-        // 同端末で同じ座席登録されている場合は登録不可
         localSeatMap[seatId] = mergedSeatMap[seatId];
       }
     }
@@ -495,7 +499,7 @@ async function syncSeatData(localSeatMap){
     displayMessage("✅ データ同期完了");
     return mergedSeatMap;
 
-  } catch(err){
+  } catch (err) {
     console.error("データ同期失敗", err);
     displayMessage("❌ データ同期失敗");
     return null;
@@ -505,11 +509,12 @@ async function syncSeatData(localSeatMap){
 // =====================
 // 保存
 // =====================
-async function saveToGAS(seatMapData, playerDataObj){
-  try{
-    await callGAS({mode:"saveData", seatMap:seatMapData, playerData:playerDataObj});
+async function saveToGAS(seatMapData, playerDataObj) {
+  try {
+    const res = await callGAS({ mode: "saveData", seatMap: seatMapData, playerData: playerDataObj });
+    if (!res.success) throw new Error(res.error || "保存失敗");
     displayMessage("✅ データ保存成功");
-  }catch(err){
+  } catch (err) {
     displayMessage("❌ データ保存失敗");
     console.error(err);
   }
@@ -518,66 +523,117 @@ async function saveToGAS(seatMapData, playerDataObj){
 // =====================
 // 読み込み
 // =====================
-async function loadFromGAS(){
-  try{
-    const res = await callGAS({mode:"loadData"});
+async function loadFromGAS() {
+  try {
+    const res = await callGAS({ mode: "loadData" });
+    if (!res.success) throw new Error(res.error || "読み込み失敗");
+
     seatMap = res.seatMap || {};
     playerData = res.playerData || {};
     renderSeats();
     displayMessage("✅ データ読み込み成功");
-  } catch(err){
+  } catch (err) {
     displayMessage("❌ データ読み込み失敗");
     console.error(err);
   }
 }
 
 // =====================
-// 座席更新（重複制御・通知対応）
+// 座席更新
 // =====================
-async function sendSeatData(tableID, playerIds, operator='webUser'){
-  try{
-    // 同座席・他端末重複チェック
+async function sendSeatData(tableID, playerIds, operator = 'webUser') {
+  try {
     await syncSeatData(seatMap);
 
-    const filteredPlayers = playerIds.filter(pid=>{
-      for(const seat in seatMap){
-        if(seatMap[seat]?.includes(pid)) return false; // 他テーブルで登録済み
+    const filteredPlayers = playerIds.filter(pid => {
+      for (const seat in seatMap) {
+        if (seatMap[seat]?.includes(pid)) return false;
       }
       return true;
     });
 
-    if(filteredPlayers.length === 0){
+    if (filteredPlayers.length === 0) {
       displayMessage("⚠ このプレイヤーはすでに登録されています");
       return;
     }
 
     seatMap[tableID] = filteredPlayers;
+    const res = await callGAS({ mode: "updatePlayers", tableID, players: filteredPlayers, operator });
 
-    await callGAS({mode:"updatePlayers", tableID, players:filteredPlayers, operator});
+    if (!res.success) throw new Error(res.error || "座席更新失敗");
 
     renderSeats();
     displayMessage(`✅ 座席 ${tableID} 更新成功`);
-    playNotification(); // 鳴らす
-  } catch(err){
+    playNotification();
+
+  } catch (err) {
     console.error('座席送信失敗', err);
     displayMessage("❌ 座席送信失敗");
   }
 }
 
 // =====================
-// 順位更新
+// 履歴送信
 // =====================
-async function postRankingUpdate(entries){
-  try{
-    await callGAS({mode:"updateRanking", rankings:entries});
+async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await callGAS({ mode: "addHistory", entry });
+      if (!res.success) throw new Error(res.error || "履歴送信失敗");
+
+      const statusContainer = document.getElementById("historyStatus");
+      if (statusContainer) statusContainer.textContent = `✅ 送信成功: ${entry.playerId}`;
+      console.log(`✅ 履歴送信成功: ${entry.playerId}`);
+      return true;
+
+    } catch (e) {
+      console.warn(`⚠️ 履歴送信失敗 (${attempt}/${retries}): ${entry.playerId}`, e);
+      if (attempt < retries) await new Promise(res => setTimeout(res, delayMs));
+      else {
+        const statusContainer = document.getElementById("historyStatus");
+        if (statusContainer) statusContainer.textContent = `❌ 送信失敗: ${entry.playerId}`;
+        console.error(`❌ 履歴送信完全に失敗: ${entry.playerId}`);
+        return false;
+      }
+    }
+  }
+}
+
+// =====================
+// 順位登録
+// =====================
+async function postRankingUpdate(entries) {
+  try {
+    const res = await callGAS({ mode: "updateRanking", rankings: entries });
+    if (!res.success) throw new Error(res.error || "順位送信失敗");
+
     displayMessage("✅ 順位送信成功");
     return true;
-  }catch(err){
+
+  } catch (err) {
     console.error('順位送信失敗', err);
     displayMessage("❌ 順位送信失敗");
     return false;
   }
 }
+
+// =====================
+// リアルタイム履歴取得
+// =====================
+async function pollHistory() {
+  try {
+    const res = await callGAS({ mode: "loadHistory" });
+    if (res.success && res.history) {
+      historyLog = res.history;
+      localStorage.setItem("historyLog", JSON.stringify(historyLog));
+      renderHistory();
+    }
+  } catch (e) {
+    console.warn("履歴取得失敗", e);
+  }
+}
+
+setInterval(pollHistory, 10000);  // 10秒ごと
 
 // =====================
 // 通知（ベル）
@@ -593,25 +649,6 @@ function playNotification(){
 function confirmAction(message){
   return confirm(`⚠️ ${message}`);
 }
-
-// =====================
-// リアルタイム同期
-// =====================
-async function pollHistory() {
-  try {
-    const res = await callGAS({ mode: "loadHistory" }); // GAS側で履歴を返す
-    if(res.history){
-      historyLog = res.history;
-      localStorage.setItem("historyLog", JSON.stringify(historyLog));
-      renderHistory();
-    }
-  } catch(e){
-    console.warn("履歴取得失敗", e);
-  }
-}
-
-// 10秒ごとに最新履歴取得
-setInterval(pollHistory, 10000);
 
 // =====================
 // カメラ制御
