@@ -155,6 +155,10 @@ function navigate(targetId){
   }
 }
 
+function navigate(url) {
+  window.location.href = url;
+}
+
 async function navigateAsync(sectionId){ return new Promise(res=>{ navigate(sectionId); setTimeout(res,300); }); }
 
 function notifyAction(message){
@@ -438,9 +442,6 @@ async function finalizeRanking(){
 
   displayMessage("🏆 順位確定＆履歴送信完了");
 }
-
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyXXXXX/exec";
-const SECRET_KEY = "your-secret-key";
 
 // =====================
 // GAS通信（CORS対策済み、プロキシ不要）
