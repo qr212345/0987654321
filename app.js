@@ -439,10 +439,14 @@ async function finalizeRanking(){
   displayMessage("🏆 順位確定＆履歴送信完了");
 }
 
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyXXXXX/exec";
+const SECRET_KEY = "your-secret-key";
+
 // =====================
-// GAS通信（CORS対応、プロキシなし）
+// GAS通信（CORS対策済み、プロキシ不要）
 // =====================
 async function callGAS(payload = {}, options = {}) {
+  payload.secret = SECRET_KEY;  // すべてのリクエストに必須
   const maxRetries = options.retries ?? 3;
   const timeoutMs = options.timeout ?? 8000;
   let attempt = 0;
@@ -452,11 +456,10 @@ async function callGAS(payload = {}, options = {}) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const res = await fetch("https://your-service.onrender.com/api", { // ← Node.js サーバー経由
+      const res = await fetch(GAS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        signal: controller.signal,
+        signal: controller.signal
       });
 
       clearTimeout(timer);
@@ -466,27 +469,24 @@ async function callGAS(payload = {}, options = {}) {
     } catch (e) {
       attempt++;
       console.warn("GAS通信リトライ", attempt, e);
-      await delay(1000);
+      await new Promise(r => setTimeout(r, 1000));
       if (attempt >= maxRetries) throw e;
     }
   }
 }
 
 // =====================
-// データ同期用
+// データ同期
 // =====================
 async function syncSeatData(localSeatMap) {
   try {
     const res = await callGAS({ mode: "loadData" });
-    if (!res.success) throw new Error(res.error || "GASからデータ取得失敗");
-
     const remoteSeatMap = res.seatMap || {};
     const mergedSeatMap = { ...remoteSeatMap };
 
     for (const seatId in localSeatMap) {
-      const players = localSeatMap[seatId];
       if (!mergedSeatMap[seatId] || mergedSeatMap[seatId].length === 0) {
-        mergedSeatMap[seatId] = players;
+        mergedSeatMap[seatId] = localSeatMap[seatId];
       } else {
         localSeatMap[seatId] = mergedSeatMap[seatId];
       }
@@ -505,7 +505,7 @@ async function syncSeatData(localSeatMap) {
 }
 
 // =====================
-// 保存
+// 保存 / 読み込み
 // =====================
 async function saveToGAS(seatMapData, playerDataObj) {
   try {
@@ -518,14 +518,9 @@ async function saveToGAS(seatMapData, playerDataObj) {
   }
 }
 
-// =====================
-// 読み込み
-// =====================
 async function loadFromGAS() {
   try {
     const res = await callGAS({ mode: "loadData" });
-    if (!res.success) throw new Error(res.error || "読み込み失敗");
-
     seatMap = res.seatMap || {};
     playerData = res.playerData || {};
     renderSeats();
@@ -581,16 +576,14 @@ async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
 
       const statusContainer = document.getElementById("historyStatus");
       if (statusContainer) statusContainer.textContent = `✅ 送信成功: ${entry.playerId}`;
-      console.log(`✅ 履歴送信成功: ${entry.playerId}`);
       return true;
 
     } catch (e) {
       console.warn(`⚠️ 履歴送信失敗 (${attempt}/${retries}): ${entry.playerId}`, e);
-      if (attempt < retries) await new Promise(res => setTimeout(res, delayMs));
+      if (attempt < retries) await new Promise(r => setTimeout(r, delayMs));
       else {
         const statusContainer = document.getElementById("historyStatus");
         if (statusContainer) statusContainer.textContent = `❌ 送信失敗: ${entry.playerId}`;
-        console.error(`❌ 履歴送信完全に失敗: ${entry.playerId}`);
         return false;
       }
     }
@@ -621,7 +614,7 @@ async function postRankingUpdate(entries) {
 async function pollHistory() {
   try {
     const res = await callGAS({ mode: "loadHistory" });
-    if (res.success && res.history) {
+    if (res.history) {
       historyLog = res.history;
       localStorage.setItem("historyLog", JSON.stringify(historyLog));
       renderHistory();
