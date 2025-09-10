@@ -8,6 +8,7 @@ const SECRET_KEY = "your-secret-key";
 
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
+const MAX_HISTORY_ITEMS = 100; // 保存する履歴の上限
 
 // =====================
 // データ構造と状態
@@ -38,15 +39,11 @@ let timerInterval = null;
 let remaining = 0;
 let paused = false;
 let countingUp = false;
+let lastScannedText = null;
 
 // =====================
 // テーマ設定
 // =====================
-// HEXを6桁に統一
-// =====================
-// テーマ設定
-// =====================
-
 // HEXを6桁に統一
 function expandHexColor(hex) {
   if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
@@ -207,15 +204,18 @@ function handleScanSuccess(decodedText){
 // =====================
 // QR紐づけの自動履歴ログ
 // =====================
-function logAction(playerId, seatId, action="参加", extra={}) {
+function logAction(playerId, seatId, action = "参加", extra = {}) {
   const entry = {
-    time: new Date().toLocaleString("ja-JP", { hour12:false }),
+    time: new Date().toLocaleString("ja-JP", { hour12: false }),
     playerId,
     seatId: seatId || null,
     action,
     rank: extra.rank || null
   };
+
   historyLog.push(entry);
+  if (historyLog.length > MAX_HISTORY_ITEMS) historyLog.shift();
+
   localStorage.setItem("historyLog", JSON.stringify(historyLog));
   renderHistory();
   sendHistoryEntry(entry).catch(e => console.warn(`履歴送信失敗: ${playerId}`, e));
@@ -616,22 +616,42 @@ function confirmAction(message){
 // =====================
 // カメラ制御
 // =====================
-function startScanCamera(){
-  if(isScanCameraStarting||!document.getElementById("reader")) return;
-  isScanCameraStarting=true;
-  scanQr=new Html5Qrcode("reader");
-  scanQr.start({facingMode:"environment"}, {fps:10, qrbox:350}, handleScanSuccess)
-    .catch(e=>displayMessage("❌ カメラ起動失敗"))
-    .finally(()=>isScanCameraStarting=false);
+async function startScanCamera() {
+  if (isScanCameraStarting || !document.getElementById("reader")) return;
+  isScanCameraStarting = true;
+
+  try {
+    scanQr = new Html5Qrcode("reader");
+    await scanQr.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 350 },
+      handleScanSuccess
+    );
+  } catch (e) {
+    console.error("カメラ起動失敗", e);
+    displayMessage("❌ カメラ起動失敗");
+  } finally {
+    isScanCameraStarting = false;
+  }
 }
 
-function startRankCamera(){
-  if(isRankCameraStarting||!document.getElementById("rankingReader")) return;
-  isRankCameraStarting=true;
-  rankQr=new Html5Qrcode("rankingReader");
-  rankQr.start({facingMode:"environment"}, {fps:10, qrbox:200}, decodedText=>handleRankingScan(decodedText))
-    .catch(e=>displayMessage("❌ 順位登録カメラ起動失敗"))
-    .finally(()=>isRankCameraStarting=false);
+async function startRankCamera() {
+  if (isRankCameraStarting || !document.getElementById("rankingReader")) return;
+  isRankCameraStarting = true;
+
+  try {
+    rankQr = new Html5Qrcode("rankingReader");
+    await rankQr.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 200 },
+      decodedText => handleRankingScan(decodedText)
+    );
+  } catch (e) {
+    console.error("順位登録カメラ起動失敗", e);
+    displayMessage("❌ 順位登録カメラ起動失敗");
+  } finally {
+    isRankCameraStarting = false;
+  }
 }
 
 async function stopScanCamera(){ if(scanQr){ await scanQr.stop(); await scanQr.clear(); scanQr=null; } }
@@ -678,22 +698,44 @@ document.getElementById("closeHelpBtn").addEventListener("click", ()=>{
 // =====================
 // 履歴描画
 // =====================
+// フィルター入力イベント
+document.getElementById("historyFilterInput")?.addEventListener("input", e => {
+  historyFilterText = e.target.value.trim().toLowerCase();
+  renderHistory();
+});
+
+// 履歴描画（フィルター対応）
 function renderHistory() {
   const container = document.getElementById("historyList");
   if (!container) return;
-
   container.innerHTML = "";
 
-  // historyLog が配列でない場合は空配列として扱う
   const safeHistory = Array.isArray(historyLog) ? historyLog.slice().reverse() : [];
 
-  safeHistory.forEach(entry => {
-    const div = document.createElement("div");
-    div.className = "history-entry";
-    div.textContent = `[${entry.time || "不明"}] ${entry.playerId || "不明"} → ${entry.seatId || "N/A"} : ${entry.action || "不明"}`
-      + (entry.rank ? `（順位: ${entry.rank}位）` : "");
-    container.appendChild(div);
+  // フィルター適用
+  const filteredHistory = safeHistory.filter(entry => {
+    if (!historyFilterText) return true;
+    return (entry.playerId?.toLowerCase().includes(historyFilterText) ||
+            entry.seatId?.toLowerCase().includes(historyFilterText) ||
+            entry.action?.toLowerCase().includes(historyFilterText));
   });
+
+  if (filteredHistory.length === 0) {
+    const emptyDiv = document.createElement("div");
+    emptyDiv.className = "history-empty";
+    emptyDiv.textContent = "🔕 履歴がありません";
+    container.appendChild(emptyDiv);
+  } else {
+    filteredHistory.forEach(entry => {
+      const div = document.createElement("div");
+      div.className = "history-entry";
+      div.textContent = `[${entry.time || "不明"}] ${entry.playerId || "不明"} → ${entry.seatId || "N/A"} : ${entry.action || "不明"}` +
+                        (entry.rank ? `（順位: ${entry.rank}位）` : "");
+      container.appendChild(div);
+    });
+  }
+
+  container.scrollTop = container.scrollHeight;
 }
 
 function exportRankingHistoryCSV(){
@@ -720,15 +762,28 @@ function exportRankingHistoryCSV(){
   displayMessage("✅ 履歴CSVを出力しました");
 }
 
-function exportHistoryCSV(){
-  if(historyLog.length===0){ displayMessage("⚠️ 履歴なし"); return; }
-  const header=["time","playerId","seatId","action","rank"];
-  const rows = historyLog.map(r=>[r.time,r.playerId,r.seatId??"",r.action,r.rank??""]);
-  const csvContent=[header,...rows].map(e=>e.join(",")).join("\n");
-  const blob=new Blob([csvContent],{type:"text/csv"});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement("a");
-  a.href=url; a.download=`history_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
+function exportHistoryCSV() {
+  if (historyLog.length === 0) { displayMessage("⚠️ 履歴なし"); return; }
+
+  const header = ["time", "playerId", "seatId", "action", "rank"];
+  const rows = historyLog.map(r => [
+    r.time,
+    r.playerId,
+    r.seatId ?? "",
+    r.action,
+    r.rank ?? ""
+  ]);
+
+  const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `history_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+
   displayMessage("✅ 履歴CSV出力完了");
 }
 
@@ -756,7 +811,6 @@ function bindButtons() {
   applyTheme();
   bindButtons();
   startScanCamera();
-  applyTheme();
   
   // スクロールでサイドバー自動開閉
   window.addEventListener("scroll", () => {
