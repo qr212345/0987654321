@@ -39,7 +39,6 @@ let timerInterval = null;
 let remaining = 0;
 let paused = false;
 let countingUp = false;
-let lastScannedText = null;
 
 // =====================
 // テーマ設定
