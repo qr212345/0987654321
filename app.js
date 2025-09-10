@@ -611,17 +611,25 @@ async function postRankingUpdate(entries) {
 async function pollHistory() {
   try {
     const res = await callGAS({ mode: "loadHistory" });
-    if (res.history) {
+
+    // 履歴が配列かチェック、そうでなければ空配列を代入
+    if (res && Array.isArray(res.history)) {
       historyLog = res.history;
-      localStorage.setItem("historyLog", JSON.stringify(historyLog));
-      renderHistory();
+    } else {
+      historyLog = [];
     }
+
+    // localStorage にも安全に保存
+    localStorage.setItem("historyLog", JSON.stringify(historyLog));
+
+    renderHistory();
   } catch (e) {
     console.warn("履歴取得失敗", e);
   }
 }
 
-setInterval(pollHistory, 10000);  // 10秒ごと
+// 10秒ごとに自動取得
+setInterval(pollHistory, 10000);
 
 // =====================
 // 通知（ベル）
@@ -700,14 +708,23 @@ document.getElementById("closeHelpBtn").addEventListener("click", ()=>{
   document.getElementById("helpSection").style.display = "none";
 });
 
-function renderHistory(){
-  const container=document.getElementById("historyList"); if(!container) return;
-  container.innerHTML="";
-  historyLog.slice().reverse().forEach(e=>{
-    const div=document.createElement("div");
-    div.className="history-entry";
-    div.textContent=`[${e.time}] ${e.playerId} → ${e.seatId||"N/A"} : ${e.action}`
-      + (e.rank?`（順位: ${e.rank}位）`:"");
+// =====================
+// 履歴描画
+// =====================
+function renderHistory() {
+  const container = document.getElementById("historyList");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // historyLog が配列でない場合は空配列として扱う
+  const safeHistory = Array.isArray(historyLog) ? historyLog.slice().reverse() : [];
+
+  safeHistory.forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "history-entry";
+    div.textContent = `[${entry.time || "不明"}] ${entry.playerId || "不明"} → ${entry.seatId || "N/A"} : ${entry.action || "不明"}`
+      + (entry.rank ? `（順位: ${entry.rank}位）` : "");
     container.appendChild(div);
   });
 }
