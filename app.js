@@ -452,12 +452,11 @@ async function callGAS(payload = {}, options = {}) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const res = await fetch(GAS_URL, {   // ← プロキシなし
+      const res = await fetch("https://your-service.onrender.com/api", { // ← Node.js サーバー経由
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...payload, secret: SECRET }),
+        body: JSON.stringify(payload),
         signal: controller.signal,
-        mode: 'cors'                       // ← CORSモード
       });
 
       clearTimeout(timer);
