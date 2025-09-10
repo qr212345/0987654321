@@ -333,39 +333,6 @@ function loadDouTakuHistory(){
   });
 }
 
-async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
-  const statusContainer = document.getElementById("historyStatus");
-  
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      if (statusContainer) {
-        statusContainer.textContent = `送信中: ${entry.playerId} (${attempt}/${retries})`;
-      }
-
-      await callGAS({ mode: "addHistory", entry });
-
-      if (statusContainer) {
-        statusContainer.textContent = `✅ 送信成功: ${entry.playerId}`;
-      }
-      console.log(`✅ 履歴送信成功: ${entry.playerId}`);
-      return true;
-
-    } catch (e) {
-      console.warn(`⚠️ 履歴送信失敗 (${attempt}/${retries}): ${entry.playerId}`, e);
-
-      if (attempt < retries) {
-        await new Promise(res => setTimeout(res, delayMs));
-      } else {
-        if (statusContainer) {
-          statusContainer.textContent = `❌ 送信失敗: ${entry.playerId}`;
-        }
-        console.error(`❌ 履歴送信完全に失敗: ${entry.playerId}`);
-        return false;
-      }
-    }
-  }
-}
-
 // =====================
 // ローカル保存・復元
 // =====================
