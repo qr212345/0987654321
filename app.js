@@ -155,10 +155,6 @@ function navigate(targetId){
   }
 }
 
-function navigate(url) {
-  window.location.href = url;
-}
-
 async function navigateAsync(sectionId){ return new Promise(res=>{ navigate(sectionId); setTimeout(res,300); }); }
 
 function notifyAction(message){
