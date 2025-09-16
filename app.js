@@ -411,7 +411,7 @@ async function finalizeRanking(){
 async function callGAS(payload = {}, options = {}) {
   payload.secret = SECRET_KEY;  // すべてのリクエストに必須
   const maxRetries = options.retries ?? 3;
-  const timeoutMs = options.timeout ?? 8000;
+  const timeoutMs = options.timeout ?? 10000;
   let attempt = 0;
 
   while (attempt < maxRetries) {
