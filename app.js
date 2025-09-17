@@ -39,6 +39,27 @@ let timerInterval = null;
 let remaining = 0;
 let paused = false;
 let countingUp = false;
+let passwordValidated = false;
+
+// =====================
+// 管理者モード
+// =====================
+function activateAdminMode() {
+  if (passwordValidated) {
+    displayMessage("✅ すでに管理者モードです");
+    return;
+  }
+
+  const pw = prompt("管理者パスワードを入力してください");
+  if (pw === "supersecret") {
+    passwordValidated = true;
+    displayMessage("🔑 管理者モードが有効になりました");
+    document.getElementById("adminStatus").textContent = "[管理者モード]";
+    document.getElementById("adminStatus").style.color = "lime";
+  } else {
+    alert("❌ 認証失敗");
+  }
+}
 
 // =====================
 // テーマ設定
@@ -798,6 +819,7 @@ function bindButtons() {
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
+  document.getElementById("adminLoginBtn").addEventListener("click", activateAdminMode);
 };
   document.addEventListener("DOMContentLoaded", async () => {
     try { 
