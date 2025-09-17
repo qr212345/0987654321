@@ -516,26 +516,36 @@ function handlePlayerRemove(playerId) {
 }
 
 async function finalizeRanking() {
-  if(!confirm("⚠️ この順位を確定しますか？")) return;
+  if (!confirm("⚠️ この順位を確定しますか？")) return;
+
   const list = document.getElementById("rankingList");
-  if(!list) return;
+  if (!list) return;
 
-  const rankedIds = Array.from(list.children).map(li=>li.dataset.id);
-  if(rankedIds.length < 2){ displayMessage("⚠️ 2人以上必要です"); return; }
+  const rankedIds = Array.from(list.children).map(li => li.dataset.id);
+  if (rankedIds.length < 2) {
+    displayMessage("⚠️ 2人以上必要です");
+    return;
+  }
 
-  const entries = rankedIds.map((playerId,index)=>({ playerId, rank:index+1 }));
-  if(!await postRankingUpdate(entries)){ displayMessage("❌ 順位送信失敗"); return; }
+  // ランキングデータだけ作成
+  const entries = rankedIds.map((playerId, index) => ({ playerId, rank: index + 1 }));
 
-  rankedIds.forEach((playerId,index)=> logAction(playerId, currentRankingSeatId, "順位確定", { rank:index+1 }));
+  // GASにランキング更新
+  const success = await postRankingUpdate(entries);
+  if (!success) {
+    displayMessage("❌ 順位送信失敗");
+    return;
+  }
 
-  if(currentRankingSeatId && seatMap[currentRankingSeatId]){
-    seatMap[currentRankingSeatId]=[];
-    currentRankingSeatId=null;
+  // UIリセット
+  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
+    seatMap[currentRankingSeatId] = [];
+    currentRankingSeatId = null;
     renderSeats();
     await stopRankCamera();
   }
 
-  displayMessage("🏆 順位確定＆履歴送信完了");
+  displayMessage("🏆 順位確定完了");
 }
 
 // =====================
