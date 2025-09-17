@@ -3,7 +3,7 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz7l4jatqVc6ggdUyzKaC7joRA9Fa_XzRoqZuI7ImxF74OJqkDhGqPV0C229CBvnbY/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzzFBQLBp3ZUb7fXHUjFuNN3GnOInBz_kVKQPUP-lz1y88QeY51Dqc9hSRMNk_GlDQ/exec";
 const SECRET_KEY = "your-secret-key";
 
 const SCAN_COOLDOWN_MS = 1500;
@@ -669,9 +669,35 @@ function confirmAction(message){
 // =====================
 // カメラ制御
 // =====================
+
+// =====================
+// UI更新ユーティリティ
+// =====================
+function updateCameraUI() {
+  const startScanBtn = document.getElementById("startScanBtn");
+  const stopScanBtn = document.getElementById("stopScanBtn");
+  const startRankBtn = document.getElementById("startRankBtn");
+  const stopRankBtn = document.getElementById("stopRankBtn");
+
+  if (startScanBtn) startScanBtn.disabled = !!scanQr || isScanCameraStarting;
+  if (stopScanBtn) stopScanBtn.disabled = !scanQr;
+  if (startRankBtn) startRankBtn.disabled = !!rankQr || isRankCameraStarting;
+  if (stopRankBtn) stopRankBtn.disabled = !rankQr;
+}
+
+// =====================
+// 通常スキャンカメラ起動
+// =====================
 async function startScanCamera() {
-  if (isScanCameraStarting || !document.getElementById("reader")) return;
+  const readerElem = document.getElementById("reader");
+  if (!readerElem) {
+    console.warn("startScanCamera: reader要素が存在しません");
+    return;
+  }
+  if (isScanCameraStarting || scanQr) return; // 二重起動防止
+
   isScanCameraStarting = true;
+  updateCameraUI();
 
   try {
     scanQr = new Html5Qrcode("reader");
@@ -680,17 +706,31 @@ async function startScanCamera() {
       { fps: 10, qrbox: 350 },
       handleScanSuccess
     );
+    console.log("Scanカメラ起動成功");
+    displayMessage("✅ Scanカメラ起動");
   } catch (e) {
-    console.error("カメラ起動失敗", e);
-    displayMessage("❌ カメラ起動失敗");
+    console.error("Scanカメラ起動失敗", e);
+    displayMessage("❌ Scanカメラ起動失敗");
+    scanQr = null; // 起動失敗時にオブジェクトクリア
   } finally {
     isScanCameraStarting = false;
+    updateCameraUI();
   }
 }
 
+// =====================
+// 順位登録カメラ起動
+// =====================
 async function startRankCamera() {
-  if (isRankCameraStarting || !document.getElementById("rankingReader")) return;
+  const rankElem = document.getElementById("rankingReader");
+  if (!rankElem) {
+    console.warn("startRankCamera: rankingReader要素が存在しません");
+    return;
+  }
+  if (isRankCameraStarting || rankQr) return; // 二重起動防止
+
   isRankCameraStarting = true;
+  updateCameraUI();
 
   try {
     rankQr = new Html5Qrcode("rankingReader");
@@ -699,17 +739,66 @@ async function startRankCamera() {
       { fps: 10, qrbox: 200 },
       decodedText => handleRankingScan(decodedText)
     );
+    console.log("Rankカメラ起動成功");
+    displayMessage("✅ Rankカメラ起動");
   } catch (e) {
-    console.error("順位登録カメラ起動失敗", e);
-    displayMessage("❌ 順位登録カメラ起動失敗");
+    console.error("Rankカメラ起動失敗", e);
+    displayMessage("❌ Rankカメラ起動失敗");
+    rankQr = null;
   } finally {
     isRankCameraStarting = false;
+    updateCameraUI();
   }
 }
 
-async function stopScanCamera(){ if(scanQr){ await scanQr.stop(); await scanQr.clear(); scanQr=null; } }
-async function stopRankCamera(){ if(rankQr){ await rankQr.stop(); await rankQr.clear(); rankQr=null; } }
+// =====================
+// 通常スキャンカメラ停止
+// =====================
+async function stopScanCamera() {
+  if (!scanQr) return; // 起動していなければ何もしない
 
+  try {
+    await scanQr.stop();
+    await scanQr.clear();
+    console.log("Scanカメラ停止完了");
+    displayMessage("🛑 Scanカメラ停止");
+  } catch (e) {
+    console.warn("stopScanCameraエラー:", e);
+    displayMessage("⚠️ Scanカメラ停止エラー");
+  } finally {
+    scanQr = null;
+    isScanCameraStarting = false;
+    updateCameraUI();
+  }
+}
+
+// =====================
+// 順位登録カメラ停止
+// =====================
+async function stopRankCamera() {
+  if (!rankQr) return;
+
+  try {
+    await rankQr.stop();
+    await rankQr.clear();
+    console.log("Rankカメラ停止完了");
+    displayMessage("🛑 Rankカメラ停止");
+  } catch (e) {
+    console.warn("stopRankCameraエラー:", e);
+    displayMessage("⚠️ Rankカメラ停止エラー");
+  } finally {
+    rankQr = null;
+    isRankCameraStarting = false;
+    updateCameraUI();
+  }
+}
+
+// =====================
+// 全カメラ停止ユーティリティ
+// =====================
+async function stopAllCameras() {
+  await Promise.all([stopScanCamera(), stopRankCamera()]);
+}
 // =====================
 // CSVエクスポート
 // =====================
@@ -852,6 +941,10 @@ function bindButtons() {
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
   document.getElementById("adminLoginBtn").addEventListener("click", activateAdminMode);
+  document.getElementById("startScanBtn")?.addEventListener("click", startScanCamera);
+  document.getElementById("stopScanBtn")?.addEventListener("click", stopScanCamera);
+  document.getElementById("startRankBtn")?.addEventListener("click", startRankCamera);
+  document.getElementById("stopRankBtn")?.addEventListener("click", stopRankCamera);
 };
   document.addEventListener("DOMContentLoaded", async () => {
     try { 
@@ -860,6 +953,7 @@ function bindButtons() {
     console.warn("GASロード失敗,ローカル使用", e); 
   }
   loadFromLocalStorage();
+  updateCameraUI();
   renderSeats();
   applyTheme();
   bindButtons();
