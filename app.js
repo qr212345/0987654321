@@ -931,8 +931,9 @@ function exportHistoryCSV() {
 
 document.getElementById("welcomeScreen").addEventListener("click", async () => {
   document.getElementById("welcomeScreen").style.display = "none";
-  navigate("rankingSection"); // 既存の順位登録モードに遷移
+  navigate("scanSection"); // 既存の順位登録モードに遷移
 });
+
 // =====================
 // 初期化
 // =====================
