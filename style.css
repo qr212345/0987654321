@@ -157,6 +157,15 @@ main {
   font-weight: bold;
 }
 
+.remove-seat-button{
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  cursor: pointer;
+  color: red;
+  font-weight: bold;
+}
+
 /* =====================
    順位登録リスト
 ===================== */
