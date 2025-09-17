@@ -191,34 +191,62 @@ function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登
 // QRスキャン
 // =====================
 function handleScanSuccess(decodedText){
-  const now=Date.now();
-  if(decodedText===lastScannedText && now-lastScanTime<SCAN_COOLDOWN_MS) return;
-  lastScannedText=decodedText; lastScanTime=now;
+  const now = Date.now();
+  if(decodedText === lastScannedText && now - lastScanTime < SCAN_COOLDOWN_MS) return;
+  lastScannedText = decodedText;
+  lastScanTime = now;
 
-  const resultEl=document.getElementById("result");
-  if(resultEl) resultEl.textContent=`📷 ${decodedText} を読み取りました`;
+  const resultEl = document.getElementById("result");
+  if(resultEl) resultEl.textContent = `📷 ${decodedText} を読み取りました`;
 
   if(decodedText.startsWith("table")){
-    currentSeatId=decodedText;
-    seatMap[currentSeatId]??=[];
+    currentSeatId = decodedText;
+    seatMap[currentSeatId] ??= [];
     displayMessage(`✅ 座席セット: ${currentSeatId}`);
     if(isRankingMode) handleRankingScan(decodedText);
+
   } else if(decodedText.startsWith("player")){
     if(!currentSeatId){ displayMessage("⚠ 先に座席QRを読み込んでください"); return; }
     if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
     if(seatMap[currentSeatId].includes(decodedText)){ displayMessage("⚠ 既に登録済み"); return; }
-    if(seatMap[currentSeatId].length>=MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
+    if(seatMap[currentSeatId].length >= MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
 
     seatMap[currentSeatId].push(decodedText);
-    playerData[decodedText]??={nickname:decodedText};
-    saveAction({type:"addPlayer",seatId:currentSeatId,playerId:decodedText});
+    playerData[decodedText] ??= { nickname: decodedText };
+    saveAction({ type:"addPlayer", seatId:currentSeatId, playerId:decodedText });
     displayMessage(`✅ ${decodedText} 追加`);
+
+    // ローカル保存のみ
     saveToLocalStorage();
     renderSeats();
-    sendSeatData(currentSeatId,seatMap[currentSeatId],'webUser');
+
+    // GAS送信は廃止（ボタン押下のみ）
+    // sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
+
+    // 履歴ログ
     douTakuRecords.push({seatId: currentSeatId, playerId: decodedText, action: "登録", time: new Date().toLocaleString()});
     localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
   }
+}
+
+// =====================
+// GAS保存ボタンバインド
+// =====================
+function bindGASSaveButton(){
+  const btn = document.getElementById("saveToGASBtn");
+  if(!btn) return;
+
+  btn.addEventListener("click", () => {
+    requireAuth(async () => {
+      try {
+        await saveToGAS(seatMap, playerData);
+        displayMessage("💾 GASに保存しました");
+      } catch(err){
+        console.error(err);
+        displayMessage("❌ GAS保存に失敗しました");
+      }
+    });
+  });
 }
 
 // =====================
@@ -1019,6 +1047,7 @@ function bindButtons() {
   renderSeats();
   applyTheme();
   bindButtons();
+  bindGASSaveButton();
   startScanCamera();
   
   // スクロールでサイドバー自動開閉
