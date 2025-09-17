@@ -632,22 +632,22 @@ async function pollHistory() {
   try {
     const res = await callGAS({ mode: "loadHistory" });
 
-    // 履歴が配列かチェック、そうでなければ空配列を代入
     if (res && Array.isArray(res.history)) {
-      historyLog = res.history;
+      // 表示用マスター配列に置き換える
+      douTakuRecords = res.history;
     } else {
-      historyLog = [];
+      douTakuRecords = [];
     }
 
-    // localStorage にも安全に保存
-    localStorage.setItem("historyLog", JSON.stringify(historyLog));
+    // localStorage にも保存（keyは douTakuRecords に統一）
+    localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
 
+    // 画面更新（renderHistory は douTakuRecords を参照）
     renderHistory();
   } catch (e) {
     console.warn("履歴取得失敗", e);
   }
 }
-
 // 10秒ごとに自動取得
 setInterval(pollHistory, 10000);
 
