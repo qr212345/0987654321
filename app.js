@@ -685,7 +685,6 @@ function updateCameraUI() {
   if (stopRankBtn) stopRankBtn.disabled = !rankQr;
 }
 
-// =====================
 // 通常スキャンカメラ起動
 // =====================
 async function startScanCamera() {
@@ -711,7 +710,7 @@ async function startScanCamera() {
   } catch (e) {
     console.error("Scanカメラ起動失敗", e);
     displayMessage("❌ Scanカメラ起動失敗");
-    scanQr = null; // 起動失敗時にオブジェクトクリア
+    scanQr = null;
   } finally {
     isScanCameraStarting = false;
     updateCameraUI();
@@ -737,7 +736,7 @@ async function startRankCamera() {
     await rankQr.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 200 },
-      decodedText => handleRankingScan(decodedText)
+      handleRankingScan
     );
     console.log("Rankカメラ起動成功");
     displayMessage("✅ Rankカメラ起動");
@@ -755,11 +754,17 @@ async function startRankCamera() {
 // 通常スキャンカメラ停止
 // =====================
 async function stopScanCamera() {
-  if (!scanQr) return; // 起動していなければ何もしない
+  if (!scanQr) return;
 
   try {
     await scanQr.stop();
-    await scanQr.clear();
+
+    // clear前に要素が存在するか確認
+    const readerElem = document.getElementById("reader");
+    if (readerElem && readerElem.parentNode) {
+      await scanQr.clear();
+    }
+
     console.log("Scanカメラ停止完了");
     displayMessage("🛑 Scanカメラ停止");
   } catch (e) {
@@ -780,7 +785,12 @@ async function stopRankCamera() {
 
   try {
     await rankQr.stop();
-    await rankQr.clear();
+
+    const rankElem = document.getElementById("rankingReader");
+    if (rankElem && rankElem.parentNode) {
+      await rankQr.clear();
+    }
+
     console.log("Rankカメラ停止完了");
     displayMessage("🛑 Rankカメラ停止");
   } catch (e) {
@@ -799,6 +809,7 @@ async function stopRankCamera() {
 async function stopAllCameras() {
   await Promise.all([stopScanCamera(), stopRankCamera()]);
 }
+
 // =====================
 // CSVエクスポート
 // =====================
