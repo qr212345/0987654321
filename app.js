@@ -250,32 +250,46 @@ function logAction(playerId, seatId, action = "参加", extra = {}) {
 // =====================
 // 座席描画
 // =====================
-function renderSeats(){
-  const seatList=document.getElementById("seatList");
-  if(!seatList) return;
-  seatList.innerHTML="";
+function renderSeats() {
+  const seatList = document.getElementById("seatList");
+  if (!seatList) return;
+  seatList.innerHTML = "";
 
-  Object.entries(seatMap).forEach(([seatId,players])=>{
-    const seatDiv=document.createElement("div");
-    seatDiv.className="seat-box";
-    seatDiv.innerHTML=`<strong>${seatId}</strong>`;
-    seatDiv.style.backgroundColor=themeConfig.seatBox.backgroundColor;
-    seatDiv.style.color=themeConfig.seatBox.color;
-    seatDiv.style.fontSize=themeConfig.fontSize;
+  Object.entries(seatMap).forEach(([seatId, players]) => {
+    const seatDiv = document.createElement("div");
+    seatDiv.className = "seat-box";
 
-    players.forEach(pid=>{
-      const entryDiv=document.createElement("div");
-      entryDiv.className="player-entry";
-      entryDiv.innerHTML=`<strong>${pid}</strong>`;
-      entryDiv.style.backgroundColor=themeConfig.playerEntry.backgroundColor;
-      entryDiv.style.color=themeConfig.playerEntry.color;
-      entryDiv.style.fontSize=themeConfig.fontSize;
+    // 座席名 + 削除ボタン 横並び
+    const seatHeader = document.createElement("div");
+    seatHeader.className = "seat-header"; // CSSでflexなどを指定
 
-      const removeBtn=document.createElement("span");
-      removeBtn.className="remove-button";
-      removeBtn.textContent="✖";
-      removeBtn.addEventListener("click",()=>removePlayer(seatId,pid));
+    const seatName = document.createElement("strong");
+    seatName.textContent = seatId;
+    seatHeader.appendChild(seatName);
+
+    const removeSeatBtn = document.createElement("button");
+    removeSeatBtn.textContent = "✖";
+    removeSeatBtn.className = "remove-seat-button"; // CSSで見た目統一
+    removeSeatBtn.addEventListener("click", () => removeSeat(seatId));
+    seatHeader.appendChild(removeSeatBtn);
+
+    seatDiv.appendChild(seatHeader);
+
+    // プレイヤーリスト
+    players.forEach(pid => {
+      const entryDiv = document.createElement("div");
+      entryDiv.className = "player-entry";
+
+      const playerName = document.createElement("strong");
+      playerName.textContent = pid;
+      entryDiv.appendChild(playerName);
+
+      const removeBtn = document.createElement("span");
+      removeBtn.className = "remove-button";
+      removeBtn.textContent = "✖";
+      removeBtn.addEventListener("click", () => removePlayer(seatId, pid));
       entryDiv.appendChild(removeBtn);
+
       seatDiv.appendChild(entryDiv);
     });
 
@@ -314,6 +328,28 @@ function removePlayer(seatId, playerId){
 
   logAction(playerId, seatId, "削除");
   displayMessage(`❌ ${playerId} 削除`);
+}
+
+function removeSeat(seatId){
+  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
+  if(!confirm(`⚠️ 座席「${seatId}」を削除しますか？中のプレイヤーもすべて削除されます`)) return;
+
+  // ローカルデータ削除
+  delete seatMap[seatId];
+
+  // ローカル表示更新
+  saveToLocalStorage();
+  renderSeats();
+
+  // GASに反映
+  callGAS({ mode: "deleteSeat", seatId, secret: SECRET_KEY })
+    .then(res => {
+      if(res.success) displayMessage(`✅ 座席 ${seatId} 削除完了`);
+      else displayMessage(`❌ 座席削除失敗: ${res.error || "不明"}`);
+    }).catch(err => {
+      console.error(err);
+      displayMessage("❌ 座席削除失敗");
+    });
 }
 
 // =====================
