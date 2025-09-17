@@ -39,6 +39,7 @@ let timerInterval = null;
 let remaining = 0;
 let paused = false;
 let countingUp = false;
+let historyFilterText = "";  // 空文字で初期化
 
 // =====================
 // 管理者モード
