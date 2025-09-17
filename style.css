@@ -310,16 +310,25 @@ welcome画面
   top:0; left:0;
   width:100vw; height:100vh;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
   background: linear-gradient(135deg,#ff8a00,#e52e71);
   color:white;
-  font-size:2rem;
   text-align:center;
   cursor:pointer;
   z-index:1000;
   padding:1rem;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 1;
+}
+
+.full-screen .welcome-content {
+  background: rgba(0,0,0,0.3);
+  padding: 2rem 3rem;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  transform: scale(1);
+  transition: transform 0.5s ease;
 }
 
 .full-screen h1 {
@@ -329,13 +338,29 @@ welcome画面
 
 .full-screen p {
   font-size:1.2rem;
+  animation: bounce 1.5s infinite;
+}
+
+/* バウンスアニメーション */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 非表示時 */
+.full-screen.hide {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
 }
 
 /* スマホ対応 */
 @media (max-width: 768px) {
   .full-screen h1 { font-size:2rem; }
   .full-screen p { font-size:1rem; }
+  .full-screen .welcome-content { padding:1.5rem 2rem; }
 }
+
 
 /* =====================
    レスポンシブ調整
