@@ -539,10 +539,10 @@ async function finalizeRanking() {
 }
 
 // =====================
-// GAS通信（CORS対策済み、プロキシ不要）
+// GAS通信（プリフライト回避版）
 // =====================
 async function callGAS(payload = {}, options = {}) {
-  payload.secret = SECRET_KEY;  // すべてのリクエストに必須
+  payload.secret = SECRET_KEY; // 全リクエスト共通
   const maxRetries = options.retries ?? 3;
   const timeoutMs = options.timeout ?? 15000;
   let attempt = 0;
@@ -552,8 +552,10 @@ async function callGAS(payload = {}, options = {}) {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
+      // プリフライトを避けるため Content-Type を text/plain に
       const res = await fetch(GAS_URL, {
         method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload),
         signal: controller.signal
       });
@@ -572,36 +574,7 @@ async function callGAS(payload = {}, options = {}) {
 }
 
 // =====================
-// データ同期
-// =====================
-async function syncSeatData(localSeatMap) {
-  try {
-    const res = await callGAS({ mode: "loadData" });
-    const remoteSeatMap = res.seatMap || {};
-    const mergedSeatMap = { ...remoteSeatMap };
-
-    for (const seatId in localSeatMap) {
-      if (!mergedSeatMap[seatId] || mergedSeatMap[seatId].length === 0) {
-        mergedSeatMap[seatId] = localSeatMap[seatId];
-      } else {
-        localSeatMap[seatId] = mergedSeatMap[seatId];
-      }
-    }
-
-    seatMap = mergedSeatMap;
-    renderSeats();
-    displayMessage("✅ データ同期完了");
-    return mergedSeatMap;
-
-  } catch (err) {
-    console.error("データ同期失敗", err);
-    displayMessage("❌ データ同期失敗");
-    return null;
-  }
-}
-
-// =====================
-// 保存 / 読み込み
+// 保存
 // =====================
 async function saveToGAS(seatMapData, playerDataObj) {
   try {
@@ -609,11 +582,14 @@ async function saveToGAS(seatMapData, playerDataObj) {
     if (!res.success) throw new Error(res.error || "保存失敗");
     displayMessage("✅ データ保存成功");
   } catch (err) {
+    console.error("GAS保存失敗", err);
     displayMessage("❌ データ保存失敗");
-    console.error(err);
   }
 }
 
+// =====================
+// 読み込み
+// =====================
 async function loadFromGAS() {
   try {
     const res = await callGAS({ mode: "loadData" });
@@ -622,8 +598,8 @@ async function loadFromGAS() {
     renderSeats();
     displayMessage("✅ データ読み込み成功");
   } catch (err) {
+    console.error("GAS読み込み失敗", err);
     displayMessage("❌ データ読み込み失敗");
-    console.error(err);
   }
 }
 
@@ -693,10 +669,8 @@ async function postRankingUpdate(entries) {
   try {
     const res = await callGAS({ mode: "updateRanking", rankings: entries });
     if (!res.success) throw new Error(res.error || "順位送信失敗");
-
     displayMessage("✅ 順位送信成功");
     return true;
-
   } catch (err) {
     console.error('順位送信失敗', err);
     displayMessage("❌ 順位送信失敗");
@@ -705,45 +679,19 @@ async function postRankingUpdate(entries) {
 }
 
 // =====================
-// リアルタイム履歴取得
+// 履歴取得（ポーリング）
 // =====================
 async function pollHistory() {
   try {
     const res = await callGAS({ mode: "loadHistory" });
-
-    if (res && Array.isArray(res.history)) {
-      // 表示用マスター配列に置き換える
-      douTakuRecords = res.history;
-    } else {
-      douTakuRecords = [];
-    }
-
-    // localStorage にも保存（keyは douTakuRecords に統一）
-    localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
-
-    // 画面更新（renderHistory は douTakuRecords を参照）
+    douTakuRecords = Array.isArray(res.history) ? res.history : [];
     renderHistory();
   } catch (e) {
     console.warn("履歴取得失敗", e);
   }
 }
-// 10秒ごとに自動取得
+
 setInterval(pollHistory, 10000);
-
-// =====================
-// 通知（ベル）
-// =====================
-function playNotification(){
-  const audio = new Audio("https://freesound.org/data/previews/170/170186_2437358-lq.mp3"); // 任意の通知音
-  audio.play().catch(()=>{});
-}
-
-// =====================
-// 削除確認ダイアログ
-// =====================
-function confirmAction(message){
-  return confirm(`⚠️ ${message}`);
-}
 
 // =====================
 // カメラ制御
