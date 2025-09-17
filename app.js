@@ -232,12 +232,18 @@ function logAction(playerId, seatId, action = "参加", extra = {}) {
     rank: extra.rank || null
   };
 
-  historyLog.push(entry);
-  if (historyLog.length > MAX_HISTORY_ITEMS) historyLog.shift();
+  // マスター配列に追加
+  douTakuRecords.push(entry);
+  if (douTakuRecords.length > MAX_HISTORY_ITEMS) douTakuRecords.shift();
 
-  localStorage.setItem("historyLog", JSON.stringify(historyLog));
+  // localStorage保存
+  localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
+
+  // 画面描画更新
   renderHistory();
-  sendHistoryEntry(entry).catch(e => console.warn(`履歴送信失敗: ${playerId}`, e));
+
+  // GAS送信
+  sendHistoryEntry(entry).catch(e => console.warn("履歴送信失敗", e));
 }
 
 // =====================
@@ -339,17 +345,9 @@ function redoAction(){
 // =====================
 // 履歴描画
 // =====================
-function loadDouTakuHistory(){
-  const records=JSON.parse(localStorage.getItem("douTakuRecords")||"[]");
-  const list=document.getElementById("historyList");
-  if(!list) return; list.innerHTML="";
-  if(!records.length){ list.innerHTML="<p>🔕 履歴がありません</p>"; return; }
-  records.forEach(r=>{
-    const div=document.createElement("div");
-    div.className="history-entry";
-    div.textContent=`🔔 ${r.playerId} さん（座席 ${r.seatId}）が ${r.time} に ${r.action}`;
-    list.appendChild(div);
-  });
+function loadDouTakuHistory() {
+  douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
+  renderHistory();
 }
 
 // =====================
@@ -403,23 +401,58 @@ function enableDragSort(listId){
   });
 }
 
-async function finalizeRanking(){
+function handlePlayerAdd(playerId) {
+  if(!currentSeatId){ displayMessage("⚠ 座席QRを先に読み込んでください"); return; }
+  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
+  if(seatMap[currentSeatId].includes(playerId)){ displayMessage("⚠ 既に登録済み"); return; }
+  if(seatMap[currentSeatId].length >= MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
+
+  seatMap[currentSeatId].push(playerId);
+  playerData[playerId] ??= { nickname: playerId };
+  saveAction({ type:"addPlayer", seatId:currentSeatId, playerId });
+  saveToLocalStorage();
+  renderSeats();
+  sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
+
+  logAction(playerId, currentSeatId, "登録");
+  displayMessage(`✅ ${playerId} 追加`);
+}
+
+function handlePlayerRemove(playerId) {
+  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
+  if(!confirm(`⚠️ 座席「${currentSeatId}」から「${playerId}」を削除しますか？`)) return;
+
+  const idx = seatMap[currentSeatId]?.indexOf(playerId);
+  if(idx === -1) return;
+
+  seatMap[currentSeatId].splice(idx,1);
+  saveAction({ type:"removePlayer", seatId:currentSeatId, playerId, index:idx });
+  saveToLocalStorage();
+  renderSeats();
+  sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
+
+  logAction(playerId, currentSeatId, "削除");
+  displayMessage(`❌ ${playerId} 削除`);
+}
+
+async function finalizeRanking() {
   if(!confirm("⚠️ この順位を確定しますか？")) return;
   const list = document.getElementById("rankingList");
   if(!list) return;
 
   const rankedIds = Array.from(list.children).map(li=>li.dataset.id);
-  if(rankedIds.length<2){ displayMessage("⚠️ 2人以上必要です"); return; }
+  if(rankedIds.length < 2){ displayMessage("⚠️ 2人以上必要です"); return; }
 
-  const entries = rankedIds.map((playerId, index)=>({ playerId, rank:index+1 }));
+  const entries = rankedIds.map((playerId,index)=>({ playerId, rank:index+1 }));
   if(!await postRankingUpdate(entries)){ displayMessage("❌ 順位送信失敗"); return; }
 
-  rankedIds.forEach((playerId,index)=> logAction(playerId,currentRankingSeatId,"順位確定",{rank:index+1}));
+  rankedIds.forEach((playerId,index)=> logAction(playerId, currentRankingSeatId, "順位確定", { rank:index+1 }));
 
   if(currentRankingSeatId && seatMap[currentRankingSeatId]){
     seatMap[currentRankingSeatId]=[];
     currentRankingSeatId=null;
-    renderSeats(); await stopRankCamera();
+    renderSeats();
+    await stopRankCamera();
   }
 
   displayMessage("🏆 順位確定＆履歴送信完了");
@@ -729,23 +762,23 @@ function renderHistory() {
   if (!container) return;
   container.innerHTML = "";
 
-  const safeHistory = Array.isArray(historyLog) ? historyLog.slice().reverse() : [];
+  const safeHistory = Array.isArray(douTakuRecords) ? douTakuRecords.slice().reverse() : [];
 
-  // フィルター適用
-  const filteredHistory = safeHistory.filter(entry => {
+  const filtered = safeHistory.filter(entry => {
     if (!historyFilterText) return true;
-    return (entry.playerId?.toLowerCase().includes(historyFilterText) ||
-            entry.seatId?.toLowerCase().includes(historyFilterText) ||
-            entry.action?.toLowerCase().includes(historyFilterText));
+    const text = historyFilterText.toLowerCase();
+    return (entry.playerId?.toLowerCase().includes(text) ||
+            entry.seatId?.toLowerCase().includes(text) ||
+            entry.action?.toLowerCase().includes(text));
   });
 
-  if (filteredHistory.length === 0) {
+  if (filtered.length === 0) {
     const emptyDiv = document.createElement("div");
     emptyDiv.className = "history-empty";
     emptyDiv.textContent = "🔕 履歴がありません";
     container.appendChild(emptyDiv);
   } else {
-    filteredHistory.forEach(entry => {
+    filtered.forEach(entry => {
       const div = document.createElement("div");
       div.className = "history-entry";
       div.textContent = `[${entry.time || "不明"}] ${entry.playerId || "不明"} → ${entry.seatId || "N/A"} : ${entry.action || "不明"}` +
@@ -782,21 +815,20 @@ function exportRankingHistoryCSV(){
 }
 
 function exportHistoryCSV() {
-  if (historyLog.length === 0) { displayMessage("⚠️ 履歴なし"); return; }
+  if (douTakuRecords.length === 0) { displayMessage("⚠️ 履歴なし"); return; }
 
-  const header = ["time", "playerId", "seatId", "action", "rank"];
-  const rows = historyLog.map(r => [
+  const headers = ["time", "playerId", "seatId", "action", "rank"];
+  const rows = douTakuRecords.map(r => [
     r.time,
     r.playerId,
     r.seatId ?? "",
     r.action,
     r.rank ?? ""
   ]);
+  const csvText = [headers, ...rows].map(r => r.join(",")).join("\n");
 
-  const csvContent = [header, ...rows].map(e => e.join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv" });
+  const blob = new Blob([csvText], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
   a.href = url;
   a.download = `history_${Date.now()}.csv`;
