@@ -833,8 +833,9 @@ window.exportSeatCSV = ()=>{
   downloadCSV(toCSV(seats,["seatID","players"]),"seats.csv");
 };
 
-document.getElementById("closeHelpBtn").addEventListener("click", ()=>{
-  document.getElementById("helpSection").style.display = "none";
+document.getElementById("closeHelpBtn")?.addEventListener("click", ()=>{
+  const help = document.getElementById("helpSection");
+  if (help) help.style.display = "none";
 });
 
 // =====================
