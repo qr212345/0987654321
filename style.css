@@ -302,6 +302,40 @@ button:hover, button:focus {
   transition: background 0.2s, transform 0.2s;
 }
 #helpSection li:hover { background: #fff3c4; transform: translateX(2px); }
+/*
+welcome画面
+*/
+.full-screen {
+  position: fixed;
+  top:0; left:0;
+  width:100vw; height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background: linear-gradient(135deg,#ff8a00,#e52e71);
+  color:white;
+  font-size:2rem;
+  text-align:center;
+  cursor:pointer;
+  z-index:1000;
+  padding:1rem;
+}
+
+.full-screen h1 {
+  font-size:2.5rem;
+  margin-bottom:1rem;
+}
+
+.full-screen p {
+  font-size:1.2rem;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+  .full-screen h1 { font-size:2rem; }
+  .full-screen p { font-size:1rem; }
+}
 
 /* =====================
    レスポンシブ調整
