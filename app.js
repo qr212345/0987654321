@@ -929,6 +929,10 @@ function exportHistoryCSV() {
   displayMessage("✅ 履歴CSV出力完了");
 }
 
+document.getElementById("welcomeScreen").addEventListener("click", async () => {
+  document.getElementById("welcomeScreen").style.display = "none";
+  navigate("rankingSection"); // 既存の順位登録モードに遷移
+});
 // =====================
 // 初期化
 // =====================
@@ -947,6 +951,7 @@ function bindButtons() {
   document.getElementById("startRankBtn")?.addEventListener("click", startRankCamera);
   document.getElementById("stopRankBtn")?.addEventListener("click", stopRankCamera);
 };
+
   document.addEventListener("DOMContentLoaded", async () => {
     try { 
       await loadFromGAS(); 
