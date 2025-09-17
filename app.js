@@ -930,8 +930,16 @@ function exportHistoryCSV() {
 }
 
 document.getElementById("welcomeScreen").addEventListener("click", async () => {
-  document.getElementById("welcomeScreen").style.display = "none";
-  navigate("scanSection"); // 既存の順位登録モードに遷移
+  const welcome = document.getElementById("welcomeScreen");
+  
+  // フェードアウトアニメーション
+  welcome.classList.add("hide");
+  
+  // 500ms待って画面遷移
+  setTimeout(() => {
+    welcome.style.display = "none";
+    navigate("scanSection"); // 既存の順位登録モードに遷移
+  }, 500);
 });
 
 // =====================
