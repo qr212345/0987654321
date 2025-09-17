@@ -206,26 +206,41 @@ function handleScanSuccess(decodedText){
     if(isRankingMode) handleRankingScan(decodedText);
 
   } else if(decodedText.startsWith("player")){
-    if(!currentSeatId){ displayMessage("⚠ 先に座席QRを読み込んでください"); return; }
-    if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
-    if(seatMap[currentSeatId].includes(decodedText)){ displayMessage("⚠ 既に登録済み"); return; }
-    if(seatMap[currentSeatId].length >= MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
+    if(!currentSeatId){
+      displayMessage("⚠ 先に座席QRを読み込んでください");
+      return;
+    }
+    if(!passwordValidated){
+      displayMessage("⚠ 管理者モードでのみ操作可能です");
+      return;
+    }
+    if(seatMap[currentSeatId].includes(decodedText)){
+      displayMessage("⚠ 既に登録済み");
+      return;
+    }
+    if(seatMap[currentSeatId].length >= MAX_PLAYERS_PER_SEAT){
+      displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`);
+      return;
+    }
 
+    // プレイヤー追加
     seatMap[currentSeatId].push(decodedText);
     playerData[decodedText] ??= { nickname: decodedText };
-    saveAction({ type:"addPlayer", seatId:currentSeatId, playerId:decodedText });
-    displayMessage(`✅ ${decodedText} 追加`);
+    saveAction({ type: "addPlayer", seatId: currentSeatId, playerId: decodedText });
 
-    // ローカル保存のみ
-    saveToLocalStorage();
+    displayMessage(`✅ ${decodedText} 追加`);
     renderSeats();
 
-    // GAS送信は廃止（ボタン押下のみ）
+    // GASに即時送信は行わない
     // sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
 
-    // 履歴ログ
-    douTakuRecords.push({seatId: currentSeatId, playerId: decodedText, action: "登録", time: new Date().toLocaleString()});
-    localStorage.setItem("douTakuRecords", JSON.stringify(douTakuRecords));
+    // 履歴に記録（ローカル保存は廃止）
+    douTakuRecords.push({
+      seatId: currentSeatId,
+      playerId: decodedText,
+      action: "登録",
+      time: new Date().toLocaleString()
+    });
   }
 }
 
