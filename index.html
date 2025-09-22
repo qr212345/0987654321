@@ -3,12 +3,65 @@
   <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="style.css">
+    <style>
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px;
+        height: 100vh;
+        background-color: #333;
+        color: white;
+        padding: 20px;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+      }
+
+      .sidebar h2 {
+        margin-top: 0;
+      }
+
+      .sidebar a {
+        color: white;
+        text-decoration: none;
+        display: block;
+        margin: 10px 0;
+      }
+      
+      .toggle-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1100;
+        background-color: #444;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      
+    </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>座席管理システム</title>
   </head>
   <body>
     <button class="toggle-btn" onclick="toggleSidebar()">☰ メニュー</button>
+
+    <div class="sidebar" id="sidebar">
+      <h2>メニュー</h2>
+      <a href="#">ホーム</a>
+      <a href="#">設定</a>
+      <a href="#">ログアウト</a>
+    </div>
+    
     <header>
       <h1>座席管理システム</h1>
       <nav id="sidebar">
@@ -106,5 +159,13 @@
   <div id="themePanel" style="display:none;"></div>
 
   <script src="app.js"></script>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const main = document.getElementById("main");
+      sidebar.classList.toggle("open");
+      main.classList.toggle("shifted");
+    }
+  </script>
   </body>
 </html>
