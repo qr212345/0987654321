@@ -3,7 +3,7 @@ let qrReader;
 // =====================
 // 統一GAS URL
 // =====================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxD54SSIbDw4Gdhjp7CDksYusMN24OUuaUYRzVlaTbGNoqqDGwwIWgi26P18nR_ng8/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwhGmk2x9peNihCPgCcF66jWyYUzpuiMuiSEeKRD3zPmM-viX2fsgolhL3Vt-tYyiI/exec";
 const SECRET_KEY = "your-secret-key";
 
 const SCAN_COOLDOWN_MS = 1500;
