@@ -18,6 +18,16 @@
         z-index: 1000;
       }
 
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        overflow-x: hidden;
+      }
+
       .sidebar.open {
         transform: translateX(0);
       }
@@ -46,7 +56,15 @@
         border-radius: 4px;
       }
 
-      
+      .main {
+        margin-left: 0;
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+      }
+
+      .main.shifted {
+        margin-left: 250px;
+      }
     </style>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
