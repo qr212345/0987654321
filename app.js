@@ -106,7 +106,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
   const openThemeBtn = document.getElementById("openThemeBtn");
   const closeThemeBtn = document.getElementById("closeThemeBtn");
   const applyThemeBtn = document.getElementById("applyThemeBtn");
-
+  sidebar = document.getElementById("sidebar");
   // 開閉ボタン
   openThemeBtn.addEventListener("click", ()=>{
     themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
@@ -821,10 +821,13 @@ async function stopRankCamera() {
   if (!rankQr) return;
 
   try {
+    // カメラ停止
     await rankQr.stop();
 
+    // DOM要素が存在する場合のみクリア
     const rankElem = document.getElementById("rankingReader");
-    if (rankElem && rankElem.parentNode) {
+    if (rankElem) {
+      // clear() は内部で DOM 要素を削除するので removeChild は不要
       await rankQr.clear();
     }
 
