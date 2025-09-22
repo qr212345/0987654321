@@ -1,40 +1,39 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>座席管理システム</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-</head>
-<body>
-  <header>
-    <h1>座席管理システム</h1>
-    <nav id="sidebar">
-      <button onclick="navigate('scanSection')">💽QRスキャン</button>
-      <button onclick="navigate('rankingSection')">💾 順位登録</button>
-      <button onclick="navigate('historySection')">🔔 履歴</button>
-      <button onclick="navigate('helpSection')">🔎 操作ヘルプ</button>
-      <button id="openThemeBtn">🎨テーマ編集</button>
-      <!-- どこかヘッダーやメニューに追加 -->
-      <button id="adminLoginBtn">🔑 管理者モード有効化</button>
-      <span id="adminStatus">[未認証]</span>
-      <button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
-      <button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
-    </nav>
-  </header>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>座席管理システム</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>座席管理システム</h1>
+      <nav id="sidebar">
+        <button onclick="navigate('scanSection')">💽QRスキャン</button>
+        <button onclick="navigate('rankingSection')">💾 順位登録</button>
+        <button onclick="navigate('historySection')">🔔 履歴</button>
+        <button onclick="navigate('helpSection')">🔎 操作ヘルプ</button>
+        <button id="openThemeBtn">🎨テーマ編集</button>
+        <!-- どこかヘッダーやメニューに追加 -->
+        <button id="adminLoginBtn">🔑 管理者モード有効化</button>
+        <span id="adminStatus">[未認証]</span>
+        <button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
+        <button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
+      </nav>
+    </header>
 
   <main>
-  <!-- メッセージ表示 -->
-  <div id="messageArea" class="message-area"></div>
-  
-  <section id="welcomeScreen" class="full-screen section active">
-    <div class="welcome-content">
-      <h1>🎉 大会へようこそ 🎉</h1>
-      <p>画面をタッチ／クリックして順位登録モードに進む</p>
-    </div>
-  </section>
-
+    <!-- メッセージ表示 -->
+    <div id="messageArea" class="message-area"></div>
+    
+    <section id="welcomeScreen" class="full-screen section active">
+      <div class="welcome-content">
+        <h1>🎉 大会へようこそ 🎉</h1>
+        <p>画面をタッチ／クリックして順位登録モードに進む</p>
+      </div>
+    </section>
     
     <!-- QRスキャンセクション -->
     <section id="scanSection" class="section" style="display:none;">
@@ -85,8 +84,8 @@
       </div>
     </section>
 
-     <section id="themeSection">
-       <h3>
+    <section id="themeSection">
+      <h3>
       テーマ編集
       <button id="closeThemeBtn" style="float:right;">×</button>
       </h3>
@@ -100,11 +99,11 @@
         <button id="applyThemeBtn">適用</button>
       </div>
     </section>
-    </main>
+  </main>
 
   <!-- テーマパネル -->
   <div id="themePanel" style="display:none;"></div>
 
   <script src="app.js"></script>
-</body>
+  </body>
 </html>
