@@ -448,19 +448,54 @@ function loadFromLocalStorage(){
 // =====================
 // 順位登録
 // =====================
-function handleRankingScan(seatId){
-  currentRankingSeatId=seatId;
-  if(!seatMap[seatId]?.length){ displayMessage("⚠️ この座席にはプレイヤーが登録されていません"); return; }
-  const list=document.getElementById("rankingList");
-  list.innerHTML="";
-  seatMap[seatId].forEach(pid=>{
-    const li=document.createElement("li");
-    li.className="draggable-item";
-    li.draggable=true; li.dataset.id=pid; li.textContent=pid;
+function handleRankScanSuccess(decodedText) {
+  // tableQR以外は警告
+  if (!decodedText.startsWith("table")) {
+    displayMessage("⚠️ 順位登録は座席QRのみ対応しています");
+    return;
+  }
+  const seatId = decodedText;
+
+  // 座席にプレイヤーがいない場合
+  if (!seatMap[seatId]?.length) {
+    displayMessage(`⚠️ ${seatId} にはプレイヤーが登録されていません`);
+    return;
+  }
+
+  // 座席ごとのコンテナ取得or生成
+  const container = document.getElementById("multiRankingArea");
+  let seatDiv = document.getElementById(`ranking-${seatId}`);
+  if (!seatDiv) {
+    seatDiv = document.createElement("div");
+    seatDiv.id = `ranking-${seatId}`;
+    seatDiv.className = "ranking-seat";
+
+    seatDiv.innerHTML = `
+      <h3>${seatId}</h3>
+      <ul id="list-${seatId}" class="ranking-list"></ul>
+      <button class="finalizeBtn" data-seat="${seatId}">順位確定</button>
+    `;
+
+    container.appendChild(seatDiv);
+
+    // 確定ボタンのイベント
+    seatDiv.querySelector(".finalizeBtn").addEventListener("click", () => finalizeRanking(seatId));
+  }
+
+  // プレイヤーリスト表示
+  const list = seatDiv.querySelector("ul");
+  list.innerHTML = "";
+  seatMap[seatId].forEach(pid => {
+    const li = document.createElement("li");
+    li.className = "draggable-item";
+    li.draggable = true;
+    li.dataset.id = pid;
+    li.textContent = pid;
     list.appendChild(li);
   });
-  enableDragSort("rankingList");
-  displayMessage(`✅ 座席 ${seatId} のプレイヤーを読み込みました`);
+
+  enableDragSort(`list-${seatId}`);
+  displayMessage(`✅ ${seatId} のプレイヤーを読み込みました`);
 }
 
 function enableDragSort(listId){
