@@ -85,10 +85,17 @@
     <div class="sidebars" id="sidebars">
       <h2>メニュー</h2>
       <a href="#">ホーム</a>
-      <a href="#">設定</a>
-      <a href="#">ログアウト</a>
+      <button onclick="navigate('scanSection')">💽QRスキャン</button>
+      <button onclick="navigate('rankingSection')">💾 順位登録</button>
+      <button onclick="navigate('historySection')">🔔 履歴</button>
+      <button onclick="navigate('helpSection')">🔎 操作ヘルプ</button>
+      <button id="openThemeBtn">🎨テーマ編集</button>
+      <a id="adminLoginBtn">🔑 管理者モード有効化</a>
+      <span id="adminStatus">[未認証]</span>
       <a onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</a>
       <a onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</a>
+      <a href="#">設定</a>
+      <a href="#">ログアウト</a>
     </div>
     
     <!-- メッセージ表示 -->
