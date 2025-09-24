@@ -551,21 +551,32 @@ async function flushAllRankings() {
     return;
   }
 
-  const formData = new URLSearchParams();
-  formData.append("secret", SECRET_KEY);
-  formData.append("results", JSON.stringify(pendingResults));
-  formData.append("timestamp", Date.now());
+  // 送信データを JSON 文字列に
+  const payload = {
+    secret: SECRET_KEY,
+    results: pendingResults,
+    timestamp: Date.now()
+  };
 
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    body: formData, // ここで x-www-form-urlencoded になる
-  });
+  try {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" }, // プリフライト回避
+      body: JSON.stringify(payload)
+    });
 
-  const json = await res.json();
-  if (json && json.updated) {
-    displayMessage("🏆 すべての順位を送信しました");
-    Object.keys(pendingResults).forEach(k => delete pendingResults[k]);
-  } else {
+    const json = await res.json();
+
+    if (json && json.success && json.players) {
+      displayMessage("🏆 すべての順位を送信しました");
+      Object.keys(pendingResults).forEach(k => delete pendingResults[k]);
+    } else {
+      console.warn("送信結果:", json);
+      displayMessage("❌ 送信失敗");
+    }
+
+  } catch (err) {
+    console.error("GAS通信エラー", err);
     displayMessage("❌ 送信失敗");
   }
 }
