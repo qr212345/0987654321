@@ -559,39 +559,41 @@ function handlePlayerRemove(playerId) {
   displayMessage(`❌ ${playerId} 削除`);
 }
 
-async function finalizeRanking() {
+async function finalizeRanking(seatId) {
   if (!confirm("⚠️ この順位を確定しますか？")) return;
 
-  const list = document.getElementById("rankingList");
+  const list = document.getElementById(`list-${seatId}`);
   if (!list) return;
 
+  // ドラッグ順序から playerId を抽出
   const rankedIds = Array.from(list.children).map(li => li.dataset.id);
   if (rankedIds.length < 2) {
     displayMessage("⚠️ 2人以上必要です");
     return;
   }
 
+  // { playerId, rank } 形式に変換
   const entries = rankedIds.map((playerId, index) => ({
     playerId,
     rank: index + 1
   }));
 
-  if (currentRankingSeatId) {
-    pendingResults[currentRankingSeatId] = {
-      seatId: currentRankingSeatId,
-      entries
-    };
-  }
+  // pendingResults に座席IDと一緒に格納
+  pendingResults[seatId] = {
+    seatId,
+    entries
+  };
 
-  // UIリセット
-  if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
-    seatMap[currentRankingSeatId] = [];
-    currentRankingSeatId = null;
+  // UIリセット（必要に応じて seatMap もクリア）
+  if (seatMap[seatId]) {
+    seatMap[seatId] = [];
     renderSeats();
-    await stopRankCamera();
   }
 
-  displayMessage(`✅ 座席の順位を保留しました。まとめて送信可能です`);
+  // カメラ停止（座席単位）
+  await stopRankCamera();
+
+  displayMessage(`✅ ${seatId} の順位を保留しました。まとめて送信可能です`);
 }
 
 // まとめて送信ボタン
