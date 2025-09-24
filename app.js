@@ -462,8 +462,15 @@ function handleRankingScan(decodedText) {
     return;
   }
 
+  // multiRankingArea が存在しない場合は自動生成
+  let container = document.getElementById("multiRankingArea");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "multiRankingArea";
+    document.getElementById("rankingSection").appendChild(container);
+  }
+
   // 座席ごとのコンテナ取得or生成
-  const container = document.getElementById("multiRankingArea");
   let seatDiv = document.getElementById(`ranking-${seatId}`);
   if (!seatDiv) {
     seatDiv = document.createElement("div");
@@ -482,15 +489,15 @@ function handleRankingScan(decodedText) {
     seatDiv.querySelector(".finalizeBtn").addEventListener("click", () => finalizeRanking(seatId));
   }
 
-  // プレイヤーリスト表示
+  // プレイヤーリスト表示（ID + 名前）
   const list = seatDiv.querySelector("ul");
   list.innerHTML = "";
-  seatMap[seatId].forEach(pid => {
+  seatMap[seatId].forEach(player => {
     const li = document.createElement("li");
     li.className = "draggable-item";
     li.draggable = true;
-    li.dataset.id = pid;
-    li.textContent = pid;
+    li.dataset.id = player.id ?? player; // playerがオブジェクトかIDか両方対応
+    li.textContent = player.name ? `${player.id} - ${player.name}` : player.id ?? player;
     list.appendChild(li);
   });
 
@@ -499,19 +506,20 @@ function handleRankingScan(decodedText) {
 }
 
 function enableDragSort(listId){
-  const list=document.getElementById(listId);
-  let dragged;
-  list.querySelectorAll(".draggable-item").forEach(item=>{
-    item.addEventListener("dragstart",()=>dragged=item);
-    item.addEventListener("dragend",()=>dragged=null);
-    item.addEventListener("dragover",e=>e.preventDefault());
-    item.addEventListener("drop",e=>{
+  const list = document.getElementById(listId);
+  let dragged = null; // リスト単位で閉じる
+
+  list.querySelectorAll(".draggable-item").forEach(item => {
+    item.addEventListener("dragstart", () => dragged = item);
+    item.addEventListener("dragend", () => dragged = null);
+    item.addEventListener("dragover", e => e.preventDefault());
+    item.addEventListener("drop", e => {
       e.preventDefault();
-      if(dragged && dragged!==item){
-        const items=Array.from(list.children);
-        const di=items.indexOf(dragged), ii=items.indexOf(item);
-        if(di<ii) list.insertBefore(dragged,item.nextSibling);
-        else list.insertBefore(dragged,item);
+      if(dragged && dragged !== item){
+        const items = Array.from(list.children);
+        const di = items.indexOf(dragged), ii = items.indexOf(item);
+        if(di < ii) list.insertBefore(dragged, item.nextSibling);
+        else list.insertBefore(dragged, item);
       }
     });
   });
