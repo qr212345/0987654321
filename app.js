@@ -528,8 +528,17 @@ async function finalizeRanking() {
     return;
   }
 
-  const entries = rankedIds.map((playerId, index) => ({ playerId, rank: index + 1 }));
-  pendingResults[currentRankingSeatId] = entries;
+  const entries = rankedIds.map((playerId, index) => ({
+    playerId,
+    rank: index + 1
+  }));
+
+  if (currentRankingSeatId) {
+    pendingResults[currentRankingSeatId] = {
+      seatId: currentRankingSeatId,
+      entries
+    };
+  }
 
   // UIリセット
   if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
@@ -542,9 +551,9 @@ async function finalizeRanking() {
   displayMessage(`✅ 座席の順位を保留しました。まとめて送信可能です`);
 }
 
+// まとめて送信ボタン
 document.getElementById("flushBtn").addEventListener("click", flushAllRankings);
 
-// まとめて送信ボタン用
 async function flushAllRankings() {
   if (Object.keys(pendingResults).length === 0) {
     displayMessage("⚠️ 送信する結果がありません");
@@ -555,13 +564,13 @@ async function flushAllRankings() {
     const payload = {
       secret: SECRET_KEY,
       mode: "updateRanking", // doPost → handleMode で処理される
-      rankings: Object.values(pendingResults).flat(),
+      rankings: Object.values(pendingResults), // seatIdごと送信
       timestamp: Date.now()
     };
 
     const res = await fetch(GAS_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" }, // text/plain で送信することでプリフライト回避
+      headers: { "Content-Type": "text/plain" }, // プリフライト回避
       body: JSON.stringify(payload)
     });
 
