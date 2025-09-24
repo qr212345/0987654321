@@ -9,6 +9,7 @@ const SECRET_KEY = "your-secret-key";
 const SCAN_COOLDOWN_MS = 1500;
 const MAX_PLAYERS_PER_SEAT = 6;
 const MAX_HISTORY_ITEMS = 100; // 保存する履歴の上限
+const pendingResults = {};
 
 // =====================
 // データ構造と状態
@@ -527,15 +528,8 @@ async function finalizeRanking() {
     return;
   }
 
-  // ランキングデータだけ作成
   const entries = rankedIds.map((playerId, index) => ({ playerId, rank: index + 1 }));
-
-  // GASにランキング更新
-  const success = await postRankingUpdate(entries);
-  if (!success) {
-    displayMessage("❌ 順位送信失敗");
-    return;
-  }
+  pendingResults[currentRankingSeatId] = entries;
 
   // UIリセット
   if (currentRankingSeatId && seatMap[currentRankingSeatId]) {
@@ -545,7 +539,35 @@ async function finalizeRanking() {
     await stopRankCamera();
   }
 
-  displayMessage("🏆 順位確定完了");
+  displayMessage(`✅ 座席の順位を保留しました。まとめて送信可能です`);
+}
+
+document.getElementById("flushBtn").addEventListener("click", flushAllRankings);
+
+// まとめて送信ボタン用
+async function flushAllRankings() {
+  if (Object.keys(pendingResults).length === 0) {
+    displayMessage("⚠️ 送信する結果がありません");
+    return;
+  }
+
+  const formData = new URLSearchParams();
+  formData.append("secret", SECRET_KEY);
+  formData.append("results", JSON.stringify(pendingResults));
+  formData.append("timestamp", Date.now());
+
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    body: formData, // ここで x-www-form-urlencoded になる
+  });
+
+  const json = await res.json();
+  if (json && json.updated) {
+    displayMessage("🏆 すべての順位を送信しました");
+    Object.keys(pendingResults).forEach(k => delete pendingResults[k]);
+  } else {
+    displayMessage("❌ 送信失敗");
+  }
 }
 
 // =====================
