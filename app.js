@@ -901,16 +901,16 @@ async function stopScanCamera() {
 // 順位登録カメラ停止
 // =====================
 async function stopRankCamera() {
-  if (!rankQr) return;
+  if (!rankQr) return; // カメラ未起動なら即リターン
 
   try {
     // カメラ停止
     await rankQr.stop();
 
-    // DOM要素が存在する場合のみクリア
+    // DOM要素が存在する場合のみ clear
     const rankElem = document.getElementById("rankingReader");
     if (rankElem) {
-      // clear() は内部で DOM 要素を削除するので removeChild は不要
+      // clear() は内部で表示をクリアするので removeChild は不要
       await rankQr.clear();
     }
 
@@ -920,9 +920,10 @@ async function stopRankCamera() {
     console.warn("stopRankCameraエラー:", e);
     displayMessage("⚠️ Rankカメラ停止エラー");
   } finally {
+    // 状態リセット
     rankQr = null;
     isRankCameraStarting = false;
-    updateCameraUI();
+    updateCameraUI(); // UI表示更新
   }
 }
 
