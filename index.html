@@ -8,7 +8,15 @@
     <title>座席管理システム</title>
   </head>
   <body>
+    <section id="welcomeScreen" class="full-screen section active">
+      <div class="welcome-content">
+        <h1>🎉 大会へようこそ 🎉</h1>
+        <p>画面をタッチ／クリックして順位登録モードに進む</p>
+      </div>
+    </section>
+    
     <button class="toggle-btn" onclick="toggleSidebar()">☰ メニュー</button>
+    
     <div class="sidebars" id="sidebars">
       <h2>メニュー</h2>
       <button href="#">ホーム</button>
@@ -32,14 +40,7 @@
       
       <!-- メッセージ表示 -->
       <div id="messageArea" class="message-area"></div>
-    
-      <section id="welcomeScreen" class="full-screen section active">
-        <div class="welcome-content">
-          <h1>🎉 大会へようこそ 🎉</h1>
-          <p>画面をタッチ／クリックして順位登録モードに進む</p>
-        </div>
-      </section>
-    
+      
       <!-- QRスキャンセクション -->
       <section id="scanSection" class="section" style="display:none;">
         <h2>QRコードスキャン</h2>
