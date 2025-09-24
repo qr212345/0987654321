@@ -551,33 +551,29 @@ async function flushAllRankings() {
     return;
   }
 
-  // 送信データを JSON 文字列に
-  const payload = {
-    secret: SECRET_KEY,
-    results: pendingResults,
-    timestamp: Date.now()
-  };
-
   try {
+    const payload = {
+      secret: SECRET_KEY,
+      mode: "updateRanking", // doPost → handleMode で処理される
+      rankings: Object.values(pendingResults).flat(),
+      timestamp: Date.now()
+    };
+
     const res = await fetch(GAS_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain" }, // プリフライト回避
+      headers: { "Content-Type": "text/plain" }, // text/plain で送信することでプリフライト回避
       body: JSON.stringify(payload)
     });
 
     const json = await res.json();
-
-    if (json && json.success && json.players) {
+    if (json && json.success) {
       displayMessage("🏆 すべての順位を送信しました");
-      Object.keys(pendingResults).forEach(k => delete pendingResults[k]);
+      pendingResults = {}; // 全クリア
     } else {
-      console.warn("送信結果:", json);
-      displayMessage("❌ 送信失敗");
+      displayMessage("❌ 送信失敗: " + (json.error || "不明なエラー"));
     }
-
   } catch (err) {
-    console.error("GAS通信エラー", err);
-    displayMessage("❌ 送信失敗");
+    displayMessage("🚨 通信エラー: " + err.message);
   }
 }
 
