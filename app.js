@@ -448,7 +448,7 @@ function loadFromLocalStorage(){
 // =====================
 // 順位登録
 // =====================
-function handleRankScanSuccess(decodedText) {
+function handleRankingScan(decodedText) {
   // tableQR以外は警告
   if (!decodedText.startsWith("table")) {
     displayMessage("⚠️ 順位登録は座席QRのみ対応しています");
