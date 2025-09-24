@@ -38,12 +38,12 @@ header h1 {
 /* =====================
    メイン
 ===================== */
-.main {
+main {
    margin-left: 0;
    padding: 20px;
    transition: margin-left 0.3s ease;
 }
-.main.shifted {
+main.shifted {
    margin-left: 250px;
 }
 .section {
