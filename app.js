@@ -605,22 +605,27 @@ async function flushAllRankings() {
   }
 
   try {
+    // GAS に送信する payload を作成
     const payload = {
-      mode: "updateRanking", // doPost → handleMode で処理
-      rankings: Object.values(pendingResults), // seatIdごとの配列
+      mode: "updateRanking",                 // doPost → handleMode で処理
+      rankings: Object.values(pendingResults), // seatId ごとの配列
       timestamp: Date.now()
     };
 
     // callGAS を使用して送信（リトライ・タイムアウト付き）
     const json = await callGAS(payload, { retries: 3, timeout: 15000 });
 
+    // レスポンスの success をチェック
     if (json && json.success) {
       displayMessage("🏆 すべての順位を送信しました");
       pendingResults = {}; // 成功したらクリア
     } else {
+      // エラー時は json.error または不明エラーを表示
       displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
     }
+
   } catch (err) {
+    // 通信エラーの場合も表示
     displayMessage("🚨 通信エラー: " + err.message);
   }
 }
@@ -629,17 +634,20 @@ async function flushAllRankings() {
 // GAS通信（プリフライト回避版）
 // =====================
 async function callGAS(payload = {}, options = {}) {
-  payload.secret = SECRET_KEY; // 全リクエスト共通
-  const maxRetries = options.retries ?? 3;
-  const timeoutMs = options.timeout ?? 15000;
+  // GAS で受信可能な形式に secret を必ず付与
+  payload.secret = SECRET_KEY;
+
+  const maxRetries = options.retries ?? 3;  // 最大リトライ回数
+  const timeoutMs  = options.timeout ?? 15000; // タイムアウト(ms)
   let attempt = 0;
 
   while (attempt < maxRetries) {
+    // タイムアウト制御用の AbortController
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      // プリフライトを避けるため Content-Type を text/plain に
+      // プリフライト回避のため text/plain で送信
       const res = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -647,15 +655,22 @@ async function callGAS(payload = {}, options = {}) {
         signal: controller.signal
       });
 
+      // タイマークリア
       clearTimeout(timer);
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      // JSON レスポンスを返す
       return await res.json();
 
-    } catch (e) {
+    } catch (err) {
       attempt++;
-      console.warn("GAS通信リトライ", attempt, e);
+      console.warn("GAS通信リトライ", attempt, err);
+
+      // 1秒待機して再試行
       await new Promise(r => setTimeout(r, 1000));
-      if (attempt >= maxRetries) throw e;
+
+      if (attempt >= maxRetries) throw err;
     }
   }
 }
