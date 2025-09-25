@@ -56,11 +56,11 @@ function v() {
   
   if ("supersecret" === inputData) {
     passwordValidated = true;
-    alert("入力されたデータ:",inputData);
+    alert("入力されたデータ: ${inputData}");
     alert("🔑 管理者モードが有効になりました");
     return;
   } else {
-    alert("入力されたデータ:",inputData);
+    alert("入力されたデータ: ${inputData}");
     alert("❌ 認証失敗");
     return;
   }
