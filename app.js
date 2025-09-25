@@ -46,28 +46,6 @@ function activateAdminMode() {
   }
 }
 
-function n() {
-  if (passwordValidated) {
-    alert("✅ すでに管理者モードです");
-  } else {
-    v();
-  }
-}
-
-function v() {
-  inputData = prompt("管理者パスワードを入力してください");
-  if ("supersecret" === inputData) {
-    passwordValidated = true;
-    alert("入力されたデータ:"+inputData);
-    alert("🔑 管理者モードが有効になりました");
-    return;
-  } else {
-    alert("入力されたデータ:"+inputData);
-    alert("❌ 認証失敗");
-    return;
-  }
-}
-
 // =====================
 // テーマ設定
 // =====================
@@ -1123,7 +1101,7 @@ function bindButtons() {
     else sidebar?.classList.remove("closed");
     lastScrollTop = st <= 0 ? 0 : st;
     scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
-   
+  
 }); // ここでDOMContentLoadedの括弧を閉じる
 })
 // window に関数を登録
