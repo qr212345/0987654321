@@ -1,6 +1,3 @@
-// =====================
-// 統一GAS URL
-// =====================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbxB6v1w4xr6Kopy_jP-W27TDmiRde0BPHvSA73gmnOXmXcrCt1jaiVvXNbehMCKh7I/exec";
 const SECRET_KEY = "your-secret-key";
 
@@ -9,9 +6,6 @@ const MAX_PLAYERS_PER_SEAT = 6;
 const MAX_HISTORY_ITEMS = 100; // 保存する履歴の上限
 const pendingResults = {};
 
-// =====================
-// データ構造と状態
-// =====================
 let currentSeatId = null;
 let seatMap = {};
 let playerData = {};
