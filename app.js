@@ -49,7 +49,7 @@ function activateAdminMode() {
   }
 }
 
-async function v() {
+function v() {
   if (passwordValidated) return true;
   const pw = prompt("管理者パスワードを入力してください");
   if (pw === "supersecret") {
