@@ -228,7 +228,7 @@ main.shifted {
 /* =====================
    ボタン共通
 ===================== */
-button {
+main button {
   cursor: pointer;
   padding: 6px 14px;
   border: none;
@@ -240,7 +240,7 @@ button {
   color: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
-button:hover, button:focus {
+main button:hover, button:focus {
   opacity: 0.95;
   outline: none;
   transform: translateY(-2px);
