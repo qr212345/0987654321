@@ -33,23 +33,6 @@ let pw;
 // 管理者モード
 // =====================
 function activateAdminMode() {
-  displayMessage("now Loading...");
-  if (passwordValidated) {
-    displayMessage("✅ すでに管理者モードです");
-    return;
-  }
-
-  passwordValidated = v();
-  if (passwordValidated) {
-    displayMessage("🔑 管理者モードが有効になりました");
-    document.getElementById("adminStatus").textContent = "[管理者モード]";
-    document.getElementById("adminStatus").style.color = "lime";
-  } else {
-    alert("❌ 認証失敗");
-  }
-}
-
-function v() {
   if (passwordValidated) {
     alert("✅ すでに管理者モードです");
   } else {
@@ -1090,7 +1073,6 @@ function bindButtons() {
   document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
   document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
   document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-  document.getElementById("adminLoginBtn").addEventListener("click", activateAdminMode);
   document.getElementById("startScanBtn")?.addEventListener("click", startScanCamera);
   document.getElementById("stopScanBtn")?.addEventListener("click", stopScanCamera);
   document.getElementById("startRankBtn")?.addEventListener("click", startRankCamera);
