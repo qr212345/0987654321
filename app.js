@@ -47,14 +47,10 @@ function activateAdminMode() {
 }
 
 function n() {
-  switch (passwordValidated) {
-    case false:
-      v();
-    case true:
-      alert("✅ すでに管理者モードです");
-      break;
-    default:
-      alert("error");
+  if (passwordValidated) {
+    alert("✅ すでに管理者モードです");
+  } else {
+    v();
   }
 }
 
