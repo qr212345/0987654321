@@ -48,7 +48,7 @@ function activateAdminMode() {
   }
 }
 
-function v() {
+async function v() {
   const pw = prompt("管理者パスワードを入力してください");
   if (pw === "supersecret") {
     passwordValidated = true;
@@ -57,6 +57,7 @@ function v() {
     document.getElementById("adminStatus").style.color = "lime";
   } else {
     alert("❌ 認証失敗");
+  }
 }
 
 // =====================
