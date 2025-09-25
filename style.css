@@ -329,10 +329,10 @@ button:hover, button:focus {
   line-height: 1.6;
   transition: background 0.2s, transform 0.2s;
 }
-#helpSection li:hover { background: #fff3c4; transform: translateX(2px); }
-/*
-welcome画面
-*/
+#helpSection li:hover {
+   background: #fff3c4;
+   transform: translateX(2px);
+}
 .full-screen {
   position: fixed;
   top:0; left:0;
@@ -382,17 +382,15 @@ welcome画面
   pointer-events: none;
 }
 
+/* =====================
+   レスポンシブ調整
+===================== */
 /* スマホ対応 */
 @media (max-width: 768px) {
   .full-screen h1 { font-size:2rem; }
   .full-screen p { font-size:1rem; }
   .full-screen .welcome-content { padding:1.5rem 2rem; }
 }
-
-
-/* =====================
-   レスポンシブ調整
-===================== */
 @media(max-width: 600px){
   header h1 { font-size: 1.3rem; }
   .seat-box { padding: 10px; }
