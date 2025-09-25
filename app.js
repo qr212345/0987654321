@@ -28,6 +28,8 @@ let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let historyFilterText = "";  // 空文字で初期化
 
+let v = false;
+
 // =====================
 // 管理者モード
 // =====================
@@ -35,6 +37,15 @@ function activateAdminMode() {
   if (passwordValidated) {
     displayMessage("✅ すでに管理者モードです");
     return;
+  }
+
+  v = v();
+  if (v) {
+    displayMessage("🔑 管理者モードが有効になりました");
+    document.getElementById("adminStatus").textContent = "[管理者モード]";
+    document.getElementById("adminStatus").style.color = "lime";
+  } else {
+    alert("❌ 認証失敗");
   }
 
   const pw = prompt("管理者パスワードを入力してください");
@@ -49,14 +60,13 @@ function activateAdminMode() {
 }
 
 async function v() {
+  if (passwordValidated) return true;
   const pw = prompt("管理者パスワードを入力してください");
   if (pw === "supersecret") {
     passwordValidated = true;
-    displayMessage("🔑 管理者モードが有効になりました");
-    document.getElementById("adminStatus").textContent = "[管理者モード]";
-    document.getElementById("adminStatus").style.color = "lime";
+    return true;
   } else {
-    alert("❌ 認証失敗");
+    return false;
   }
 }
 
