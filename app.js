@@ -613,22 +613,19 @@ async function flushAllRankings() {
     };
 
     // callGAS を使用して送信（リトライ・タイムアウト付き）
-    const json = await callGAS(payload, { retries: 3, timeout: 15000 });
-
-    // レスポンスの success をチェック
-    if (json && json.success) {
-      displayMessage("🏆 すべての順位を送信しました");
-      pendingResults = {}; // 成功したらクリア
-    } else {
-      // エラー時は json.error または不明エラーを表示
-      displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
-    }
-
-  } catch (err) {
-    // 通信エラーの場合も表示
-    displayMessage("🚨 通信エラー: " + err.message);
+  const json = await callGAS(payload, { retries: 3, timeout: 15000 });
+  if (json && json.success) {
+    displayMessage("🏆 すべての順位を送信しました");
+    pendingResults = {};
+  } else {
+    console.error("GASエラー応答:", json);
+    displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
   }
+} catch (err) {
+  console.error("GAS通信例外:", err); // ← ここで AbortError か確認
+  displayMessage("🚨 通信エラー: " + err.message);
 }
+
 
 // =====================
 // GAS通信（プリフライト回避版）
