@@ -33,6 +33,7 @@ let pw;
 // 管理者モード
 // =====================
 function activateAdminMode() {
+  displayMessage("now Loading...");
   if (passwordValidated) {
     displayMessage("✅ すでに管理者モードです");
     return;
