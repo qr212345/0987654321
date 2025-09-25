@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzdb6-w8k1gRl51kdudWtXe0bngXAsro2o_UDQ1Jk0TksJzpuKVk6tcBc6eYyCWcO8/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycby_8v7Gie_f3cdNv8OA5-R3VLVBvPB7rjgAaVuDBbUXKsOMI9AVLyIbaoVpBovGJQ8/exec";
 const SECRET_KEY = "your-secret-key";
 
 const SCAN_COOLDOWN_MS = 1500;
