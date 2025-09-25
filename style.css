@@ -76,6 +76,24 @@ header h1 {
    cursor: pointer;
    border-radius: 4px;
 }
+/* =====================
+   タイマー表示
+===================== */
+#timerDisplay {
+  margin-top: 12px;
+  font-size: 2rem;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+}
+#timerSection input[type=number] {
+  font-size: 1rem;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 60px;
+}
+
 
 /* =====================
    メイン
