@@ -28,8 +28,6 @@ let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let historyFilterText = "";  // 空文字で初期化
 
-let v = false;
-
 // =====================
 // 管理者モード
 // =====================
