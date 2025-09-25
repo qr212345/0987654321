@@ -37,8 +37,8 @@ function activateAdminMode() {
     return;
   }
 
-  v = v();
-  if (v) {
+  passwordValidated = v();
+  if (passwordValidated) {
     displayMessage("🔑 管理者モードが有効になりました");
     document.getElementById("adminStatus").textContent = "[管理者モード]";
     document.getElementById("adminStatus").style.color = "lime";
