@@ -48,6 +48,17 @@ function activateAdminMode() {
   }
 }
 
+async function v() {
+  const pw = prompt("管理者パスワードを入力してください");
+  if (pw === "supersecret") {
+    passwordValidated = true;
+    displayMessage("🔑 管理者モードが有効になりました");
+    document.getElementById("adminStatus").textContent = "[管理者モード]";
+    document.getElementById("adminStatus").style.color = "lime";
+  } else {
+    alert("❌ 認証失敗");
+}
+
 // =====================
 // テーマ設定
 // =====================
