@@ -47,13 +47,20 @@ function activateAdminMode() {
 }
 
 function v() {
-  if (passwordValidated) alert("✅ すでに管理者モードです");
-
-  if ("supersecret" === prompt("管理者パスワードを入力してください")) {
+  if (passwordValidated) {
+    alert("✅ すでに管理者モードです");
+    return;
+  }
+  
+  inputData = prompt("管理者パスワードを入力してください");
+  
+  if ("supersecret" === inputData) {
     passwordValidated = true;
     alert("🔑 管理者モードが有効になりました");
+    return;
   } else {
-  alert("❌ 認証失敗");
+    alert("❌ 認証失敗");
+    return;
   }
 }
 
