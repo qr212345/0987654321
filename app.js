@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxB6v1w4xr6Kopy_jP-W27TDmiRde0BPHvSA73gmnOXmXcrCt1jaiVvXNbehMCKh7I/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzI9LkF17my0AdtdiE9KWxBmhL2VCBRX565nx8inRc1cofS9WfdJs0XvlXHJDglPMA/exec";
 const SECRET_KEY = "your-secret-key";
 
 const SCAN_COOLDOWN_MS = 1500;
@@ -585,6 +585,9 @@ async function finalizeRanking(seatId) {
 // まとめて送信ボタン
 document.getElementById("flushBtn").addEventListener("click", flushAllRankings);
 
+// =====================
+// 全順位まとめて送信
+// =====================
 async function flushAllRankings() {
   if (Object.keys(pendingResults).length === 0) {
     displayMessage("⚠️ 送信する結果がありません");
@@ -593,24 +596,19 @@ async function flushAllRankings() {
 
   try {
     const payload = {
-      secret: SECRET_KEY,
-      mode: "updateRanking", // doPost → handleMode で処理される
-      rankings: Object.values(pendingResults), // seatIdごと送信
+      mode: "updateRanking", // doPost → handleMode で処理
+      rankings: Object.values(pendingResults), // seatIdごとの配列
       timestamp: Date.now()
     };
 
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" }, // プリフライト回避
-      body: JSON.stringify(payload)
-    });
+    // callGAS を使用して送信（リトライ・タイムアウト付き）
+    const json = await callGAS(payload, { retries: 3, timeout: 15000 });
 
-    const json = await res.json();
     if (json && json.success) {
       displayMessage("🏆 すべての順位を送信しました");
-      pendingResults = {}; // 全クリア
+      pendingResults = {}; // 成功したらクリア
     } else {
-      displayMessage("❌ 送信失敗: " + (json.error || "不明なエラー"));
+      displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
     }
   } catch (err) {
     displayMessage("🚨 通信エラー: " + err.message);
