@@ -19,7 +19,6 @@ let seatMap = {};
 let playerData = {};
 let undoStack = [];
 let redoStack = [];
-let qrActive = false;
 let scanQr = null;
 let rankQr = null;
 let isScanCameraStarting = false;
@@ -29,17 +28,12 @@ let currentRankingSeatId = null;
 let lastScannedText = null;
 let lastScanTime = 0;
 let msgTimer = null;
-let pollTimer = null;
 let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
 let sidebar = document.getElementById("sidebar");
 let lastScrollTop = 0;
 let scrollTimeout;
 let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
-let timerInterval = null;
-let remaining = 0;
-let paused = false;
-let countingUp = false;
 let historyFilterText = "";  // 空文字で初期化
 
 // =====================
