@@ -1,3 +1,27 @@
+// 管理者モード
+const adminStatus = document.getElementById("adminStatus");
+let passwordValidated = false;
+let inputData;
+
+function activateAdminMode() {
+  if (passwordValidated) {
+    alert("✅ すでに管理者モードです");
+  } else {
+    inputData = prompt("管理者パスワードを入力してください");
+    if (inputData === "supersecret") {
+    passwordValidated = true;
+    adminStatus.textContent = "管理者モード有効化[有効!!]";
+    adminStatus.style.color = "yellow";
+    alert("管理者モードが有効になりました");
+    } else {
+    alert("認証失敗");
+    }
+  }
+}
+
+
+
+
 const GAS_URL = "https://script.google.com/macros/s/AKfycby_8v7Gie_f3cdNv8OA5-R3VLVBvPB7rjgAaVuDBbUXKsOMI9AVLyIbaoVpBovGJQ8/exec";
 const SECRET_KEY = "your-secret-key";
 
@@ -24,31 +48,8 @@ let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
 let sidebar = document.getElementById("sidebar");
 let lastScrollTop = 0;
 let scrollTimeout;
-let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let historyFilterText = "";  // 空文字で初期化
-let pw;
-
-// =====================
-// 管理者モード
-// =====================
-const adminStatus = document.getElementById("adminStatus");
-
-function activateAdminMode() {
-  if (passwordValidated) {
-    alert("✅ すでに管理者モードです");
-  } else {
-    pw = prompt("管理者パスワードを入力してください");
-    if (pw === "supersecret") {
-    passwordValidated = true;
-    adminStatus.textContent = "🔑 管理者モード有効化[有効!!]";
-    adminStatus.style.color = "yellow";
-    alert("🔑 管理者モードが有効になりました");
-    } else {
-    alert("❌ 認証失敗");
-    }
-  }
-}
 
 // =====================
 // テーマ設定
