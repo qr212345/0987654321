@@ -192,7 +192,7 @@ function handleScanSuccess(decodedText){
   if(decodedText === lastScannedText && now - lastScanTime < SCAN_COOLDOWN_MS) return;
   lastScannedText = decodedText;
   lastScanTime = now;
-
+  
   const resultEl = document.getElementById("result");
   if(resultEl) resultEl.textContent = `📷 ${decodedText} を読み取りました`;
 
