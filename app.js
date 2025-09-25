@@ -606,25 +606,33 @@ async function flushAllRankings() {
 
   try {
     // GAS に送信する payload を作成
+    const rankings = Object.values(pendingResults).map(seat => ({
+      seatId: seat.seatId || "",
+      entries: Array.isArray(seat.entries) ? seat.entries : []
+    }));
+
     const payload = {
-      mode: "updateRanking",                 // doPost → handleMode で処理
-      rankings: Object.values(pendingResults), // seatId ごとの配列
+      secret: SECRET_KEY,      // ← ここ必須
+      mode: "updateRanking",   // doPost → handleMode で処理
+      rankings,
       timestamp: Date.now()
     };
 
     // callGAS を使用して送信（リトライ・タイムアウト付き）
-  const json = await callGAS(payload, { retries: 3, timeout: 15000 });
-  if (json && json.success) {
-    displayMessage("🏆 すべての順位を送信しました");
-    pendingResults = {};
-  } else {
-    console.error("GASエラー応答:", json);
-    displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
+    const json = await callGAS(payload, { retries: 3, timeout: 15000 });
+
+    if (json && json.success) {
+      displayMessage("🏆 すべての順位を送信しました");
+      pendingResults = {}; // 成功したらクリア
+    } else {
+      console.error("GASエラー応答:", json);
+      displayMessage("❌ 送信失敗: " + (json?.error || "不明なエラー"));
+    }
+
+  } catch (err) {
+    console.error("GAS通信例外:", err); // ← ここで AbortError か確認
+    displayMessage("🚨 通信エラー: " + err.message);
   }
-} catch (err) {
-  console.error("GAS通信例外:", err); // ← ここで AbortError か確認
-  displayMessage("🚨 通信エラー: " + err.message);
-}
 }
 
 // =====================
