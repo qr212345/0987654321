@@ -32,6 +32,8 @@ let pw;
 // =====================
 // 管理者モード
 // =====================
+const adminStatus = document.getElementById("adminStatus");
+
 function activateAdminMode() {
   if (passwordValidated) {
     alert("✅ すでに管理者モードです");
@@ -39,9 +41,8 @@ function activateAdminMode() {
     pw = prompt("管理者パスワードを入力してください");
     if (pw === "supersecret") {
     passwordValidated = true;
-    const adminStatus = document.getElementById("adminStatus");
-    adminStatus.textContent = "色が変更されました";
-    adminStatus.style.color = "white";
+    adminStatus.textContent = "🔑 管理者モード有効化[有効!!]";
+    adminStatus.style.color = "yellow";
     alert("🔑 管理者モードが有効になりました");
     } else {
     alert("❌ 認証失敗");
