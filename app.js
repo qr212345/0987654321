@@ -27,6 +27,7 @@ let scrollTimeout;
 let passwordValidated = false;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let historyFilterText = "";  // 空文字で初期化
+let pw;
 
 // =====================
 // 管理者モード
@@ -49,7 +50,7 @@ function activateAdminMode() {
 
 function v() {
   if (passwordValidated) return true;
-  const pw = prompt("管理者パスワードを入力してください");
+  pw = prompt("管理者パスワードを入力してください");
   if (pw === "supersecret") {
     passwordValidated = true;
     return true;
