@@ -2,9 +2,10 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css?p=(new Date()).getTime()">
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js?p=(new Date()).getTime()"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <title>座席管理システム</title>
   </head>
   <body>
@@ -112,7 +113,7 @@
     <!-- テーマパネル -->
     <div id="themePanel" style="display:none;"></div>
 
-    <script src="app.js?p=(new Date()).getTime()"></script>
+    <script src="app.js"></script>
     <script>
       function toggleSidebar() {
         const sidebars = document.getElementById("sidebars");
