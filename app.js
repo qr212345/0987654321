@@ -625,7 +625,7 @@ async function flushAllRankings() {
   console.error("GAS通信例外:", err); // ← ここで AbortError か確認
   displayMessage("🚨 通信エラー: " + err.message);
 }
-
+}
 
 // =====================
 // GAS通信（プリフライト回避版）
