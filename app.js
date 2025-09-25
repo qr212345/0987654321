@@ -48,7 +48,7 @@ function activateAdminMode() {
   }
 }
 
-async function v() {
+function v() {
   const pw = prompt("管理者パスワードを入力してください");
   if (pw === "supersecret") {
     passwordValidated = true;
