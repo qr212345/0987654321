@@ -592,49 +592,6 @@ async function finalizeRanking(seatId) {
   displayMessage(`✅ ${seatId} の順位を保留しました。まとめて送信可能です`);
 }
 
-// まとめて送信ボタン
-document.getElementById("flushBtn").addEventListener("click", flushAllRankings);
-
-// =====================
-// 全順位まとめて送信
-// =====================
-async function flushAllRankings() {
-  const seats = Object.values(pendingResults);
-  if (seats.length === 0) {
-    displayMessage("⚠️ 送信する結果がありません");
-    return;
-  }
-
-  try {
-    for (const seat of seats) {
-      // seat 単位で payload 作成
-      const payload = {
-        secret: SECRET_KEY,
-        mode: "updateRanking",
-        rankings: [{
-          seatId: seat.seatId || "",
-          entries: Array.isArray(seat.entries) ? seat.entries : []
-        }],
-        timestamp: Date.now()
-      };
-
-      // GAS に送信
-      const json = await callGAS(payload, { retries: 3, timeout: 15000 });
-      if (json && json.success) {
-        displayMessage(`🏆 座席 ${seat.seatId} の順位を送信しました`);
-        delete pendingResults[seat.seatId];
-      } else {
-        console.error("GASエラー応答:", json);
-        displayMessage(`❌ 座席 ${seat.seatId} の送信失敗: ` + (json?.error || "不明なエラー"));
-      }
-    }
-
-  } catch (err) {
-    console.error("GAS通信例外:", err);
-    displayMessage("🚨 通信エラー: " + err.message);
-  }
-}
-
 // =====================
 // GAS通信（プリフライト回避版）
 // =====================
@@ -772,15 +729,32 @@ async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
 // =====================
 // 順位登録
 // =====================
-async function postRankingUpdate(entries) {
+async function postRankingUpdate(seatRankings = []) {
+  if (!Array.isArray(seatRankings) || seatRankings.length === 0) {
+    displayMessage("⚠️ 送信する順位データがありません");
+    return false;
+  }
+
   try {
-    const res = await callGAS({ mode: "updateRanking", rankings: entries });
-    if (!res.success) throw new Error(res.error || "順位送信失敗");
-    displayMessage("✅ 順位送信成功");
-    return true;
+    const payload = {
+      secret: SECRET_KEY,
+      mode: "updateRanking",
+      rankings: seatRankings,   // 複数席まとめて送信
+      timestamp: Date.now()
+    };
+
+    const res = await callGAS(payload, { retries: 3, timeout: 15000 });
+
+    if (res && res.success) {
+      displayMessage("✅ 順位送信成功");
+      return true;
+    } else {
+      throw new Error(res?.error || "順位送信失敗");
+    }
+
   } catch (err) {
-    console.error('順位送信失敗', err);
-    displayMessage("❌ 順位送信失敗");
+    console.error("順位送信失敗", err);
+    displayMessage("❌ 順位送信失敗: " + err.message);
     return false;
   }
 }
