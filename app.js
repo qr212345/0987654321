@@ -1,8 +1,10 @@
 //テーマ編集
 const themeSection = document.getElementById("themeSection");
+
 function openThemeBtn() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
 }
+
 
 
 // 管理者モード
