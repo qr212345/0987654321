@@ -91,6 +91,12 @@ OH- 2025/09/25
   function addPlayerToSeat(seatId, playerId){
     // 省略
   }
+  function handlePlayerAdd(playerId) {
+    // 省略
+  }
+  function handlePlayerRemove(playerId) {
+    // 省略
+  }
   などの参照されない関数の削除を行った。
   未だに、何の為にあったのかが分からない。
 */
@@ -551,39 +557,9 @@ function enableDragSort(listId){
   });
 }
 
-function handlePlayerAdd(playerId) {
-  if(!currentSeatId){ displayMessage("⚠ 座席QRを先に読み込んでください"); return; }
-  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
-  if(seatMap[currentSeatId].includes(playerId)){ displayMessage("⚠ 既に登録済み"); return; }
-  if(seatMap[currentSeatId].length >= MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
 
-  seatMap[currentSeatId].push(playerId);
-  playerData[playerId] ??= { nickname: playerId };
-  saveAction({ type:"addPlayer", seatId:currentSeatId, playerId });
-  saveToLocalStorage();
-  renderSeats();
-  sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
 
-  logAction(playerId, currentSeatId, "登録");
-  displayMessage(`✅ ${playerId} 追加`);
-}
 
-function handlePlayerRemove(playerId) {
-  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
-  if(!confirm(`⚠️ 座席「${currentSeatId}」から「${playerId}」を削除しますか？`)) return;
-
-  const idx = seatMap[currentSeatId]?.indexOf(playerId);
-  if(idx === -1) return;
-
-  seatMap[currentSeatId].splice(idx,1);
-  saveAction({ type:"removePlayer", seatId:currentSeatId, playerId, index:idx });
-  saveToLocalStorage();
-  renderSeats();
-  sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
-
-  logAction(playerId, currentSeatId, "削除");
-  displayMessage(`❌ ${playerId} 削除`);
-}
 
 async function finalizeRanking(seatId) {
   if (!confirm("⚠️ この順位を確定しますか？")) return;
