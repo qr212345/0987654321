@@ -1,18 +1,16 @@
-//テーマ編集オープンボタン・クローズボタン
-const themeSection = document.getElementById("themeSection");
+document.addEventListener("DOMContentLoaded", () => {
+  const themeSection = document.getElementById("themeSection");
+  
+  const openThemeBtn = document.querySelector("#openThemeBtn");
+  openThemeBtn.addEventListener("click", () => {
+    themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+  });
 
-var openThemeBtn = document.querySelector("#openThemeBtn");
-openThemeBtn.addEventListener("click", openTheme, false);
-
-function openTheme() {
-  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
-}
-
-function closeThemeBtn() {
-  themeSection.style.display = "none";
-}
-
-
+  const closeThemeBtn = document.querySelector("#closeThemeBtn");
+  closeThemeBtn.addEventListener("click", () => {
+    themeSection.style.display = "none";
+  });
+});
 
 
 // 管理者モード
