@@ -82,7 +82,18 @@ OH- 2025/09/24
   全面的に私が悪いと考えられる。
 */
 
-
+/*
+OH- 2025/09/25
+  function expandHexColor(hex) {
+    // 省略
+  }
+  async function navigateAsync(sectionId){ // 省略 }
+  function addPlayerToSeat(seatId, playerId){
+    // 省略
+  }
+  などの参照されない関数の削除を行った。
+  未だに、何の為にあったのかが分からない。
+*/
 
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycby_8v7Gie_f3cdNv8OA5-R3VLVBvPB7rjgAaVuDBbUXKsOMI9AVLyIbaoVpBovGJQ8/exec";
@@ -116,7 +127,6 @@ let historyFilterText = "";  // 空文字で初期化
 // =====================
 // テーマ設定
 // =====================
-// HEXを6桁に統一
 let themeConfig = {
   seatBox: { backgroundColor: "#f5f5f5", color: "#000000" },
   playerEntry: { backgroundColor: "#d0f0c0", color: "#000000" },
@@ -143,19 +153,11 @@ function applyTheme() {
   });
 }
 
-
-
-
 // =====================
 // イベントバインド
 // =====================
 window.addEventListener("DOMContentLoaded", ()=>{
-  
   const applyThemeBtn = document.getElementById("applyThemeBtn");
-  // 閉ボタン
-
-
-  // 適用ボタン
   applyThemeBtn.addEventListener("click", ()=>{
     themeConfig.seatBox.backgroundColor = document.getElementById("seatBgColor").value;
     themeConfig.playerEntry.backgroundColor = document.getElementById("playerBgColor").value;
@@ -164,7 +166,6 @@ window.addEventListener("DOMContentLoaded", ()=>{
     themeConfig.fontSize = document.getElementById("fontSizeInput").value + "px";
     applyTheme();
   });
-
   applyTheme(); // 初期テーマ適用
 });
 
@@ -212,7 +213,7 @@ function navigate(targetId){
   }
 }
 
-async function navigateAsync(sectionId){ return new Promise(res=>{ navigate(sectionId); setTimeout(res,300); }); }
+
 
 function notifyAction(message){
   const msg = document.createElement("div");
@@ -383,21 +384,7 @@ function renderSeats() {
 // =====================
 // プレイヤー追加/削除
 // =====================
-function addPlayerToSeat(seatId, playerId){
-  if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
-  if(!seatMap[seatId]) seatMap[seatId]=[];
-  if(seatMap[seatId].includes(playerId)){ displayMessage("⚠ 既に登録済み"); return; }
-  if(seatMap[seatId].length>=MAX_PLAYERS_PER_SEAT){ displayMessage(`⚠ この座席は${MAX_PLAYERS_PER_SEAT}人まで`); return; }
 
-  seatMap[seatId].push(playerId);
-  playerData[playerId] ??= { nickname: playerId };
-  saveAction({ type:"addPlayer", seatId, playerId });
-  saveToLocalStorage(); renderSeats();
-  sendSeatData(seatId, seatMap[seatId],'webUser');
-
-  logAction(playerId, seatId, "登録");
-  displayMessage(`✅ ${playerId} 追加`);
-}
 
 function removePlayer(seatId, playerId){
   if(!passwordValidated){ displayMessage("⚠ 管理者モードでのみ操作可能です"); return; }
