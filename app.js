@@ -7,6 +7,32 @@ function toggleSidebar() {
 
 
 
+function v(targetId){
+  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
+  const target=document.getElementById(targetId);
+  if(target) target.style.display='block';
+  location.hash=targetId;
+
+  switch(targetId){
+    case 'historySection': loadDouTakuHistory(); break;
+    case 'rankingSection':
+      requireAuth(()=>{
+        isRankingMode=true;
+        currentRankingSeatId=null;
+        document.getElementById("rankingList").innerHTML="";
+        displayMessage("座席QR を読み込んでください（順位登録モード）");
+        startRankCamera();
+      });
+      break;
+    case 'scanSection':
+      isRankingMode=false;
+      stopRankCamera().then(startScanCamera);
+      break;
+  }
+}
+
+
+
 // OH-=========================================
 //  テーマ機能オープン&クローズ
 // OH-=========================================
