@@ -1,3 +1,11 @@
+//テーマ編集
+const openThemeBtn = document.getElementById("openThemeBtn");
+function v() {
+  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+}
+
+
+
 // 管理者モード
 const adminStatus = document.getElementById("adminStatus");
 let passwordValidated = false;
@@ -5,7 +13,7 @@ let inputData;
 
 function activateAdminMode() {
   if (passwordValidated) {
-    alert("✅ すでに管理者モードです");
+    alert("すでに管理者モードです");
   } else {
     inputData = prompt("管理者パスワードを入力してください");
     if (inputData === "supersecret") {
@@ -19,11 +27,7 @@ function activateAdminMode() {
   }
 }
 
-const themeSection = document.getElementById("themeSection");
-const openThemeBtn = document.getElementById("openThemeBtn");
-function v() {
-  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
-}
+
 
 
 
