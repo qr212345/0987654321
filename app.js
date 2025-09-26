@@ -21,10 +21,6 @@ function activateAdminMode() {
 
 
 
-function openThemeBtn() {
-  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
-}
-
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycby_8v7Gie_f3cdNv8OA5-R3VLVBvPB7rjgAaVuDBbUXKsOMI9AVLyIbaoVpBovGJQ8/exec";
 const SECRET_KEY = "your-secret-key";
@@ -92,17 +88,23 @@ function applyTheme() {
   });
 }
 
-
+function v() {
+  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+}
 
 // =====================
 // イベントバインド
 // =====================
 window.addEventListener("DOMContentLoaded", ()=>{
   const themeSection = document.getElementById("themeSection");
+  const openThemeBtn = document.getElementById("openThemeBtn");
   const closeThemeBtn = document.getElementById("closeThemeBtn");
   const applyThemeBtn = document.getElementById("applyThemeBtn");
   sidebar = document.getElementById("sidebar");
-  // 閉ボタン
+  // 開閉ボタン
+  openThemeBtn.addEventListener("click", ()=>{
+    themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+  });
   closeThemeBtn.addEventListener("click", ()=>{
     themeSection.style.display = "none";
   });
