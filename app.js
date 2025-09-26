@@ -84,21 +84,10 @@ OH- 2025/09/24
 
 /*
 OH- 2025/09/25
-  function expandHexColor(hex) {
-    // 省略
-  }
-  async function navigateAsync(sectionId){ // 省略 }
-  function addPlayerToSeat(seatId, playerId){
-    // 省略
-  }
-  function handlePlayerAdd(playerId) {
-    // 省略
-  }
-  function handlePlayerRemove(playerId) {
-    // 省略
-  }
-  などの参照されない関数の削除を行った。
+  参照されていない関数6つの削除を行った。
   未だに、何の為にあったのかが分からない。
+  依存関係が分からなかったためもしかしたら、必要な関数を削除してしまった可能性がある。
+  しかし、それは私には判断が付かない。
 */
 
 
@@ -557,10 +546,6 @@ function enableDragSort(listId){
   });
 }
 
-
-
-
-
 async function finalizeRanking(seatId) {
   if (!confirm("⚠️ この順位を確定しますか？")) return;
 
@@ -735,35 +720,7 @@ async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
 // =====================
 // 順位登録
 // =====================
-async function postRankingUpdate(seatRankings = []) {
-  if (!Array.isArray(seatRankings) || seatRankings.length === 0) {
-    displayMessage("⚠️ 送信する順位データがありません");
-    return false;
-  }
 
-  try {
-    const payload = {
-      secret: SECRET_KEY,
-      mode: "updateRanking",
-      rankings: seatRankings,   // 複数席まとめて送信
-      timestamp: Date.now()
-    };
-
-    const res = await callGAS(payload, { retries: 3, timeout: 15000 });
-
-    if (res && res.success) {
-      displayMessage("✅ 順位送信成功");
-      return true;
-    } else {
-      throw new Error(res?.error || "順位送信失敗");
-    }
-
-  } catch (err) {
-    console.error("順位送信失敗", err);
-    displayMessage("❌ 順位送信失敗: " + err.message);
-    return false;
-  }
-}
 
 // =====================
 // 履歴取得（ポーリング）
