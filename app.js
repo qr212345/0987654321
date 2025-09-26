@@ -88,6 +88,10 @@ function applyTheme() {
   });
 }
 
+function v() {
+  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+}
+
 // =====================
 // イベントバインド
 // =====================
