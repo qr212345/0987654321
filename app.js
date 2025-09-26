@@ -54,6 +54,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+
+
+
+
 /*
 OH- 2025/09/24
   やっとコードを共有されたが、明らかに冗長な部分が多いコードであった。
