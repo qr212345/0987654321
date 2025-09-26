@@ -2,9 +2,9 @@
 const themeSection = document.getElementById("themeSection");
 
 var openThemeBtn = document.querySelector("#openThemeBtn");
-openThemeBtn.addEventListener("click", openThemeBtn);
+openThemeBtn.addEventListener("click", openTheme, false);
 
-function openThemeBtn() {
+function openTheme() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
 }
 
