@@ -62,6 +62,14 @@ let historyFilterText = "";  // 空文字で初期化
 // =====================
 // テーマ設定
 // =====================
+// HEXを6桁に統一
+function expandHexColor(hex) {
+  if(/^#([0-9a-fA-F]{3})$/.test(hex)) {
+    return "#" + hex[1]+hex[1] + hex[2]+hex[2] + hex[3]+hex[3];
+  }
+  return hex;
+}
+
 let themeConfig = {
   seatBox: { backgroundColor: "#f5f5f5", color: "#000000" },
   playerEntry: { backgroundColor: "#d0f0c0", color: "#000000" },
