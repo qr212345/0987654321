@@ -1,5 +1,5 @@
 //テーマ編集
-const openThemeBtn = document.getElementById("openThemeBtn");
+const themeSection = document.getElementById("themeSection");
 function openThemeBtn() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
 }
