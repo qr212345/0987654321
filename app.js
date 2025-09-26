@@ -1,11 +1,16 @@
+// ==========================================
+//  テーマ機能オープン&クローズ
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
   const themeSection = document.getElementById("themeSection");
   
+  // オープンボタン
   const openThemeBtn = document.getElementById("openThemeBtn");
   openThemeBtn.addEventListener("click", () => {
     themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
   });
 
+  // クローズボタン
   const closeThemeBtn = document.getElementById("closeThemeBtn");
   closeThemeBtn.addEventListener("click", () => {
     themeSection.style.display = "none";
