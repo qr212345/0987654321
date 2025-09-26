@@ -1,7 +1,8 @@
 //テーマ編集オープンボタン・クローズボタン
 const themeSection = document.getElementById("themeSection");
 
-document.querySelector("#openThemeBtn").addEventListener("click", openThemeBtn);
+var openThemeBtn = document.querySelector("#openThemeBtn");
+openThemeBtn.addEventListener("click", openThemeBtn);
 
 function openThemeBtn() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
@@ -10,6 +11,7 @@ function openThemeBtn() {
 function closeThemeBtn() {
   themeSection.style.display = "none";
 }
+
 
 
 
