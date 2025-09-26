@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
   const themeSection = document.getElementById("themeSection");
   
-  const openThemeBtn = document.querySelector("#openThemeBtn");
+  const openThemeBtn = document.getElementById("openThemeBtn");
   openThemeBtn.addEventListener("click", () => {
     themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
   });
 
-  const closeThemeBtn = document.querySelector("#closeThemeBtn");
+  const closeThemeBtn = document.getElementById("closeThemeBtn");
   closeThemeBtn.addEventListener("click", () => {
     themeSection.style.display = "none";
   });
