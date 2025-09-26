@@ -5,7 +5,7 @@ function openThemeBtn() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
 }
 
-function openThemeBtn() {
+function closeThemeBtn() {
   themeSection.style.display = "none";
 }
 
