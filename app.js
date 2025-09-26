@@ -1,8 +1,17 @@
-//テーマ編集
+//テーマ編集オープンボタン
 const themeSection = document.getElementById("themeSection");
 
 function openThemeBtn() {
   themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+}
+
+
+
+//テーマ編集クローズボタン
+const closeThemeBtn = document.getElementById("closeThemeBtn");
+
+function openThemeBtn() {
+  themeSection.style.display = "none";
 }
 
 
@@ -55,7 +64,6 @@ let lastScannedText = null;
 let lastScanTime = 0;
 let msgTimer = null;
 let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
-let sidebar = document.getElementById("sidebar");
 let lastScrollTop = 0;
 let scrollTimeout;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
@@ -105,13 +113,10 @@ function applyTheme() {
 // イベントバインド
 // =====================
 window.addEventListener("DOMContentLoaded", ()=>{
-  const closeThemeBtn = document.getElementById("closeThemeBtn");
+  
   const applyThemeBtn = document.getElementById("applyThemeBtn");
-  sidebar = document.getElementById("sidebar");
   // 閉ボタン
-  closeThemeBtn.addEventListener("click", ()=>{
-    themeSection.style.display = "none";
-  });
+
 
   // 適用ボタン
   applyThemeBtn.addEventListener("click", ()=>{
