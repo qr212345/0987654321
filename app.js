@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let inputData = null;
 
   // OH-起動
-  openThemeBtn.addEventListener("click", () => {
+  adminStatus.addEventListener("click", () => {
     if (passwordValidated) {
       alert("すでに管理者モードです");
     } else {
