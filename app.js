@@ -1,16 +1,16 @@
-// ==========================================
+// OH-=========================================
 //  テーマ機能オープン&クローズ
-// ==========================================
+// OH-=========================================
 document.addEventListener("DOMContentLoaded", () => {
   const themeSection = document.getElementById("themeSection");
   
-  // オープンボタン
+  // OH-オープンボタン
   const openThemeBtn = document.getElementById("openThemeBtn");
   openThemeBtn.addEventListener("click", () => {
     themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
   });
 
-  // クローズボタン
+  // OH-クローズボタン
   const closeThemeBtn = document.getElementById("closeThemeBtn");
   closeThemeBtn.addEventListener("click", () => {
     themeSection.style.display = "none";
@@ -18,27 +18,69 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// 管理者モード
-const adminStatus = document.getElementById("adminStatus");
-let passwordValidated = false;
-let inputData;
 
-function activateAdminMode() {
-  if (passwordValidated) {
-    alert("すでに管理者モードです");
-  } else {
-    inputData = prompt("管理者パスワードを入力してください");
-    if (inputData === "supersecret") {
-    passwordValidated = true;
-    adminStatus.textContent = "管理者モード有効化[有効!!]";
-    adminStatus.style.color = "yellow";
-    alert("管理者モードが有効になりました");
+// OH-=========================================
+//  管理者モード起動機能
+// OH-=========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const adminStatus = document.getElementById("adminStatus");
+  let passwordValidated = false;
+  let inputData = null;
+
+  // OH-起動
+  openThemeBtn.addEventListener("click", () => {
+    if (passwordValidated) {
+      alert("すでに管理者モードです");
     } else {
-    alert("認証失敗");
+      inputData = prompt("管理者パスワードを入力してください");
+      if (inputData === "supersecret") {
+        passwordValidated = true;
+        adminStatus.textContent = "管理者モード有効化[有効!!]";
+        adminStatus.style.color = "yellow";
+        alert("管理者モードが有効になりました");
+      } else {
+        alert("認証失敗");
+      }
     }
-  }
-}
+  });
+});
 
+/*
+OH- 2025/09/24
+  やっとコードを共有されたが、明らかに冗長な部分が多いコードであった。
+  例えば、テーマ設定の部分はもっと簡潔にできるし、管理者モードの部分も一つの関数にまとめられる。(現時点では2つあるのだ)
+  更に、GASとの通信部分もfetchを使ってもっとシンプルにできる。
+  これらの改善点を踏まえて、コード全体をリファクタリングして、可読性と保守性を向上させる必要がある。
+  また、コメントも適切に追加して、各関数の役割を明確にすることも重要である。
+  これらの点を改善することで、コードの品質が向上し、将来的な拡張や修正が容易になるだろう。
+  
+  更に、エラーハンドリングも強化する必要がある。現在のコードでは、GASとの通信が失敗した場合の処理が不十分であり、ユーザーに適切なフィードバックを提供できていない。
+  例えば、通信エラーが発生した場合には、ユーザーに再試行のオプションを提供するなどの対応が考えられる。
+  最後に、コードの一貫性を保つために、命名規則やコードスタイルを統一することも重要である。これにより、他の開発者がコードを理解しやすくなり、チームでの協力が円滑になるだろう。
+
+  こんなことを考えているが上記の内容を見てもらうと分かる通り、
+  著者はJSは始めて触ってから3日間、htmlとCSSは2年前にほんの少し触った程度の者である。
+  そのため、"『飛嶋朝陽』さんが夏休みとAIを使って作ったコード"が"著者のコード"より劣るはずはない。
+  更に言えば、『飛嶋朝陽』さんに著者がコードレビューをした際の感想(「可読性が低すぎる、単一責任の原則が守られていない」)を伝えたところ、
+  「そんなこと言うなら、自分でやればいいじゃん」
+  と言われた。
+  『飛嶋朝陽』さんの発言は正しいのだろう。今でも申し訳ないと思っている。
+  理由としてはいくつかあり、以下の通りである。
+    ・私は夏休み中に企画の為にJavaFX及びJavaを勉強していたためである。
+      私はその時、夏休みの全ての予定と夏休み中の半分の睡眠時間しか代償として消費していない。
+      つまり、誕生日プレゼントでエナドリを要求して、睡眠をせずに『飛嶋朝陽』さんを手伝うこともできから。
+      まさか、『飛嶋朝陽』さんが夏休みの全ての予定と夏休み中の半分以上の睡眠時間を代償にしていないなんてことはないはずだ。
+      その時はそこまで、私は考えが及ばなかった。
+      あとで、エナドリを大量に贈ろうと思う。
+    ・そもそも、JavaScriptでの開発経験が全くなかったためである。
+      というのも、独学で少しでも、プログラミングをしていれば、"単一責任の原則"なんて言葉は知っているはずである。
+      つまり、『飛嶋朝陽』さんは"単一責任の原則"なんて言葉は知っているはずである。
+      とすれば、私は"単一責任の原則"が全てのプログラミング言語に共通する概念だと誤解していたとしか考えられない。
+      JavaScriptには"単一責任の原則"を適応できないのだろう。
+      この"単一責任の原則"を全く守られていないコードを見る限りそうとしか思えない。
+  この2つの理由が完全に正であると『飛嶋朝陽』さんに指摘されたため、
+  全面的に私が悪いと考えられる。
+*/
 
 
 
