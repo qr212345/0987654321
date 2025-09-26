@@ -19,6 +19,11 @@ function activateAdminMode() {
   }
 }
 
+const themeSection = document.getElementById("themeSection");
+const openThemeBtn = document.getElementById("openThemeBtn");
+function v() {
+  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
+}
 
 
 
@@ -89,11 +94,7 @@ function applyTheme() {
 }
 
 
-const themeSection = document.getElementById("themeSection");
-const openThemeBtn = document.getElementById("openThemeBtn");
-function v() {
-  themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
-}
+
 
 // =====================
 // イベントバインド
