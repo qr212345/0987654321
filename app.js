@@ -1,20 +1,91 @@
-function toggleSidebar() {
-  const sidebars = document.getElementById("sidebars");
-  const main = document.getElementById("main");
-  sidebars.classList.toggle("open");
-  main.classList.toggle("shifted");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const welcome = document.getElementById("welcomeScreen");
+  document.getElementById("welcomeScreen").addEventListener("click", async () => {
+    welcome.classList.add("hide");
+    setTimeout(() => {
+      welcome.style.display = "none";
+      v(); // 既存の順位登録モードに遷移
+    }, 500);
+  });
+});
 
 
+function v(){
+  document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+  const target = document.getElementById("scanSection");
+  if(target) {
+    target.style.display = "block";
 
-function v(targetId){
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  const target=document.getElementById(targetId);
-  if(target) target.style.display='block';
-  location.hash=targetId;
-  isRankingMode=false;
+  }
+  location.hash = "scanSection";
+  isRankingMode = true;
   stopRankCamera().then(startScanCamera);
 }
+
+function n() {
+  document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+  const target = document.getElementById("helpSection");
+  if(target) target.style.display = "block";
+  location.hash = "helpSection";
+}
+
+function App() {
+  document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+  const target = document.getElementById("rankingSection");
+  if(target) target.style.display = "block";
+  location.hash = "rankingSection";
+  requireAuth(() => {
+    isRankingMode = true;
+    currentRankingSeatId = null;
+    document.getElementById("rankingList").innerHTML = "";
+    displayMessage("座席QR を読み込んでください（順位登録モード）");
+    startRankCamera();
+  });
+}
+
+function navigate(){
+  document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+  const target = document.getElementById("historySection");
+  if(target) target.style.display = "block";
+  location.hash = "historySection";
+
+  loadDouTakuHistory();
+}
+
+
+
+// OH-=========================================
+//  メニュー開閉ボタン
+// OH-=========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("menuBtn");
+  const sidebars = document.getElementById("sidebars");
+  const main = document.getElementById("main");
+
+  toggleBtn.addEventListener("click", () => {
+    sidebars.classList.toggle("open");
+    main.classList.toggle("shifted");
+  });
+});
+
+
+
+// OH-=========================================
+//  
+// OH-=========================================
+document.addEventListener("DOMContentLoaded", () => {
+  const popBtn = document.getElementById("pop");
+  popBtn.addEventListener("click", () => {
+    document.querySelectorAll(".section").forEach(s=>s.style.display="none");
+    const target=document.getElementById("scanSection");
+    if(target) {
+      target.style.display="block";
+    }
+    location.hash="scanSection";
+    isRankingMode=false;
+    stopRankCamera().then(startScanCamera);
+  });
+});
 
 
 
@@ -23,15 +94,13 @@ function v(targetId){
 // OH-=========================================
 document.addEventListener("DOMContentLoaded", () => {
   const themeSection = document.getElementById("themeSection");
+  const btn_openThene = document.getElementById("btn_openThene");
+  const closeThemeBtn = document.getElementById("closeThemeBtn");
   
-  // OH-オープンボタン
-  const openThemeBtn = document.getElementById("openThemeBtn");
-  openThemeBtn.addEventListener("click", () => {
+  btn_openThene.addEventListener("click", () => {
     themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
   });
 
-  // OH-クローズボタン
-  const closeThemeBtn = document.getElementById("closeThemeBtn");
   closeThemeBtn.addEventListener("click", () => {
     themeSection.style.display = "none";
   });
@@ -48,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let inputData = null;
 
   // OH-起動
-  adminStatus.addEventListener("click", () => {
+  adminStatus.addEventListener("click", async () => {
     if (passwordValidated) {
       alert("すでに管理者モードです");
     } else {
@@ -111,6 +180,13 @@ OH- 2025/09/25
   未だに、何の為にあったのかが分からない。
   依存関係が分からなかったためもしかしたら、必要な関数を削除してしまった可能性がある。
   しかし、それは私には判断が付かない。
+*/
+
+/*
+OH- 2025/09/26
+  えー、様々なところで違うオブジェクトに同じプロパティ名を使っている。
+  それを変えている。
+  とりあえず、全てのプロパティ名が重複しないようにした。
 */
 
 
@@ -207,29 +283,7 @@ async function requireAuth(callback){
   else alert("認証失敗");
 }
 
-function navigate(targetId){
-  document.querySelectorAll('.section').forEach(s=>s.style.display='none');
-  const target=document.getElementById(targetId);
-  if(target) target.style.display='block';
-  location.hash=targetId;
 
-  switch(targetId){
-    case 'historySection': loadDouTakuHistory(); break;
-    case 'rankingSection':
-      requireAuth(()=>{
-        isRankingMode=true;
-        currentRankingSeatId=null;
-        document.getElementById("rankingList").innerHTML="";
-        displayMessage("座席QR を読み込んでください（順位登録モード）");
-        startRankCamera();
-      });
-      break;
-    case 'scanSection':
-      isRankingMode=false;
-      stopRankCamera().then(startScanCamera);
-      break;
-  }
-}
 
 
 
@@ -291,7 +345,7 @@ function handleScanSuccess(decodedText){
     renderSeats();
 
     // GASに即時送信は行わない
-    // sendSeatData(currentSeatId, seatMap[currentSeatId], 'webUser');
+    // sendSeatData(currentSeatId, seatMap[currentSeatId], "webUser");
 
     // 履歴に記録（ローカル保存は廃止）
     douTakuRecords.push({
@@ -412,7 +466,7 @@ function removePlayer(seatId, playerId){
   seatMap[seatId].splice(idx,1);
   saveAction({ type:"removePlayer", seatId, playerId, index: idx });
   saveToLocalStorage(); renderSeats();
-  sendSeatData(seatId, seatMap[seatId],'webUser');
+  sendSeatData(seatId, seatMap[seatId],"webUser");
 
   logAction(playerId, seatId, "削除");
   displayMessage(`❌ ${playerId} 削除`);
@@ -684,7 +738,7 @@ async function loadFromGAS() {
 // =====================
 // 座席更新
 // =====================
-async function sendSeatData(tableID, playerIds, operator = 'webUser') {
+async function sendSeatData(tableID, playerIds, operator = "webUser") {
   try {
     await syncSeatData(seatMap);
 
@@ -710,7 +764,7 @@ async function sendSeatData(tableID, playerIds, operator = 'webUser') {
     playNotification();
 
   } catch (err) {
-    console.error('座席送信失敗', err);
+    console.error("座席送信失敗", err);
     displayMessage("❌ 座席送信失敗");
   }
 }
@@ -1046,18 +1100,7 @@ function exportHistoryCSV() {
   displayMessage("✅ 履歴CSV出力完了");
 }
 
-document.getElementById("welcomeScreen").addEventListener("click", async () => {
-  const welcome = document.getElementById("welcomeScreen");
-  
-  // フェードアウトアニメーション
-  welcome.classList.add("hide");
-  
-  // 500ms待って画面遷移
-  setTimeout(() => {
-    welcome.style.display = "none";
-    navigate("scanSection"); // 既存の順位登録モードに遷移
-  }, 500);
-});
+
 
 // =====================
 // 初期化
@@ -1104,7 +1147,6 @@ function bindButtons() {
 })
 // window に関数を登録
 Object.assign(window, {
-  navigate,
   undoAction,
   redoAction,
   removePlayer,

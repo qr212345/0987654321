@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache">
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <title>座席管理システム</title>
   </head>
   <body>
@@ -16,16 +15,16 @@
       </div>
     </section>
     
-    <button class="toggle-btn" onclick="toggleSidebar()">☰ メニュー</button>
+    <button id = "menuBtn" class="menuBtn">☰</button>
     
     <div class="sidebars" id="sidebars">
       <h2>メニュー</h2>
-      <br><button id="openThemeBtn">🎨テーマ編集</button>
+      <br><button id="btn_openThene">🎨テーマ編集</button>
       <br><button id="adminStatus">🔑 管理者モード有効化[未有効]</button>
-      <br><button onclick="v('scanSection')">💽QRスキャン</button>
-      <br><button onclick="navigate('rankingSection')">💾 順位登録</button>
-      <br><button onclick="navigate('historySection')">🔔 履歴</button>
-      <br><button onclick="navigate('helpSection')">🔎 操作ヘルプ</button>
+      <br><button id="pop">💽QRスキャン</button>
+      <br><button onclick="App()">💾 順位登録</button>
+      <br><button onclick="navigate()">🔔 履歴</button>
+      <br><button onclick="n()">🔎 操作ヘルプ</button>
       <br><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
       <br><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
     </div>
@@ -75,7 +74,7 @@
       <!-- 操作ヘルプセクション -->
       <section id="helpSection" class="section" style="display:none;">
         <div class="help-container">
-          <button id="closeHelpBtn" onclick="navigate('scanSection')">閉じる ✖</button>
+          <button id="closeHelpBtn" onclick="v();">閉じる ✖</button>
           <h2>操作手順</h2>
           <ol>
             <li>QRコードをスキャンして座席とプレイヤーを登録</li>
@@ -96,11 +95,11 @@
         </h3>
 
         <div class="theme-controls">
-          <label>座席背景: <input type="color" id="seatBgColor" value="#f5f5f5"></label><br>
-          <label>プレイヤー背景: <input type="color" id="playerBgColor" value="#d0f0c0"></label><br>
-          <label>ボタン背景: <input type="color" id="buttonBgColor" value="#4CAF50"></label><br>
-          <label>ボタン文字色: <input type="color" id="buttonColor" value="#ffffff"></label><br>
-          <label>フォントサイズ: <input type="number" id="fontSizeInput" value="14" style="width:60px">px</label><br>
+          <label>座席背景: <input id="seatBgColor" type="color" value="#f5f5f5"></label><br>
+          <label>プレイヤー背景: <input id="playerBgColor" type="color" value="#d0f0c0"></label><br>
+          <label>ボタン背景: <input id="buttonBgColor" type="color" value="#4CAF50"></label><br>
+          <label>ボタン文字色: <input id="buttonColor" type="color" value="#ffffff"></label><br>
+          <label>フォントサイズ: <input id="fontSizeInput" type="number" value="14" style="width:60px">px</label><br>
           <button id="applyThemeBtn">適用</button>
         </div>
       </section>
@@ -110,5 +109,6 @@
     <div id="themePanel" style="display:none;"></div>
 
     <script src="app.js" defer></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   </body>
 </html>
