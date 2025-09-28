@@ -3,23 +3,15 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache">
     <link rel="stylesheet" href="style.css">
     <title>座席管理システム</title>
   </head>
   <body>
-    <section id="welcomeScreen" class="full-screen">
-      <div class="welcome-content">
-        <h1>🎉 大会へようこそ 🎉</h1>
-        <p>画面をタッチ／クリックして順位登録モードに進む</p>
-      </div>
-    </section>
+    <button id = "btnMenu">☰</button>
     
-    <button id = "menuBtn" class="menuBtn">☰</button>
-    
-    <div class="sidebars" id="sidebars">
+    <nav id="sidebar">
       <h2>メニュー</h2>
-      <br><button id="btn_openThene">🎨テーマ編集</button>
+      <br><button id="btnTheme">🎨テーマ編集</button>
       <br><button id="adminStatus">🔑 管理者モード有効化[未有効]</button>
       <br><button id="pop">💽QRスキャン</button>
       <br><button onclick="App()">💾 順位登録</button>
@@ -27,15 +19,22 @@
       <br><button onclick="n()">🔎 操作ヘルプ</button>
       <br><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
       <br><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
-    </div>
+    </nav>
     
-    <main class="main" id="main">
+    <section id="welcomeScreen">
+      <div id="welcome-content">
+        <h1>🎉 大会へようこそ 🎉</h1>
+        <p>画面をタッチ／クリックして順位登録モードに進む</p>
+      </div>
+    </section>
+
+    <main id="main">
       <header>
         <h1>座席管理システム</h1>
       </header>
       
       <!-- メッセージ表示 -->
-      <div id="messageArea" class="message-area"></div>
+      <div id="messageArea"></div>
       
       <!-- QRスキャンセクション -->
       <section id="scanSection" class="section" style="display:none;">
@@ -44,8 +43,8 @@
         <p id="result">読み取り結果がここに表示されます</p>
         <div id="seatList" class="seat-list"></div>
         <div class="controls">
-          <button id="undoBtn">↩ Undo</button>
-          <button id="redoBtn">↪ Redo</button>
+          <button id="btnUndo">↩ Undo</button>
+          <button id="btnRedo">↪ Redo</button>
           <button id="exportPlayerBtn">📄 プレイヤーCSV</button>
           <button id="exportSeatBtn">📜 座席CSV</button>
           <button id="saveToGASBtn">📥 GAS保存</button>
@@ -74,7 +73,6 @@
       <!-- 操作ヘルプセクション -->
       <section id="helpSection" class="section" style="display:none;">
         <div class="help-container">
-          <button id="closeHelpBtn" onclick="v();">閉じる ✖</button>
           <h2>操作手順</h2>
           <ol>
             <li>QRコードをスキャンして座席とプレイヤーを登録</li>
@@ -88,12 +86,8 @@
         </div>
       </section>
 
-      <section id="themeSection">
-        <h3>
-        テーマ編集
-        <button id="closeThemeBtn" style="float:right;">×</button>
-        </h3>
-
+      <section id="sectionTheme" class="section">
+        <h3>テーマ編集</h3>
         <div class="theme-controls">
           <label>座席背景: <input id="seatBgColor" type="color" value="#f5f5f5"></label><br>
           <label>プレイヤー背景: <input id="playerBgColor" type="color" value="#d0f0c0"></label><br>
@@ -109,6 +103,7 @@
     <div id="themePanel" style="display:none;"></div>
 
     <script src="app.js" defer></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="subapp.js" defer></script>
+    <script src="qrcode.js"></script>
   </body>
 </html>

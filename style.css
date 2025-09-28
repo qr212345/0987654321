@@ -35,64 +35,60 @@ header h1 {
   font-size: 1.6rem;
 }
 
-.sidebars {
+nav {
   position: fixed;
   top: 0;
   left: 0;
   width: 250px;
-  height: 100vh;
+  height: 100%;
   background-color: #333;
   color: white;
   padding: 20px;
   transform: translateX(-100%);
   transition: transform 0.3s ease;
-  z-index: 1000;
+  z-index: 100;
 }
 
-.sidebars.open {
-   transform: translateX(0);
+nav.open {
+  transform: translateX(0);
 }
 
-.sidebars h2 {
-   margin-top: 0;
+nav h2 {
+  margin-top: 0;
 }
 
-.sidebars a {
-   color: white;
-   text-decoration: none;
-   display: block;
-   margin: 10px 0;
-}
-      
-.menuBtn {
-   position: fixed;
-   top: 20px;
-   left: 20px;
-   z-index: 1100;
-   background-color: #444;
-   color: white;
-   border: none;
-   padding: 10px 15px;
-   cursor: pointer;
-   border-radius: 4px;
-}
-/* =====================
-   タイマー表示
-===================== */
-#timerDisplay {
-  margin-top: 12px;
-  font-size: 2rem;
-  font-weight: bold;
-  text-align: center;
-  color: #333;
-}
-#timerSection input[type=number] {
-  font-size: 1rem;
-  padding: 4px 6px;
+nav button {
+  cursor: pointer;
+  padding: 6px 14px;
+  border: none;
   border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 60px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  transition: 0.2s, transform 0.1s, box-shadow 0.2s;
+  background: #333;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
+nav button:hover, button:focus {
+  opacity: 0.95;
+  outline: none;
+  background-color: #444;
+  transform: translateX(2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+#btnMenu {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 110;
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
 
 
 /* =====================
@@ -114,7 +110,7 @@ main.shifted {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   z-index: 2000;
 }
-.message-area {
+#messageArea {
   margin-bottom: 10px;
   min-height: 24px;
   font-weight: bold;
@@ -270,23 +266,8 @@ main button:hover, button:focus {
 #themePanel button { margin-top: 6px; width: 100%; }
 
 /* =====================
-   アニメーション & フェード
-===================== */
-.fade-out { opacity: 0; transition: opacity 0.5s ease; }
-
-/* =====================
    ヘルプモーダル
 ===================== */
-#helpSection {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.6);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 2000;
-  padding: 20px;
-  box-sizing: border-box;
-}
 #helpSection .help-container {
   width: 90%; max-width: 800px;
   height: 90%;
@@ -297,20 +278,6 @@ main button:hover, button:focus {
   overflow-y: auto;
   position: relative;
 }
-#closeHelpBtn {
-  position: absolute;
-  top: 15px;
-  right: 20px;
-  background: #f44336;
-  color: #fff;
-  border: none;
-  padding: 8px 14px;
-  font-size: 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 10;
-}
-#closeHelpBtn:hover { background: #d32f2f; }
 #helpSection h2 {
   font-size: 1.8rem;
   margin-bottom: 20px;
@@ -331,10 +298,10 @@ main button:hover, button:focus {
   transition: background 0.2s, transform 0.2s;
 }
 #helpSection li:hover {
-   background: #fff3c4;
-   transform: translateX(2px);
+  background: #fff3c4;
+  transform: translateX(2px);
 }
-.full-screen {
+#welcomeScreen {
   position: fixed;
   top:0; left:0;
   width:100vw; height:100vh;
@@ -345,13 +312,13 @@ main button:hover, button:focus {
   color:white;
   text-align:center;
   cursor:pointer;
-  z-index:1000;
+  z-index:200;
   padding:1rem;
   transition: opacity 0.5s ease, transform 0.5s ease;
   opacity: 1;
 }
 
-.full-screen .welcome-content {
+#welcomeScreen #welcome-content {
   background: rgba(0,0,0,0.3);
   padding: 2rem 3rem;
   border-radius: 20px;
@@ -360,12 +327,12 @@ main button:hover, button:focus {
   transition: transform 0.5s ease;
 }
 
-.full-screen h1 {
+#welcomeScreen h1 {
   font-size:2.5rem;
   margin-bottom:1rem;
 }
 
-.full-screen p {
+#welcomeScreen p {
   font-size:1.2rem;
   animation: bounce 1.5s infinite;
 }
@@ -377,7 +344,7 @@ main button:hover, button:focus {
 }
 
 /* 非表示時 */
-.full-screen.hide {
+#welcomeScreen.hide {
   opacity: 0;
   transform: scale(0.95);
   pointer-events: none;
@@ -388,9 +355,9 @@ main button:hover, button:focus {
 ===================== */
 /* スマホ対応 */
 @media (max-width: 768px) {
-  .full-screen h1 { font-size:2rem; }
-  .full-screen p { font-size:1rem; }
-  .full-screen .welcome-content { padding:1.5rem 2rem; }
+  #welcomeScreen h1 { font-size:2rem; }
+  #welcomeScreen p { font-size:1rem; }
+  #welcomeScreen #welcome-content { padding:1.5rem 2rem; }
 }
 @media(max-width: 600px){
   header h1 { font-size: 1.3rem; }
@@ -399,5 +366,4 @@ main button:hover, button:focus {
   .draggable-item { font-size: 0.9rem; }
   #themePanel { width: 90%; right: 5%; }
   #helpSection .help-container { width: 95%; height: 95%; padding: 16px 20px; }
-  #sidebar { justify-content: center; }
 }

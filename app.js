@@ -4,23 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
     welcome.classList.add("hide");
     setTimeout(() => {
       welcome.style.display = "none";
-      v(); // 既存の順位登録モードに遷移
+      document.querySelectorAll(".section").forEach(s => s.style.display = "none");
+      const target = document.getElementById("scanSection");
+      if(target) {
+        target.style.display = "block";
+      }
+      location.hash = "scanSection";
+      isRankingMode = true;
+      stopRankCamera().then(startScanCamera);
     }, 500);
   });
 });
-
-
-function v(){
-  document.querySelectorAll(".section").forEach(s => s.style.display = "none");
-  const target = document.getElementById("scanSection");
-  if(target) {
-    target.style.display = "block";
-
-  }
-  location.hash = "scanSection";
-  isRankingMode = true;
-  stopRankCamera().then(startScanCamera);
-}
 
 function n() {
   document.querySelectorAll(".section").forEach(s => s.style.display = "none");
@@ -49,26 +43,9 @@ function navigate(){
   if(target) target.style.display = "block";
   location.hash = "historySection";
 
-  loadDouTakuHistory();
+  douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
+  renderHistory();
 }
-
-
-
-// OH-=========================================
-//  メニュー開閉ボタン
-// OH-=========================================
-document.addEventListener("DOMContentLoaded", () => {
-  const toggleBtn = document.getElementById("menuBtn");
-  const sidebars = document.getElementById("sidebars");
-  const main = document.getElementById("main");
-
-  toggleBtn.addEventListener("click", () => {
-    sidebars.classList.toggle("open");
-    main.classList.toggle("shifted");
-  });
-});
-
-
 
 // OH-=========================================
 //  
@@ -90,30 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // OH-=========================================
-//  テーマ機能オープン&クローズ
-// OH-=========================================
-document.addEventListener("DOMContentLoaded", () => {
-  const themeSection = document.getElementById("themeSection");
-  const btn_openThene = document.getElementById("btn_openThene");
-  const closeThemeBtn = document.getElementById("closeThemeBtn");
-  
-  btn_openThene.addEventListener("click", () => {
-    themeSection.style.display = themeSection.style.display === "none" ? "block" : "none";
-  });
-
-  closeThemeBtn.addEventListener("click", () => {
-    themeSection.style.display = "none";
-  });
-});
-
-
-
-// OH-=========================================
 //  管理者モード起動機能
 // OH-=========================================
+let passwordValidated = false;
 document.addEventListener("DOMContentLoaded", () => {
   const adminStatus = document.getElementById("adminStatus");
-  let passwordValidated = false;
+  
   let inputData = null;
 
   // OH-起動
@@ -136,58 +95,86 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+// OH-=========================================
+//  undoボタンとredoボタンの実装
+// OH-=========================================
+let undoStack = [];
+let redoStack = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btnUndo = document.getElementById("btnUndo");
+  const btnRedo = document.getElementById("btnRedo");
+
+  btnUndo.addEventListener("click", async () => {
+    if (!undoStack.length) {
+      displayMessage("元に戻す操作がありません");
+      return;
+    }
+    const last = undoStack.pop();
+    redoStack.push(last);
+    switch(last.type){
+      case "addPlayer":
+        seatMap[last.seatId]=seatMap[last.seatId].filter(p=>p!==last.playerId);
+        break;
+      case "removePlayer":
+        seatMap[last.seatId]?.splice(last.index,0,last.playerId);
+        break;
+    }
+    saveToLocalStorage();
+    renderSeats();
+    displayMessage("↩ 元に戻しました");
+  });
+
+  btnRedo.addEventListener("click", async () => {
+    if (!redoStack.length) {
+      displayMessage("やり直す操作がありません");
+      return;
+    }
+    const last=redoStack.pop();
+    undoStack.push(last);
+    switch(last.type){
+      case "addPlayer":
+        seatMap[last.seatId]??=[];
+        seatMap[last.seatId].push(last.playerId);
+        break;
+      case "removePlayer":
+        seatMap[last.seatId]=seatMap[last.seatId].filter(p=>p!==last.playerId);
+        break;
+    }
+    saveToLocalStorage();
+    renderSeats();
+    displayMessage("↪ やり直しました");
+  });
+});
+
+function saveAction(action) {
+  undoStack.push(action);
+  redoStack=[];
+}
 
 
-/*
-OH- 2025/09/24
-  やっとコードを共有されたが、明らかに冗長な部分が多いコードであった。
-  例えば、テーマ設定の部分はもっと簡潔にできるし、管理者モードの部分も一つの関数にまとめられる。(現時点では2つあるのだ)
-  この改善点を踏まえて、コード全体をリファクタリングして、可読性と保守性を向上させる必要がある。
-  また、コメントも適切に追加して、各関数の役割を明確にすることも重要である。
-  これらの点を改善することで、コードの品質が向上し、将来的な拡張や修正が容易になるだろう。
-  
-  更に、エラーハンドリングも強化する必要がある。現在のコードでは、GASとの通信が失敗した場合の処理が不十分であり、ユーザーに適切なフィードバックを提供できていない。
-  例えば、通信エラーが発生した場合には、ユーザーに再試行のオプションを提供するなどの対応が考えられる。
-  最後に、コードの一貫性を保つために、命名規則やコードスタイルを統一することも重要である。これにより、他の開発者がコードを理解しやすくなり、チームでの協力が円滑になるだろう。
 
-  こんなことを考えているが上記の内容を見てもらうと分かる通り、
-  著者はJSは始めて触ってから3時間、htmlとCSSは2年前にほんの少し触った程度の者である。
-  そのため、"『飛嶋朝陽』さんが夏休みとAIを使って作ったコード"が"著者のコード"より劣るはずはない。
-  更に言えば、『飛嶋朝陽』さんに著者がコードレビューをした際の感想(「可読性が低すぎる、単一責任の原則が守られていない」)を伝えたところ、
-  「そんなこと言うなら、自分でやればいいじゃん」
-  と言われた。
-  『飛嶋朝陽』さんの発言は正しいのだろう。今でも申し訳ないと思っている。
-  理由としてはいくつかあり、以下の通りである。
-    ・私は夏休み中に企画の為にJavaFX及びJavaを勉強していたためである。
-      私はその時、夏休みの全ての予定と夏休み中の半分の睡眠時間しか代償として消費していない。
-      つまり、誕生日プレゼントでエナドリを要求して、睡眠をせずに『飛嶋朝陽』さんを手伝うこともできから。
-      まさか、『飛嶋朝陽』さんが夏休みの全ての予定と夏休み中の半分以上の睡眠時間を代償にしていないなんてことはないはずだ。
-      その時はそこまで、私は考えが及ばなかった。
-      あとで、エナドリを大量に贈ろうと思う。
-    ・そもそも、JavaScriptでの開発経験が全くなかったためである。
-      というのも、独学で少しでも、プログラミングをしていれば、"単一責任の原則"なんて言葉は知っているはずである。
-      つまり、『飛嶋朝陽』さんは"単一責任の原則"なんて言葉は知っているはずである。
-      とすれば、私は"単一責任の原則"が全てのプログラミング言語に共通する概念だと誤解していたとしか考えられない。
-      JavaScriptには"単一責任の原則"を適応できないのだろう。
-      この"単一責任の原則"を全く守られていないコードを見る限りそうとしか思えない。
-  この2つの理由が完全に正であると『飛嶋朝陽』さんに指摘されたため、
-  全面的に私が悪いと考えられる。
-*/
 
-/*
-OH- 2025/09/25
-  参照されていない関数6つの削除を行った。
-  未だに、何の為にあったのかが分からない。
-  依存関係が分からなかったためもしかしたら、必要な関数を削除してしまった可能性がある。
-  しかし、それは私には判断が付かない。
-*/
 
-/*
-OH- 2025/09/26
-  えー、様々なところで違うオブジェクトに同じプロパティ名を使っている。
-  それを変えている。
-  とりあえず、全てのプロパティ名が重複しないようにした。
-*/
+
+
+
+
+// =====================
+// 初期化
+// =====================
+function bindButtons() {
+  document.getElementById("exportPlayerBtn")?.addEventListener("click", exportPlayerCSV);
+  document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
+  document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
+  document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
+  document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
+  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
+};
+
+
+
+
 
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycby_8v7Gie_f3cdNv8OA5-R3VLVBvPB7rjgAaVuDBbUXKsOMI9AVLyIbaoVpBovGJQ8/exec";
@@ -201,8 +188,6 @@ const pendingResults = {};
 let currentSeatId = null;
 let seatMap = {};
 let playerData = {};
-let undoStack = [];
-let redoStack = [];
 let scanQr = null;
 let rankQr = null;
 let isScanCameraStarting = false;
@@ -214,7 +199,6 @@ let lastScanTime = 0;
 let msgTimer = null;
 let douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
 let lastScrollTop = 0;
-let scrollTimeout;
 let historyLog = JSON.parse(localStorage.getItem("historyLog") || "[]");
 let historyFilterText = "";  // 空文字で初期化
 
@@ -260,7 +244,6 @@ window.addEventListener("DOMContentLoaded", ()=>{
     themeConfig.fontSize = document.getElementById("fontSizeInput").value + "px";
     applyTheme();
   });
-  applyTheme(); // 初期テーマ適用
 });
 
 // =====================
@@ -297,8 +280,6 @@ function notifyAction(message){
   const audio = new Audio("https://freesound.org/data/previews/170/170186_2437358-lq.mp3");
   audio.play().catch(()=>{});
 }
-
-function onQrScanSuccess(data){ notifyAction(`この座席で「${data}」を登録しました！`); }
 
 // =====================
 // QRスキャン
@@ -495,52 +476,11 @@ function removeSeat(seatId){
 }
 
 // =====================
-// Undo / Redo
-// =====================
-function saveAction(action){ undoStack.push(action); redoStack=[]; }
-
-function undoAction(){
-  if(!undoStack.length){ displayMessage("元に戻す操作がありません"); return; }
-  const last=undoStack.pop();
-  redoStack.push(last);
-  switch(last.type){
-    case "addPlayer": seatMap[last.seatId]=seatMap[last.seatId].filter(p=>p!==last.playerId); break;
-    case "removePlayer": seatMap[last.seatId]?.splice(last.index,0,last.playerId); break;
-  }
-  saveToLocalStorage(); renderSeats(); displayMessage("↩ 元に戻しました");
-}
-
-function redoAction(){
-  if(!redoStack.length){ displayMessage("やり直す操作がありません"); return; }
-  const last=redoStack.pop();
-  undoStack.push(last);
-  switch(last.type){
-    case "addPlayer": seatMap[last.seatId]??=[]; seatMap[last.seatId].push(last.playerId); break;
-    case "removePlayer": seatMap[last.seatId]=seatMap[last.seatId].filter(p=>p!==last.playerId); break;
-  }
-  saveToLocalStorage(); renderSeats(); displayMessage("↪ やり直しました");
-}
-
-// =====================
-// 履歴描画
-// =====================
-function loadDouTakuHistory() {
-  douTakuRecords = JSON.parse(localStorage.getItem("douTakuRecords") || "[]");
-  renderHistory();
-}
-
-// =====================
 // ローカル保存・復元
 // =====================
 function saveToLocalStorage(){
   localStorage.setItem("seatMap",JSON.stringify(seatMap));
   localStorage.setItem("playerData",JSON.stringify(playerData));
-}
-
-function loadFromLocalStorage(){
-  seatMap=JSON.parse(localStorage.getItem("seatMap")||"{}");
-  playerData=JSON.parse(localStorage.getItem("playerData")||"{}");
-  renderSeats();
 }
 
 // =====================
@@ -795,11 +735,6 @@ async function sendHistoryEntry(entry, retries = 3, delayMs = 500) {
 }
 
 // =====================
-// 順位登録
-// =====================
-
-
-// =====================
 // 履歴取得（ポーリング）
 // =====================
 async function pollHistory() {
@@ -811,27 +746,9 @@ async function pollHistory() {
     console.warn("履歴取得失敗", e);
   }
 }
-
 setInterval(pollHistory, 10000);
 
-// =====================
-// カメラ制御
-// =====================
 
-// =====================
-// UI更新ユーティリティ
-// =====================
-function updateCameraUI() {
-  const startScanBtn = document.getElementById("startScanBtn");
-  const stopScanBtn = document.getElementById("stopScanBtn");
-  const startRankBtn = document.getElementById("startRankBtn");
-  const stopRankBtn = document.getElementById("stopRankBtn");
-
-  if (startScanBtn) startScanBtn.disabled = !!scanQr || isScanCameraStarting;
-  if (stopScanBtn) stopScanBtn.disabled = !scanQr;
-  if (startRankBtn) startRankBtn.disabled = !!rankQr || isRankCameraStarting;
-  if (stopRankBtn) stopRankBtn.disabled = !rankQr;
-}
 
 // 通常スキャンカメラ起動
 // =====================
@@ -844,7 +761,6 @@ async function startScanCamera() {
   if (isScanCameraStarting || scanQr) return; // 二重起動防止
 
   isScanCameraStarting = true;
-  updateCameraUI();
 
   try {
     scanQr = new Html5Qrcode("reader");
@@ -861,7 +777,6 @@ async function startScanCamera() {
     scanQr = null;
   } finally {
     isScanCameraStarting = false;
-    updateCameraUI();
   }
 }
 
@@ -877,7 +792,6 @@ async function startRankCamera() {
   if (isRankCameraStarting || rankQr) return; // 二重起動防止
 
   isRankCameraStarting = true;
-  updateCameraUI();
 
   try {
     rankQr = new Html5Qrcode("rankingReader");
@@ -894,7 +808,6 @@ async function startRankCamera() {
     rankQr = null;
   } finally {
     isRankCameraStarting = false;
-    updateCameraUI();
   }
 }
 
@@ -921,7 +834,6 @@ async function stopScanCamera() {
   } finally {
     scanQr = null;
     isScanCameraStarting = false;
-    updateCameraUI();
   }
 }
 
@@ -959,7 +871,6 @@ async function stopRankCamera() {
     // 3) 状態リセット
     rankQr = null;
     isRankCameraStarting = false;
-    updateCameraUI(); // UI表示更新
   }
 }
 
@@ -1003,11 +914,6 @@ window.exportSeatCSV = ()=>{
   if(seats.length===0){ displayMessage("⚠ エクスポートデータなし"); return; }
   downloadCSV(toCSV(seats,["seatID","players"]),"seats.csv");
 };
-
-document.getElementById("closeHelpBtn")?.addEventListener("click", ()=>{
-  const help = document.getElementById("helpSection");
-  if (help) help.style.display = "none";
-});
 
 // =====================
 // 履歴描画
@@ -1100,55 +1006,19 @@ function exportHistoryCSV() {
   displayMessage("✅ 履歴CSV出力完了");
 }
 
-
-
-// =====================
-// 初期化
-// =====================
-function bindButtons() {
-  document.getElementById("undoBtn")?.addEventListener("click", undoAction);
-  document.getElementById("redoBtn")?.addEventListener("click", redoAction);
-  document.getElementById("exportPlayerBtn")?.addEventListener("click", exportPlayerCSV);
-  document.getElementById("exportSeatBtn")?.addEventListener("click", exportSeatCSV);
-  document.getElementById("confirmRankingBtn")?.addEventListener("click", finalizeRanking);
-  document.getElementById("saveToGASBtn")?.addEventListener("click", () => requireAuth(() => saveToGAS(seatMap, playerData)));
-  document.getElementById("loadFromGASBtn")?.addEventListener("click", () => requireAuth(loadFromGAS));
-  document.getElementById("exportHistoryBtn")?.addEventListener("click", exportRankingHistoryCSV);
-  document.getElementById("startScanBtn")?.addEventListener("click", startScanCamera);
-  document.getElementById("stopScanBtn")?.addEventListener("click", stopScanCamera);
-  document.getElementById("startRankBtn")?.addEventListener("click", startRankCamera);
-  document.getElementById("stopRankBtn")?.addEventListener("click", stopRankCamera);
-};
-
-  document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", async () => {
     try { 
       await loadFromGAS(); 
     }   catch (e) { 
     console.warn("GASロード失敗,ローカル使用", e); 
   }
-  loadFromLocalStorage();
-  updateCameraUI();
   renderSeats();
-  applyTheme();
   bindButtons();
   bindGASSaveButton();
   startScanCamera();
-  
-  // スクロールでサイドバー自動開閉
-  window.addEventListener("scroll", () => {
-    if (scrollTimeout) clearTimeout(scrollTimeout);
-    const st = window.pageYOffset || document.documentElement.scrollTop;
-    if (st > lastScrollTop) sidebar?.classList.add("closed"); 
-    else sidebar?.classList.remove("closed");
-    lastScrollTop = st <= 0 ? 0 : st;
-    scrollTimeout = setTimeout(() => sidebar?.classList.remove("closed"), 1500);
-  
-}); // ここでDOMContentLoadedの括弧を閉じる
 })
 // window に関数を登録
 Object.assign(window, {
-  undoAction,
-  redoAction,
   removePlayer,
   exportPlayerCSV,
   exportSeatCSV,
