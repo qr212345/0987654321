@@ -1,109 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>座席管理システム</title>
-  </head>
-  <body>
-    <button id = "btnMenu">☰</button>
-    
-    <nav id="sidebar">
-      <h2>メニュー</h2>
-      <br><button id="btnTheme">🎨テーマ編集</button>
-      <br><button id="adminStatus">🔑 管理者モード有効化[未有効]</button>
-      <br><button id="pop">💽QRスキャン</button>
-      <br><button onclick="App()">💾 順位登録</button>
-      <br><button onclick="navigate()">🔔 履歴</button>
-      <br><button onclick="n()">🔎 操作ヘルプ</button>
-      <br><button onclick="window.open('https://qr212345.github.io/QW/')">📍 リアルタイム座席</button>
-      <br><button onclick="window.open('https://qr212345.github.io/rankingusheet/')">📊 リアルタイムランキング</button>
-    </nav>
-    
-    <section id="welcomeScreen">
-      <div id="welcome-content">
-        <h1>🎉 大会へようこそ 🎉</h1>
-        <p>画面をタッチ／クリックして順位登録モードに進む</p>
-      </div>
-    </section>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="substyle.css">
+        <title>座席管理システム</title>
+    </head>
+    <body>
+        <header id="header">
 
-    <main id="main">
-      <header>
-        <h1>座席管理システム</h1>
-      </header>
-      
-      <!-- メッセージ表示 -->
-      <div id="messageArea"></div>
-      
-      <!-- QRスキャンセクション -->
-      <section id="scanSection" class="section" style="display:none;">
-        <h2>QRコードスキャン</h2>
-        <div id="reader" class="qr-reader"></div>
-        <p id="result">読み取り結果がここに表示されます</p>
-        <div id="seatList" class="seat-list"></div>
-        <div class="controls">
-          <button id="btnUndo">↩ Undo</button>
-          <button id="btnRedo">↪ Redo</button>
-          <button id="exportPlayerBtn">📄 プレイヤーCSV</button>
-          <button id="exportSeatBtn">📜 座席CSV</button>
-          <button id="saveToGASBtn">📥 GAS保存</button>
-          <button id="loadFromGASBtn">📤 GAS読み込み</button>
-        </div>
-      </section>
-    
-      <!-- 順位登録セクション -->
-      <section id="rankingSection" class="section" style="display:none;">
-        <h2>順位登録モード</h2>
-        <div id="rankingReader" class="qr-reader"></div>
-        <div id="multiRankingArea" class="ranking-list"></div>
-        <ul id="rankingList" class="ranking-list"></ul>
-        <button id="confirmRankingBtn">🏆 順位確定</button>
-        <button id="flushBtn">📨まとめて送信</button>
-        <p>ドラッグで順位を入れ替えてください</p>
-      </section>
+        </header>
+        <nav id="nav">
+            <button class="btnNav">ねこ</button>
+            <button class="btnNav">ねこ</button>
+            <button class="btnNav">ねこ</button>
+            <button class="btnNav">ねこ</button>
+            <button class="btnNav">ねこ</button>
+        </nav>
+        <main id="main">
+            <div id="sideBar">
+                <button id="btnControl_sideMenu">></button>
+            </div>
+            <div id="sideMenu">
+                <h2>メニュー</h2>
+                <br><button id="btnTheme">Setting</button>
+                <br><button id="btnHelp">Help</button>
+                <br><button id="btnWebQW">📍 リアルタイム座席</button>
+                <br><button id="btnWebRankingusheet">📊 リアルタイムランキング</button>
+                <br><button id="pop">💽QRスキャン</button>
+                <br><button id="btnSystemRanking" onclick="App()">💾 順位登録</button>
+            </div>
+            
+            <div id="messageArea"></div>
 
-      <!-- 履歴セクション -->
-      <section id="historySection" class="section" style="display:none;">
-        <h2>🎞️ 履歴</h2>
-        <button id="exportHistoryBtn">📤 CSV出力</button>
-        <div id="historyList" class="history-list"></div>
-      </section>
+            <!-- QRスキャンセクション -->
+            <section id="scanSection" class="section">
+                <h2>QRコードスキャン</h2>
+                <div id="reader" class="qr-reader"></div>
+                <p id="result">読み取り結果がここに表示されます</p>
+                <div id="seatList"></div>
+                <div>
+                    <button id="btnUndo">↩ Undo</button>
+                    <button id="btnRedo">↪ Redo</button>
+                    <button id="saveToGASBtn">📥 GAS保存</button>
+                    <button id="loadFromGASBtn">📤 GAS読み込み</button>
+                </div>
+            </section>
+            
+            <!-- 順位登録セクション -->
+            <section id="rankingSection" class="section">
+                <h2>順位登録モード</h2>
+                <div id="rankingReader" class="qr-reader"></div>
+                <div id="multiRankingArea" class="ranking-list"></div>
+                <ul id="rankingList" class="ranking-list"></ul>
+                <button id="confirmRankingBtn">🏆 順位確定</button>
+                <button id="flushBtn">📨まとめて送信</button>
+                <p>ドラッグで順位を入れ替えてください</p>
+            </section>
 
-      <!-- 操作ヘルプセクション -->
-      <section id="helpSection" class="section" style="display:none;">
-        <div class="help-container">
-          <h2>操作手順</h2>
-          <ol>
-            <li>QRコードをスキャンして座席とプレイヤーを登録</li>
-            <li>Undo/Redoで操作を修正</li>
-            <li>順位登録モードで座席QRをスキャンし、ドラッグで順位確定</li>
-            <li>CSVエクスポートやGAS保存でデータ管理</li>
-            <li>テーマパネルで座席・プレイヤーの色やフォントサイズを変更可能</li>
-            <li>履歴セクションで登録・操作の記録を確認</li>
-            <li>タイマーでイベント時間を管理</li>
-          </ol>
-        </div>
-      </section>
+            <!-- テーマ編集セクション -->
+            <section id="sectionTheme" class="section">
+                <h3>テーマ編集</h3>
+                <div>
+                    <label>座席背景: <input id="seatBgColor" type="color" value="#f5f5f5"></label><br>
+                    <label>プレイヤー背景: <input id="playerBgColor" type="color" value="#d0f0c0"></label><br>
+                    <label>ボタン背景: <input id="buttonBgColor" type="color" value="#4CAF50"></label><br>
+                    <label>ボタン文字色: <input id="buttonColor" type="color" value="#ffffff"></label><br>
+                    <label>フォントサイズ: <input id="fontSizeInput" type="number" value="14" style="width:60px">px</label><br>
+                    <button id="applyThemeBtn">適用</button>
+                </div>
+            </section>
 
-      <section id="sectionTheme" class="section">
-        <h3>テーマ編集</h3>
-        <div class="theme-controls">
-          <label>座席背景: <input id="seatBgColor" type="color" value="#f5f5f5"></label><br>
-          <label>プレイヤー背景: <input id="playerBgColor" type="color" value="#d0f0c0"></label><br>
-          <label>ボタン背景: <input id="buttonBgColor" type="color" value="#4CAF50"></label><br>
-          <label>ボタン文字色: <input id="buttonColor" type="color" value="#ffffff"></label><br>
-          <label>フォントサイズ: <input id="fontSizeInput" type="number" value="14" style="width:60px">px</label><br>
-          <button id="applyThemeBtn">適用</button>
-        </div>
-      </section>
-    </main>
-    
-    <!-- テーマパネル -->
-    <div id="themePanel" style="display:none;"></div>
+            <!-- 操作ヘルプセクション -->
+            <section id="sectionHelp" class="section">
+                <div id="help-container">
+                    <h2>操作手順</h2>
+                    <ol>
+                        <li>QRコードをスキャンして座席とプレイヤーを登録</li>
+                        <li>Undo/Redoで操作を修正</li>
+                        <li>順位登録モードで座席QRをスキャンし、ドラッグで順位確定</li>
+                        <li>CSVエクスポートやGAS保存でデータ管理</li>
+                        <li>テーマパネルで座席・プレイヤーの色やフォントサイズを変更可能</li>
+                        <li>履歴セクションで登録・操作の記録を確認</li>
+                        <li>タイマーでイベント時間を管理</li>
+                    </ol>
+                </div>
+            </section>
+        </main>
 
-    <script src="app.js" defer></script>
-    <script src="subapp.js" defer></script>
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  </body>
+        <script src="app.js" defer></script>
+        <script src="subapp.js" defer></script>
+        <script src="sub2app.js" defer></script>
+        <script src="qrcode.js" defer></script>
+    </body>
 </html>
